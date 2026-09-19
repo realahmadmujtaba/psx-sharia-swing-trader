@@ -1,0 +1,421 @@
+{
+  "updated_at": "2026-09-19T17:46+05:00",
+  "price_date": "2026-09-18",
+  "universe": "KMI30",
+  "rules": {
+    "ema_period": 50,
+    "rsi_period": 14,
+    "rsi_lower": 30,
+    "rsi_upper": 45,
+    "volume_lookback": 20,
+    "min_avg_volume": 100000,
+    "stop_loss_pct": 0.04,
+    "take_profit_pct": 0.08,
+    "min_holding_days": 3,
+    "max_holding_days": 15
+  },
+  "stocks": [
+    {
+      "symbol": "AIRLINK",
+      "date": "2026-09-18",
+      "close": 129.03,
+      "ema_50": 134.4747760873434,
+      "rsi": 47.1038563904937,
+      "avg_volume": 607107.85,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "ATRL",
+      "date": "2026-09-18",
+      "close": 1095.15,
+      "ema_50": 1042.890989353859,
+      "rsi": 52.40398490315911,
+      "avg_volume": 883935.55,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "CPHL",
+      "date": "2026-09-18",
+      "close": 75.38,
+      "ema_50": 74.35635414616638,
+      "rsi": 58.280185140165656,
+      "avg_volume": 1533852.4,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "DGKC",
+      "date": "2026-09-18",
+      "close": 196.08,
+      "ema_50": 204.98023064989908,
+      "rsi": 42.90264374768366,
+      "avg_volume": 3276401.8,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "EFERT",
+      "date": "2026-09-18",
+      "close": 188.22,
+      "ema_50": 189.34507393442993,
+      "rsi": 51.24676029960587,
+      "avg_volume": 801778.85,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "ENGROH",
+      "date": "2026-09-18",
+      "close": 263.02,
+      "ema_50": 269.76202644564427,
+      "rsi": 43.350528438658145,
+      "avg_volume": 1314548.35,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "FCCL",
+      "date": "2026-09-18",
+      "close": 54.35,
+      "ema_50": 54.37658697724984,
+      "rsi": 50.995581138100064,
+      "avg_volume": 3913396.55,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "FFC",
+      "date": "2026-09-18",
+      "close": 539.03,
+      "ema_50": 547.8594245053351,
+      "rsi": 45.007839632729905,
+      "avg_volume": 562825.75,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "FFL",
+      "date": "2026-09-18",
+      "close": 14.78,
+      "ema_50": 15.834776668949216,
+      "rsi": 37.99951297394944,
+      "avg_volume": 1976856.05,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "GAL",
+      "date": "2026-09-18",
+      "close": 543.38,
+      "ema_50": 589.1547678012631,
+      "rsi": 31.79149656730027,
+      "avg_volume": 533384.4,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "GHNI",
+      "date": "2026-09-18",
+      "close": 1081.24,
+      "ema_50": 1180.4092615114928,
+      "rsi": 28.196715105976565,
+      "avg_volume": 137454.15,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too low"
+      ]
+    },
+    {
+      "symbol": "HCAR",
+      "date": "2026-09-18",
+      "close": 222.54,
+      "ema_50": 232.50660420014847,
+      "rsi": 43.8327116256039,
+      "avg_volume": 467742.35,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "HUBC",
+      "date": "2026-09-18",
+      "close": 203.8,
+      "ema_50": 211.202107639622,
+      "rsi": 40.047851307859155,
+      "avg_volume": 2420580.05,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "LUCK",
+      "date": "2026-09-18",
+      "close": 416.0,
+      "ema_50": 433.5371485980573,
+      "rsi": 42.41093121208021,
+      "avg_volume": 1032362.35,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "MARI",
+      "date": "2026-09-18",
+      "close": 650.51,
+      "ema_50": 658.3923557024445,
+      "rsi": 45.359094333066146,
+      "avg_volume": 368995.85,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "MEBL",
+      "date": "2026-09-18",
+      "close": 552.75,
+      "ema_50": 553.9554487132159,
+      "rsi": 46.833255316808696,
+      "avg_volume": 718433.45,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "MLCF",
+      "date": "2026-09-18",
+      "close": 94.76,
+      "ema_50": 97.11113513703708,
+      "rsi": 45.588761119833734,
+      "avg_volume": 9100180.9,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "NML",
+      "date": "2026-09-18",
+      "close": 133.29,
+      "ema_50": 142.0147989315992,
+      "rsi": 40.08614606839762,
+      "avg_volume": 886675.7,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "NRL",
+      "date": "2026-09-18",
+      "close": 518.61,
+      "ema_50": 477.0914355835813,
+      "rsi": 54.23588364383104,
+      "avg_volume": 3833266.35,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "OGDC",
+      "date": "2026-09-18",
+      "close": 318.06,
+      "ema_50": 321.19173594811804,
+      "rsi": 46.703220534993314,
+      "avg_volume": 3565035.5,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "PAEL",
+      "date": "2026-09-18",
+      "close": 36.84,
+      "ema_50": 39.81138687373906,
+      "rsi": 40.12419043489236,
+      "avg_volume": 4166623.25,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "PPL",
+      "date": "2026-09-18",
+      "close": 228.8,
+      "ema_50": 227.36137889721635,
+      "rsi": 53.271713530599826,
+      "avg_volume": 5787414.85,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "PRL",
+      "date": "2026-09-18",
+      "close": 82.97,
+      "ema_50": 74.46113071950302,
+      "rsi": 49.41032532178266,
+      "avg_volume": 34422976.95,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "RSI too high"
+      ]
+    },
+    {
+      "symbol": "PSO",
+      "date": "2026-09-18",
+      "close": 345.64,
+      "ema_50": 354.2740124501645,
+      "rsi": 42.860303542088,
+      "avg_volume": 1817583.75,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "SAZEW",
+      "date": "2026-09-18",
+      "close": 1745.2,
+      "ema_50": 1880.8237215477934,
+      "rsi": 34.21762136207094,
+      "avg_volume": 126177.45,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "SEARL",
+      "date": "2026-09-18",
+      "close": 79.69,
+      "ema_50": 86.48633338345832,
+      "rsi": 35.034658023517395,
+      "avg_volume": 1727146.15,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "SNGP",
+      "date": "2026-09-18",
+      "close": 91.59,
+      "ema_50": 100.22929320652973,
+      "rsi": 34.84022054411325,
+      "avg_volume": 1730392.0,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "SSGC",
+      "date": "2026-09-18",
+      "close": 23.88,
+      "ema_50": 26.6129996427754,
+      "rsi": 35.54671660771109,
+      "avg_volume": 6562221.2,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "SYS",
+      "date": "2026-09-18",
+      "close": 121.95,
+      "ema_50": 130.80071071801694,
+      "rsi": 37.27057286598427,
+      "avg_volume": 1738118.8,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA"
+      ]
+    },
+    {
+      "symbol": "TREET",
+      "date": "2026-09-18",
+      "close": 22.32,
+      "ema_50": 23.121003547291693,
+      "rsi": 47.15659151265421,
+      "avg_volume": 1270328.55,
+      "stale": false,
+      "status": "NO SIGNAL",
+      "reasons": [
+        "Below 50-day EMA",
+        "RSI too high"
+      ]
+    }
+  ],
+  "signals_today": [],
+  "history": []
+}
