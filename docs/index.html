@@ -87,6 +87,15 @@
   .rules h3 { margin: 0 0 6px; font-size: 0.95rem; }
   .rules ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem; }
   footer { margin-top: 32px; font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 16px; }
+  .tile.watch .n { color: var(--warn); }
+  h2 .sub { font-size: 0.85rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .banner { margin-top: 16px; padding: 10px 16px; border-radius: 10px; font-size: 0.92rem; border: 1px solid var(--border); }
+  .banner.up { background: var(--buy-bg); color: var(--buy); }
+  .banner.down { background: var(--warn-bg); color: var(--warn); }
+  .warning { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .warning:last-child { border-bottom: 0; }
+  .warning .rec { font-weight: 700; }
+  .warning p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
   #error { display: none; background: var(--sell-bg); color: var(--sell); padding: 12px 16px; border-radius: 10px; margin-top: 16px; }
   @media (max-width: 640px) {
     .tiles { grid-template-columns: repeat(2, 1fr); }
@@ -99,16 +108,34 @@
   <header>
     <h1>PSX Sharia Swing Scanner</h1>
     <p>End-of-day swing scan of the <span id="universe">KMI-30</span> Sharia-compliant index.</p>
-    <div class="meta">Prices as of <strong id="price-date">—</strong> · Updated <strong id="updated">—</strong> PKT</div>
+    <div class="meta">Prices as of <strong id="price-date">—</strong> · Updated <strong id="updated">—</strong> PKT · <strong id="n-total">–</strong> stocks scanned</div>
   </header>
   <div id="error"></div>
+  <div id="market" class="banner" hidden></div>
 
   <div class="tiles">
     <div class="tile buy"><div class="n" id="n-buy">–</div><div class="l">BUY today</div></div>
     <div class="tile sell"><div class="n" id="n-sell">–</div><div class="l">SELL today</div></div>
     <div class="tile hold"><div class="n" id="n-hold">–</div><div class="l">Open positions</div></div>
-    <div class="tile"><div class="n" id="n-total">–</div><div class="l">Stocks scanned</div></div>
+    <div class="tile watch"><div class="n" id="n-watch">–</div><div class="l">On watchlist</div></div>
   </div>
+
+  <section id="warnings-section" hidden>
+    <h2>Warnings</h2>
+    <div class="card" id="warnings"></div>
+  </section>
+
+  <section>
+    <h2>Watchlist <span class="sub">one condition short of a BUY</span></h2>
+    <div class="card scroll">
+      <table>
+        <thead>
+          <tr><th>Symbol</th><th>Missing</th><th class="num">Close</th><th class="num">RSI (14)</th><th class="num">Volume ×</th></tr>
+        </thead>
+        <tbody id="watchlist"></tbody>
+      </table>
+    </div>
+  </section>
 
   <section>
     <h2>All stocks</h2>
@@ -117,7 +144,7 @@
         <thead>
           <tr>
             <th>Symbol</th><th>Status</th><th class="num">Close</th><th class="num">vs 50-day EMA</th>
-            <th class="num">RSI (14)</th><th class="num">Avg vol (20d)</th><th>Notes</th>
+            <th class="num">RSI (14)</th><th class="num">Volume ×</th><th class="num">Avg vol (20d)</th><th>Notes</th>
           </tr>
         </thead>
         <tbody id="stocks"></tbody>
@@ -188,13 +215,15 @@
       tr.append(status);
 
       if (s.close === undefined) {
-        for (let i = 0; i < 4; i++) tr.append(el("td", "—", "num"));
+        for (let i = 0; i < 5; i++) tr.append(el("td", "—", "num"));
       } else {
         const gap = (s.close / s.ema_50 - 1) * 100;
         const inZone = s.rsi >= rules.rsi_lower && s.rsi <= rules.rsi_upper;
+        const spike = s.volume_ratio >= rules.volume_spike_mult;
         tr.append(el("td", fmt(s.close), "num"));
         tr.append(el("td", (gap >= 0 ? "+" : "") + fmt(gap, 1) + "%", "num " + (gap >= 0 ? "up" : "down")));
         tr.append(el("td", fmt(s.rsi, 1), "num" + (inZone ? " inzone" : "")));
+        tr.append(el("td", fmt(s.volume_ratio, 1) + "×", "num" + (spike ? " inzone" : "")));
         tr.append(el("td", fmt(s.avg_volume, 0), "num"));
       }
       tr.append(el("td", notesFor(s), "notes"));
@@ -225,21 +254,79 @@
     }
   }
 
+  function renderMarket(m, r) {
+    const box = document.getElementById("market");
+    if (!m) {
+      box.textContent = `Market filter: ${r.market_index} data unavailable. New BUY signals are paused.`;
+      box.className = "banner down";
+    } else {
+      const trend = m.uptrend ? "above" : "below";
+      box.textContent = `Market filter: ${r.market_index} closed at ${fmt(m.close, 0)}, ${trend} its ${r.ema_period}-day EMA (${fmt(m.ema_50, 0)}). ` +
+        (m.uptrend ? "New BUY signals allowed." : "New BUY signals are paused until the index recovers.");
+      box.className = "banner " + (m.uptrend ? "up" : "down");
+    }
+    box.hidden = false;
+  }
+
+  function renderWatchlist(list) {
+    const body = document.getElementById("watchlist");
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      const td = el("td", "No stock is exactly one condition away today.", "empty");
+      td.colSpan = 5;
+      tr.append(td);
+      body.append(tr);
+      return;
+    }
+    for (const w of list) {
+      const tr = document.createElement("tr");
+      tr.append(el("td", w.symbol, "sym"));
+      tr.append(el("td", w.missing, "notes"));
+      tr.append(el("td", fmt(w.close), "num"));
+      tr.append(el("td", fmt(w.rsi, 1), "num"));
+      tr.append(el("td", fmt(w.volume_ratio, 1) + "×", "num"));
+      body.append(tr);
+    }
+  }
+
+  function renderWarnings(list) {
+    if (!list.length) return;
+    const root = document.getElementById("warnings");
+    for (const w of list) {
+      const div = el("div", null, "warning");
+      const head = el("div");
+      head.append(el("span", w.symbol + " left the Sharia index · ", "sym"));
+      head.append(el("span", w.recommendation === "SELL" ? "Suggestion: sell now" : "Suggestion: can hold a few days", "rec"));
+      div.append(head);
+      div.append(el("p", `${w.reason} Entry ${fmt(w.entry_price)}, close ${fmt(w.close_price)}, day ${w.days_held}. The decision is yours.`));
+      root.append(div);
+    }
+    document.getElementById("warnings-section").hidden = false;
+  }
+
   function renderRules(r) {
+    const pct = v => fmt(v * 100, 0) + "%";
     const groups = [
-      ["BUY when all three hold", [
+      ["BUY when all conditions hold", [
+        `${r.market_index} index above its ${r.ema_period}-day EMA (market filter)`,
         `Close above the ${r.ema_period}-day EMA (uptrend)`,
         `RSI (${r.rsi_period}) between ${r.rsi_lower} and ${r.rsi_upper} (pullback)`,
+        `Today's volume at least ${r.volume_spike_mult}× the ${r.volume_lookback}-day average`,
+        `Close within ${pct(r.support_proximity_pct)} of support (${r.ema_period}-day EMA or ${r.support_lookback}-day low)`,
         `${r.volume_lookback}-day average volume above ${fmt(r.min_avg_volume, 0)} shares`,
+        `At most ${r.max_open_positions} open positions; strongest volume spike first`,
       ]],
       ["SELL an open position", [
-        `Close at or below ${fmt(r.stop_loss_pct * 100, 0)}% stop-loss`,
-        `Close at or above ${fmt(r.take_profit_pct * 100, 0)}% take-profit`,
+        `Stop-loss: ${r.atr_stop_mult} × ATR (${r.atr_period}) below entry`,
+        `Take-profit: ${r.atr_target_mult} × ATR above entry`,
         `Or ${r.max_holding_days} days held, whichever comes first`,
+        "Checked on the closing price",
       ]],
-      ["Settlement lock", [
-        `No SELL of any kind before day ${r.min_holding_days}`,
-        "Shares must settle into the account before selling",
+      ["Sharia", [
+        `Only stocks in the ${r.market_index} Sharia index`,
+        `No SELL of any kind before day ${r.min_holding_days}: shares must settle into the account first`,
+        "Purification ratio (Al-Meezan) shown with every signal",
+        "If a held stock leaves the index: a warning with a hold-or-sell suggestion",
       ]],
     ];
     const root = document.getElementById("rules");
@@ -264,6 +351,10 @@
       document.getElementById("n-sell").textContent = count("SELL");
       document.getElementById("n-hold").textContent = count("HOLDING");
       document.getElementById("n-total").textContent = d.stocks.length;
+      document.getElementById("n-watch").textContent = (d.watchlist || []).length;
+      renderMarket(d.market, d.rules);
+      renderWarnings(d.warnings || []);
+      renderWatchlist(d.watchlist || []);
       renderStocks(d.stocks, d.rules);
       renderHistory(d.history);
       renderRules(d.rules);

@@ -18,14 +18,21 @@ You are acting as a Quantitative Trading Architect assisting in building an End-
 ## 3. Hard Architectural Rules (IMPORTANT)
 * **Timezone Strictness:** All datetime operations, scheduling, and logging MUST use `pytz.timezone('Asia/Karachi')`. The market EOD analysis cron runs exactly at 17:45 PKT.
 * **Data Ingestion Hierarchy:** Fetch historical prices using `psxdata.stocks(symbol, start, end)`. Wrap this in a try-except block; on exception or network timeout, retry up to 3 times with exponential backoff (`cache=False` on retries to force a fresh fetch instead of re-reading a possibly-stale cache). If all attempts fail, skip that symbol for the current run rather than emitting a signal on missing data.
-* **Trading Logic Parameters:**
-  * **Swing Trade Duration:** Assumed 3 to 15 days holding period.
+* **Trading Logic Parameters (all must hold for a BUY):**
+  * **Swing Trade Duration:** 2 to 15 days holding period.
+  * **Market Filter:** No new BUY while the KMI-30 index (`psxdata.stocks("KMI30")`) closes below its own 50-day EMA.
   * **Trend Filter:** Close Price > 50-day EMA.
   * **Pullback/Momentum Filter:** 14-day RSI between 30 and 45.
   * **Liquidity Filter:** 20-day Average Daily Volume > 100,000 shares (vital for PSX to avoid illiquid traps).
-* **Risk Management Implementation:** Every generated signal must auto-calculate a strict 4% Stop-Loss and an 8% Take-Profit (1:2 Risk-to-Reward ratio) based on the current closing price.
+  * **Volume Spike:** Today's volume ≥ 1.5× the average of the prior 20 sessions.
+  * **Near Support:** Close no more than 3% above the 50-day EMA or above the lowest low of the prior 20 sessions.
+* **Risk Management Implementation:** Every BUY auto-calculates an ATR-based Stop-Loss (close − 1.5 × ATR(14), Wilder smoothing) and Take-Profit (close + 3 × ATR(14)), keeping a 1:2 risk-to-reward ratio, all stated in rupees.
+* **Position Sizing:** Each BUY suggests shares worth 10% of `TRADING_CAPITAL` (from `.env`), with at most 5 open positions; when more stocks qualify than free slots, the largest volume spikes win. Share counts and rupee totals appear only in the private email, never on the public dashboard.
 * **SELL Signal = Exit Alert:** PSX retail swing trading is long-only (no shorting), so SELL is not an independent scan — it is the exit for a position a prior BUY alert opened. Once a symbol's BUY alert fires, treat it as an open position (the last logged signal for that symbol) until a SELL closes it. Each EOD run, for any open position, fire SELL when the closing price crosses the entry's Stop-Loss or Take-Profit, OR when `MAX_HOLDING_DAYS` (15) has elapsed since entry — whichever comes first. Do not scan a symbol for a new BUY setup while it already has an open position.
-* **Minimum Holding Lock:** Shares must settle into the account before they can be sold (Sharia possession requirement, plus PSX T+2 settlement). No SELL alert of any kind — including Stop-Loss or Take-Profit — may fire until `MIN_HOLDING_DAYS` (3) have elapsed since the BUY alert.
+* **Minimum Holding Lock:** Shares must settle into the account before they can be sold (Sharia possession requirement, plus PSX T+2 settlement). No SELL alert of any kind — including Stop-Loss or Take-Profit — may fire until `MIN_HOLDING_DAYS` (2) have elapsed since the BUY alert.
+* **Purification:** Each company's non-compliant income ratio comes from Al-Meezan's "complete ratios" KMI-30 recomposition PDF, parsed into `data/purification_ratios.csv` by `python -m fetchers.purification <pdf> --as-of <date> --source <label>` (refresh after each May/November recomposition). SELL alerts state the ratio, the purification amount on any profit, and a reminder to purify dividends by the same ratio. Ratios above 5% are flagged as compliant only under a special PSX Shariah exception.
+* **Left the Sharia Index:** If a held stock drops out of KMI-30, keep evaluating its exit rules and email a warning with a hold-or-sell suggestion (SELL if below the 50-day EMA, in loss, or RSI > 70; otherwise HOLD a few days). The decision stays with the investor.
+* **Watchlist:** Every email lists stocks exactly one condition short of a BUY (including stocks blocked only by the market filter or the position cap).
 * **Scan Universe:** Sharia-compliant stocks only. The scan universe is the live constituent list of the PSX KMI-30 index (`psxdata.tickers(index="KMI30")`), refreshed each run with a cached fallback in `data/universe_cache.csv`. Ex-dividend/bonus/right suffixes (`XD`/`XB`/`XR`) are stripped from symbols. If neither live nor cached list is available, abort the run rather than scan an unverified list. Never hardcode or guess compliance status.
 * **Alert Wording:** Alerts state that a stock matches the swing-entry criteria; they never claim a price is guaranteed to rise.
 * **Async Execution:** The email alert module must be purely asynchronous using `asyncio` and `aiosmtplib`. Do not use `smtplib` synchronously or blocking SMTP calls, to prevent I/O blocking.

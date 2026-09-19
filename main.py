@@ -9,8 +9,16 @@ import config
 from alerts import dashboard
 from alerts.email_alert import send_digest
 from core import state
-from core.signal_engine import entry_failures, evaluate_exit, evaluate_symbol, snapshot
+from core.signal_engine import (
+    delisting_advice,
+    entry_failures,
+    evaluate_exit,
+    evaluate_symbol,
+    market_status,
+    snapshot,
+)
 from fetchers.psx_fetcher import fetch_ohlcv
+from fetchers.purification import load_ratios, purification_amount
 from fetchers.universe import get_universe
 
 HISTORY_DAYS = 400
@@ -18,15 +26,35 @@ HISTORY_DAYS = 400
 STALE_AFTER_DAYS = 4
 
 
-def run_scan() -> tuple[list[dict], list[dict]]:
+def _attach_purification(signal: dict, ratios: dict) -> None:
+    ratio = ratios.get(signal["symbol"])
+    signal["purification_pct"] = float(ratio["non_compliant_income_pct"]) if ratio else None
+    signal["purification_source"] = ratio["source"] if ratio else None
+    if signal["signal_type"] == "SELL" and signal.get("shares"):
+        signal["pnl_total"] = round(signal["pnl_per_share"] * signal["shares"], 2)
+        if signal["purification_pct"] is not None:
+            signal["purification_on_profit"] = purification_amount(signal["pnl_total"], signal["purification_pct"])
+
+
+def _watch(row: dict, missing: str) -> dict:
+    return {"symbol": row["symbol"], "missing": missing, "close": row["close"], "rsi": row["rsi"],
+            "ema_50": row["ema_50"], "volume_ratio": row["volume_ratio"]}
+
+
+def run_scan() -> dict:
     end = datetime.now(config.TIMEZONE).date()
     start = end - timedelta(days=HISTORY_DAYS)
 
     log_df = state.load_log()
-    signals = []
-    rows = []
+    ratios = load_ratios()
+    universe = get_universe()
+    held_outside = [s for s in state.open_positions(log_df)["symbol"] if s not in universe] if not log_df.empty else []
+    open_count = len(state.open_positions(log_df))
+    market = market_status(fetch_ohlcv(config.MARKET_INDEX, start, end))
 
-    for symbol in get_universe():
+    signals, rows, warnings, watchlist, candidates = [], [], [], [], []
+
+    for symbol in [*universe, *held_outside]:
         df = fetch_ohlcv(symbol, start, end)
         snap = snapshot(df) if not df.empty else None
         if snap is None:
@@ -45,35 +73,57 @@ def run_scan() -> tuple[list[dict], list[dict]]:
                 days_held=(snap["date"] - open_position["date"]).days,
             )
             if exit_signal is not None:
+                _attach_purification(exit_signal, ratios)
                 signals.append(exit_signal)
                 state.append_signal(exit_signal)
+                open_count -= 1
                 row.update(status="SELL", reasons=[exit_signal["exit_reason"]])
+            elif symbol in held_outside:
+                warnings.append(delisting_advice(open_position, snap))
+                row.update(status="HOLDING", reasons=[f"Left {config.UNIVERSE_INDEX}"])
             else:
                 row.update(status="HOLDING", reasons=[])
             rows.append(row)
             continue
 
-        entry_signal = evaluate_symbol(symbol, df)
-        if entry_signal is not None:
-            signals.append(entry_signal)
-            state.append_signal(entry_signal)
-            row.update(
-                status="BUY",
-                reasons=[],
-                stop_loss=entry_signal["stop_loss"],
-                take_profit=entry_signal["take_profit"],
-            )
+        failures = entry_failures(snap)
+        if failures:
+            row.update(status="NO SIGNAL", reasons=failures)
+            if len(failures) == 1:
+                watchlist.append(_watch(row, failures[0]))
         else:
-            row.update(status="NO SIGNAL", reasons=entry_failures(snap))
+            candidates.append((row, df))
         rows.append(row)
 
-    return signals, rows
+    if market is None or not market["uptrend"]:
+        blocked = (f"Market filter: {config.MARKET_INDEX} below 50-day EMA" if market
+                   else f"Market filter: {config.MARKET_INDEX} data unavailable")
+        for row, _ in candidates:
+            row.update(status="NO SIGNAL", reasons=[blocked])
+            watchlist.append(_watch(row, blocked))
+    else:
+        candidates.sort(key=lambda item: item[0]["volume_ratio"], reverse=True)
+        free_slots = max(config.MAX_OPEN_POSITIONS - open_count, 0)
+        for rank, (row, df) in enumerate(candidates):
+            if rank >= free_slots:
+                full = f"Max {config.MAX_OPEN_POSITIONS} open positions reached"
+                row.update(status="NO SIGNAL", reasons=[full])
+                watchlist.append(_watch(row, full))
+                continue
+            entry_signal = evaluate_symbol(row["symbol"], df)
+            _attach_purification(entry_signal, ratios)
+            signals.append(entry_signal)
+            state.append_signal(entry_signal)
+            row.update(status="BUY", reasons=[], stop_loss=entry_signal["stop_loss"],
+                       take_profit=entry_signal["take_profit"])
+
+    return {"signals": signals, "rows": rows, "market": market, "warnings": warnings, "watchlist": watchlist}
 
 
 def run_once() -> None:
-    signals, rows = run_scan()
-    dashboard.publish(dashboard.build_payload(rows, signals, state.load_log()))
-    asyncio.run(send_digest(signals))
+    result = run_scan()
+    dashboard.publish(dashboard.build_payload(result, state.load_log()))
+    asyncio.run(send_digest(result))
 
 
 def run_scheduled() -> None:

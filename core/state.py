@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 LOG_PATH = Path(__file__).resolve().parent.parent / "data" / "signals_log.csv"
-LOG_COLUMNS = ["date", "symbol", "signal_type", "close_price", "stop_loss", "take_profit", "exit_reason"]
+LOG_COLUMNS = ["date", "symbol", "signal_type", "close_price", "stop_loss", "take_profit", "exit_reason", "shares"]
 
 
 def load_log() -> pd.DataFrame:
@@ -12,7 +12,16 @@ def load_log() -> pd.DataFrame:
     log_df = pd.read_csv(LOG_PATH, parse_dates=["date"])
     log_df["date"] = log_df["date"].dt.date
     log_df["exit_reason"] = log_df["exit_reason"].fillna("")
+    if "shares" not in log_df:
+        log_df["shares"] = pd.NA
     return log_df
+
+
+def open_positions(log_df: pd.DataFrame) -> pd.DataFrame:
+    if log_df.empty:
+        return log_df
+    latest = log_df.sort_values("date").groupby("symbol").tail(1)
+    return latest[latest["signal_type"] == "BUY"]
 
 
 def get_open_position(log_df: pd.DataFrame, symbol: str) -> pd.Series | None:
@@ -39,8 +48,10 @@ def append_signal(signal: dict) -> None:
                 "stop_loss": signal["stop_loss"],
                 "take_profit": signal["take_profit"],
                 "exit_reason": signal.get("exit_reason", ""),
+                "shares": signal.get("shares"),
             }
-        ]
+        ],
+        columns=LOG_COLUMNS,
     )
     header = not LOG_PATH.exists()
     row.to_csv(LOG_PATH, mode="a", header=header, index=False)

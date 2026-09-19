@@ -72,6 +72,17 @@ If it errors on the email step, that confirms `.env` isn't filled in yet (step 2
 before that — data fetch, indicator math, signal filtering, CSV logging/dedup — is already
 validated against live PSX data and synthetic edge cases.
 
+## Trading capital and purification data
+
+- `.env` holds `TRADING_CAPITAL` (PKR). Each BUY email suggests shares worth 10% of it. It stays on
+  this PC: the public dashboard never shows share counts or rupee totals.
+- `data/purification_ratios.csv` holds each company's non-compliant income ratio from Al-Meezan.
+  KMI-30 is recomposed every May and November; when the new "complete ratios" PDF is out, run:
+  ```
+  python -m fetchers.purification "<PDF path or URL>" --as-of <accounts date> --source "<description>"
+  ```
+  The current file uses accounts as of 2025-12-31.
+
 ## 4. Live dashboard
 
 https://realahmadmujtaba.github.io/psx-sharia-swing-trader/
@@ -87,4 +98,4 @@ goes out, and the task output shows `[dashboard] publish failed`.
 The agent scans only Sharia-compliant stocks: the live PSX **KMI-30** constituent list, fetched
 fresh each run (`fetchers/universe.py`, `config.UNIVERSE_INDEX`). A copy is cached in
 `data/universe_cache.csv` in case PSX is unreachable. No SELL alert fires until at least
-3 days after the BUY (`config.MIN_HOLDING_DAYS`), so shares have time to settle into your account.
+2 days after the BUY (`config.MIN_HOLDING_DAYS`), so shares have time to settle into your account.

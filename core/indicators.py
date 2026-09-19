@@ -19,3 +19,11 @@ def rsi(series: pd.Series, period: int = 14) -> pd.Series:
 
 def avg_volume(series: pd.Series, period: int = 20) -> pd.Series:
     return series.rolling(window=period).mean()
+
+
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
+    prev_close = close.shift(1)
+    true_range = pd.concat(
+        [high - low, (high - prev_close).abs(), (low - prev_close).abs()], axis=1
+    ).max(axis=1)
+    return true_range.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()

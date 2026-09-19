@@ -1,7 +1,14 @@
 {
-  "updated_at": "2026-09-19T20:08+05:00",
+  "updated_at": "2026-09-20T01:03+05:00",
   "price_date": "2026-09-18",
   "universe": "KMI30",
+  "market": {
+    "index": "KMI30",
+    "date": "2026-09-18",
+    "close": 243139.25,
+    "ema_50": 247680.06531280102,
+    "uptrend": false
+  },
   "rules": {
     "ema_period": 50,
     "rsi_period": 14,
@@ -9,19 +16,29 @@
     "rsi_upper": 45,
     "volume_lookback": 20,
     "min_avg_volume": 100000,
-    "stop_loss_pct": 0.04,
-    "take_profit_pct": 0.08,
-    "min_holding_days": 3,
-    "max_holding_days": 15
+    "volume_spike_mult": 1.5,
+    "support_lookback": 20,
+    "support_proximity_pct": 0.03,
+    "atr_period": 14,
+    "atr_stop_mult": 1.5,
+    "atr_target_mult": 3.0,
+    "min_holding_days": 2,
+    "max_holding_days": 15,
+    "max_open_positions": 5,
+    "market_index": "KMI30"
   },
   "stocks": [
     {
       "symbol": "AIRLINK",
       "date": "2026-09-18",
       "close": 129.03,
-      "ema_50": 134.4747760873434,
-      "rsi": 47.1038563904937,
+      "ema_50": 134.47481583343728,
+      "rsi": 47.10385618827039,
       "avg_volume": 607107.85,
+      "volume_ratio": 1.718934605469247,
+      "atr": 3.6386432590459035,
+      "support_low": 118.61,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
@@ -33,75 +50,105 @@
       "symbol": "ATRL",
       "date": "2026-09-18",
       "close": 1095.15,
-      "ema_50": 1042.890989353859,
-      "rsi": 52.40398490315911,
+      "ema_50": 1042.8911777864764,
+      "rsi": 52.40398483776146,
       "avg_volume": 883935.55,
+      "volume_ratio": 0.2619708973106351,
+      "atr": 47.734923381880364,
+      "support_low": 1030.0,
+      "near_support": false,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high"
+        "RSI too high",
+        "No volume spike",
+        "Not near support"
       ]
     },
     {
       "symbol": "CPHL",
       "date": "2026-09-18",
       "close": 75.38,
-      "ema_50": 74.35635414616638,
-      "rsi": 58.280185140165656,
+      "ema_50": 74.35635812077574,
+      "rsi": 58.28018532460242,
       "avg_volume": 1533852.4,
+      "volume_ratio": 1.353442524032973,
+      "atr": 2.152364295176553,
+      "support_low": 68.81,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "DGKC",
       "date": "2026-09-18",
       "close": 196.08,
-      "ema_50": 204.98023064989908,
-      "rsi": 42.90264374768366,
+      "ema_50": 204.9803238725556,
+      "rsi": 42.902643629263544,
       "avg_volume": 3276401.8,
+      "volume_ratio": 0.8389855326839452,
+      "atr": 6.120794568504473,
+      "support_low": 182.26,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "EFERT",
       "date": "2026-09-18",
       "close": 188.22,
-      "ema_50": 189.34507393442993,
-      "rsi": 51.24676029960587,
+      "ema_50": 189.34511982310198,
+      "rsi": 51.24676015406411,
       "avg_volume": 801778.85,
+      "volume_ratio": 0.2769439806435331,
+      "atr": 3.625336103676344,
+      "support_low": 180.01,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "ENGROH",
       "date": "2026-09-18",
       "close": 263.02,
-      "ema_50": 269.76202644564427,
-      "rsi": 43.350528438658145,
+      "ema_50": 269.7620334915427,
+      "rsi": 43.350528639606864,
       "avg_volume": 1314548.35,
+      "volume_ratio": 0.4513035813783853,
+      "atr": 4.7826037749844375,
+      "support_low": 256.72,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "FCCL",
       "date": "2026-09-18",
       "close": 54.35,
-      "ema_50": 54.37658697724984,
-      "rsi": 50.995581138100064,
+      "ema_50": 54.37659601045301,
+      "rsi": 50.99558138785972,
       "avg_volume": 3913396.55,
+      "volume_ratio": 1.8088730121468497,
+      "atr": 1.5483540618791443,
+      "support_low": 50.51,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
@@ -113,102 +160,141 @@
       "symbol": "FFC",
       "date": "2026-09-18",
       "close": 539.03,
-      "ema_50": 547.8594245053351,
-      "rsi": 45.007839632729905,
+      "ema_50": 547.8594604574836,
+      "rsi": 45.00783954042581,
       "avg_volume": 562825.75,
+      "volume_ratio": 1.2620601656993486,
+      "atr": 8.53203274401842,
+      "support_low": 525.0,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "FFL",
       "date": "2026-09-18",
       "close": 14.78,
-      "ema_50": 15.834776668949216,
-      "rsi": 37.99951297394944,
+      "ema_50": 15.834779017582042,
+      "rsi": 37.99951294197345,
       "avg_volume": 1976856.05,
+      "volume_ratio": 0.8905144471198951,
+      "atr": 0.392232852130179,
+      "support_low": 14.2,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "GAL",
       "date": "2026-09-18",
       "close": 543.38,
-      "ema_50": 589.1547678012631,
-      "rsi": 31.79149656730027,
+      "ema_50": 589.1547587680606,
+      "rsi": 31.79149650307943,
       "avg_volume": 533384.4,
+      "volume_ratio": 0.8568256588175794,
+      "atr": 23.372012645336177,
+      "support_low": 529.0,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "GHNI",
       "date": "2026-09-18",
       "close": 1081.24,
-      "ema_50": 1180.4092615114928,
-      "rsi": 28.196715105976565,
+      "ema_50": 1180.4095160671577,
+      "rsi": 28.196714993408037,
       "avg_volume": 137454.15,
+      "volume_ratio": 0.965475266096265,
+      "atr": 46.44773613006998,
+      "support_low": 1084.98,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too low"
+        "RSI too low",
+        "No volume spike"
       ]
     },
     {
       "symbol": "HCAR",
       "date": "2026-09-18",
       "close": 222.54,
-      "ema_50": 232.50660420014847,
-      "rsi": 43.8327116256039,
+      "ema_50": 232.5066139560079,
+      "rsi": 43.83271163797575,
       "avg_volume": 467742.35,
+      "volume_ratio": 0.27305434954158253,
+      "atr": 8.606132941014627,
+      "support_low": 211.11,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "HUBC",
       "date": "2026-09-18",
       "close": 203.8,
-      "ema_50": 211.202107639622,
-      "rsi": 40.047851307859155,
+      "ema_50": 211.2021351005596,
+      "rsi": 40.04785108394213,
       "avg_volume": 2420580.05,
+      "volume_ratio": 0.5474831526029528,
+      "atr": 3.7899670124680047,
+      "support_low": 199.99,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "LUCK",
       "date": "2026-09-18",
       "close": 416.0,
-      "ema_50": 433.5371485980573,
-      "rsi": 42.41093121208021,
+      "ema_50": 433.53744994571434,
+      "rsi": 42.41093117981955,
       "avg_volume": 1032362.35,
+      "volume_ratio": 0.914507196727096,
+      "atr": 9.854950158441143,
+      "support_low": 398.51,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "MARI",
       "date": "2026-09-18",
       "close": 650.51,
-      "ema_50": 658.3923557024445,
-      "rsi": 45.359094333066146,
+      "ema_50": 658.3924214641634,
+      "rsi": 45.359094178686156,
       "avg_volume": 368995.85,
+      "volume_ratio": 1.7726529183098712,
+      "atr": 10.616224148844267,
+      "support_low": 636.1,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
@@ -220,77 +306,107 @@
       "symbol": "MEBL",
       "date": "2026-09-18",
       "close": 552.75,
-      "ema_50": 553.9554487132159,
-      "rsi": 46.833255316808696,
+      "ema_50": 553.9557496995451,
+      "rsi": 46.833255287348706,
       "avg_volume": 718433.45,
+      "volume_ratio": 0.9344332244923782,
+      "atr": 13.688618627780315,
+      "support_low": 527.0,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "MLCF",
       "date": "2026-09-18",
       "close": 94.76,
-      "ema_50": 97.11113513703708,
-      "rsi": 45.588761119833734,
+      "ema_50": 97.11120017609979,
+      "rsi": 45.58876108574001,
       "avg_volume": 9100180.9,
+      "volume_ratio": 0.888487768308936,
+      "atr": 3.276098342125404,
+      "support_low": 89.75,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "NML",
       "date": "2026-09-18",
       "close": 133.29,
-      "ema_50": 142.0147989315992,
-      "rsi": 40.08614606839762,
+      "ema_50": 142.01483398042743,
+      "rsi": 40.086145943764265,
       "avg_volume": 886675.7,
+      "volume_ratio": 1.3695371471266102,
+      "atr": 4.083652408616833,
+      "support_low": 126.69,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "NRL",
       "date": "2026-09-18",
       "close": 518.61,
-      "ema_50": 477.0914355835813,
-      "rsi": 54.23588364383104,
+      "ema_50": 477.0914578052611,
+      "rsi": 54.23588362251896,
       "avg_volume": 3833266.35,
+      "volume_ratio": 0.18743246238451242,
+      "atr": 27.912983007331952,
+      "support_low": 470.0,
+      "near_support": false,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high"
+        "RSI too high",
+        "No volume spike",
+        "Not near support"
       ]
     },
     {
       "symbol": "OGDC",
       "date": "2026-09-18",
       "close": 318.06,
-      "ema_50": 321.19173594811804,
-      "rsi": 46.703220534993314,
+      "ema_50": 321.1917538338603,
+      "rsi": 46.70322039941652,
       "avg_volume": 3565035.5,
+      "volume_ratio": 0.7781215893143404,
+      "atr": 6.35352393510255,
+      "support_low": 311.4,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "PAEL",
       "date": "2026-09-18",
       "close": 36.84,
-      "ema_50": 39.81138687373906,
-      "rsi": 40.12419043489236,
+      "ema_50": 39.81139175166876,
+      "rsi": 40.12419040367803,
       "avg_volume": 4166623.25,
+      "volume_ratio": 2.087617532870728,
+      "atr": 1.161729748593279,
+      "support_low": 34.81,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
@@ -301,113 +417,158 @@
       "symbol": "PPL",
       "date": "2026-09-18",
       "close": 228.8,
-      "ema_50": 227.36137889721635,
-      "rsi": 53.271713530599826,
+      "ema_50": 227.36145224682596,
+      "rsi": 53.271713353117,
       "avg_volume": 5787414.85,
+      "volume_ratio": 1.0579397102631867,
+      "atr": 6.923813613475284,
+      "support_low": 207.21,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high"
+        "RSI too high",
+        "No volume spike"
       ]
     },
     {
       "symbol": "PRL",
       "date": "2026-09-18",
       "close": 82.97,
-      "ema_50": 74.46113071950302,
-      "rsi": 49.41032532178266,
+      "ema_50": 74.46112873219833,
+      "rsi": 49.410325308972666,
       "avg_volume": 34422976.95,
+      "volume_ratio": 0.2905470123631945,
+      "atr": 6.118927610263149,
+      "support_low": 74.74,
+      "near_support": false,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high"
+        "RSI too high",
+        "No volume spike",
+        "Not near support"
       ]
     },
     {
       "symbol": "PSO",
       "date": "2026-09-18",
       "close": 345.64,
-      "ema_50": 354.2740124501645,
-      "rsi": 42.860303542088,
+      "ema_50": 354.2739784853205,
+      "rsi": 42.860303576464084,
       "avg_volume": 1817583.75,
+      "volume_ratio": 0.35501733369596095,
+      "atr": 7.998641279144299,
+      "support_low": 333.15,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "SAZEW",
       "date": "2026-09-18",
       "close": 1745.2,
-      "ema_50": 1880.8237215477934,
-      "rsi": 34.21762136207094,
+      "ema_50": 1880.8239600243567,
+      "rsi": 34.217621280759104,
       "avg_volume": 126177.45,
+      "volume_ratio": 0.41535622488632823,
+      "atr": 45.80928255470537,
+      "support_low": 1740.0,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "SEARL",
       "date": "2026-09-18",
       "close": 79.69,
-      "ema_50": 86.48633338345832,
-      "rsi": 35.034658023517395,
+      "ema_50": 86.48637818814595,
+      "rsi": 35.0346580764713,
       "avg_volume": 1727146.15,
+      "volume_ratio": 1.411788266519561,
+      "atr": 2.1542083110206374,
+      "support_low": 76.62,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "SNGP",
       "date": "2026-09-18",
       "close": 91.59,
-      "ema_50": 100.22929320652973,
-      "rsi": 34.84022054411325,
+      "ema_50": 100.2293188608267,
+      "rsi": 34.84022038446692,
       "avg_volume": 1730392.0,
+      "volume_ratio": 0.7759390556549272,
+      "atr": 3.226927273851664,
+      "support_low": 87.55,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "SSGC",
       "date": "2026-09-18",
       "close": 23.88,
-      "ema_50": 26.6129996427754,
-      "rsi": 35.54671660771109,
+      "ema_50": 26.61299476484569,
+      "rsi": 35.546716656095796,
       "avg_volume": 6562221.2,
+      "volume_ratio": 0.7658929295475296,
+      "atr": 1.0460184822857612,
+      "support_low": 22.51,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "SYS",
       "date": "2026-09-18",
       "close": 121.95,
-      "ema_50": 130.80071071801694,
-      "rsi": 37.27057286598427,
+      "ema_50": 130.80069825219658,
+      "rsi": 37.270572802780144,
       "avg_volume": 1738118.8,
+      "volume_ratio": 0.6208562650983026,
+      "atr": 3.2521513012627348,
+      "support_low": 118.51,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA"
+        "Below 50-day EMA",
+        "No volume spike"
       ]
     },
     {
       "symbol": "TREET",
       "date": "2026-09-18",
       "close": 22.32,
-      "ema_50": 23.121003547291693,
-      "rsi": 47.15659151265421,
+      "ema_50": 23.121005173268262,
+      "rsi": 47.15659158390875,
       "avg_volume": 1270328.55,
+      "volume_ratio": 1.7249062425623527,
+      "atr": 0.7382188665996559,
+      "support_low": 20.7,
+      "near_support": true,
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
@@ -417,5 +578,16 @@
     }
   ],
   "signals_today": [],
+  "warnings": [],
+  "watchlist": [
+    {
+      "symbol": "PAEL",
+      "missing": "Below 50-day EMA",
+      "close": 36.84,
+      "rsi": 40.12419040367803,
+      "ema_50": 39.81139175166876,
+      "volume_ratio": 2.087617532870728
+    }
+  ],
   "history": []
 }

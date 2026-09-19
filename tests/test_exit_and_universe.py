@@ -23,15 +23,16 @@ def _df(close: float, as_of: date) -> pd.DataFrame:
 
 class TestMinHoldingLock(unittest.TestCase):
     def test_take_profit_before_min_hold_is_suppressed(self):
-        self.assertIsNone(evaluate_exit(POSITION, _df(170.0, date(2026, 9, 3))))
+        self.assertIsNone(evaluate_exit(POSITION, _df(170.0, date(2026, 9, 2))))
 
     def test_stop_loss_before_min_hold_is_suppressed(self):
         self.assertIsNone(evaluate_exit(POSITION, _df(130.0, date(2026, 9, 2))))
 
     def test_take_profit_on_min_hold_day_fires(self):
-        signal = evaluate_exit(POSITION, _df(170.0, date(2026, 9, 4)))
+        signal = evaluate_exit(POSITION, _df(170.0, date(2026, 9, 3)))
         self.assertEqual(signal["exit_reason"], "TAKE_PROFIT")
-        self.assertEqual(signal["days_held"], 3)
+        self.assertEqual(signal["days_held"], 2)
+        self.assertAlmostEqual(signal["pnl_per_share"], 20.0)
 
     def test_stop_loss_after_min_hold_fires(self):
         signal = evaluate_exit(POSITION, _df(140.0, date(2026, 9, 6)))
