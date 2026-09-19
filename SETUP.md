@@ -72,7 +72,17 @@ If it errors on the email step, that confirms `.env` isn't filled in yet (step 2
 before that — data fetch, indicator math, signal filtering, CSV logging/dedup — is already
 validated against live PSX data and synthetic edge cases.
 
-## 4. Ticker list
+## 4. Live dashboard
+
+https://realahmadmujtaba.github.io/psx-sharia-swing-trader/
+
+After each scan, `alerts/dashboard.py` writes `docs/data.json` and commits and pushes it, and
+GitHub Pages redeploys within a minute or two. The page shows every KMI-30 stock with its latest
+close, distance from the 50-day EMA, RSI, volume, status and the reason it didn't qualify, plus the
+signal history. The push uses your GitHub login on this PC. If that login expires, the email still
+goes out, and the task output shows `[dashboard] publish failed`.
+
+## 5. Ticker list
 
 The agent scans only Sharia-compliant stocks: the live PSX **KMI-30** constituent list, fetched
 fresh each run (`fetchers/universe.py`, `config.UNIVERSE_INDEX`). A copy is cached in
