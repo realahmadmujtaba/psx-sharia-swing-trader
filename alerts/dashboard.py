@@ -65,7 +65,11 @@ def publish(payload: dict) -> None:
     DATA_PATH.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
     # The signal log is state: it must travel with the repo so cloud runs remember open positions.
-    _git("add", str(DATA_PATH.relative_to(PROJECT_ROOT)), "data/signals_log.csv")
+    # It only exists once a signal has fired, and git add fails the whole call on a missing path.
+    paths = [str(DATA_PATH.relative_to(PROJECT_ROOT))]
+    if (PROJECT_ROOT / "data" / "signals_log.csv").exists():
+        paths.append("data/signals_log.csv")
+    _git("add", *paths)
     if _git("diff", "--cached", "--quiet").returncode == 0:
         return
 

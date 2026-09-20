@@ -1,9 +1,14 @@
+import subprocess
+import tempfile
 import unittest
 from datetime import date
+from pathlib import Path
+from unittest import mock
 
 import pandas as pd
 
 import config
+from alerts import dashboard
 from core import performance
 from core.backtest import _metrics, _qualifies
 
@@ -86,6 +91,36 @@ class TestPerformance(unittest.TestCase):
 
     def test_empty_log(self):
         self.assertEqual(performance.summarise(performance.closed_trades(pd.DataFrame()))["trades"], 0)
+
+
+class TestPublishStaging(unittest.TestCase):
+    """A missing signal log must not stop the dashboard file from being staged."""
+
+    def _staged_paths(self, log_exists: bool) -> tuple[str, ...]:
+        calls = []
+
+        def fake_git(*args):
+            calls.append(args)
+            return subprocess.CompletedProcess(args, 1 if args[0] == "diff" else 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "data").mkdir()
+            if log_exists:
+                (root / "data" / "signals_log.csv").write_text("date,symbol\n", encoding="utf-8")
+            with mock.patch.object(dashboard, "_git", fake_git), \
+                 mock.patch.object(dashboard, "PROJECT_ROOT", root), \
+                 mock.patch.object(dashboard, "DATA_PATH", root / "docs" / "data.json"):
+                dashboard.publish({"price_date": "2026-09-18"})
+        return [c for c in calls if c[0] == "add"][0][1:]
+
+    def test_stages_dashboard_even_without_log(self):
+        staged = self._staged_paths(log_exists=False)
+        self.assertEqual(len(staged), 1)
+        self.assertIn("data.json", staged[0])
+
+    def test_stages_log_when_present(self):
+        self.assertIn("data/signals_log.csv", self._staged_paths(log_exists=True))
 
 
 if __name__ == "__main__":
