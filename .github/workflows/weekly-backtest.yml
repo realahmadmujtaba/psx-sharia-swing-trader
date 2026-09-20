@@ -1,0 +1,37 @@
+name: Weekly backtest
+
+on:
+  schedule:
+    # Saturdays 06:00 UTC, after the trading week closes.
+    - cron: "0 6 * * 6"
+  workflow_dispatch:
+    inputs:
+      years:
+        description: Years of history to test
+        default: "3"
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - run: python -m core.backtest --years ${{ inputs.years || 3 }} --save
+
+      - name: Commit refreshed results
+        run: |
+          git config user.name "psx-agent"
+          git config user.email "actions@github.com"
+          git add docs/backtest.json
+          git diff --cached --quiet || git commit -m "Refresh backtest results"
+          git push

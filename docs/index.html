@@ -4,366 +4,254 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PSX Sharia Swing Scanner</title>
-<meta name="description" content="Daily end-of-day swing scan of the PSX KMI-30 Sharia-compliant index.">
+<meta name="description" content="Daily rule-based swing trade alerts for Sharia-compliant Pakistan Stock Exchange stocks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap">
 <style>
   :root {
-    --bg: #f6f7f9;
+    --bg: #f5f7f5;
     --surface: #ffffff;
-    --border: #e3e6eb;
-    --text: #1b1f24;
-    --muted: #5f6b7a;
-    --accent: #0f766e;
-    --buy: #15803d;
-    --buy-bg: #dcfce7;
-    --sell: #b91c1c;
-    --sell-bg: #fee2e2;
-    --hold: #1d4ed8;
-    --hold-bg: #dbeafe;
-    --none-bg: #eef0f3;
-    --warn: #a16207;
-    --warn-bg: #fef3c7;
+    --line: #dde4dd;
+    --ink: #16211b;
+    --muted: #5a6b61;
+    --accent: #0c6b4f;
+    --accent-ink: #ffffff;
+    --accent-soft: #dff0e7;
+    --brass: #8a6a1f;
+    --pos: #12713f;
+    --neg: #a8322b;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0f1216;
-      --surface: #171b21;
-      --border: #2a3039;
-      --text: #e6e9ee;
-      --muted: #97a2b0;
-      --accent: #2dd4bf;
-      --buy: #4ade80;
-      --buy-bg: #12331f;
-      --sell: #f87171;
-      --sell-bg: #3a1616;
-      --hold: #93c5fd;
-      --hold-bg: #172a4a;
-      --none-bg: #222831;
-      --warn: #facc15;
-      --warn-bg: #3a300c;
+    :root:not([data-theme="light"]) {
+      --bg: #0e1411; --surface: #161d19; --line: #27332c; --ink: #e6ece8; --muted: #9bab a1;
+      --muted: #9baba1; --accent: #45c493; --accent-ink: #08160f; --accent-soft: #14301f;
+      --brass: #d6b263; --pos: #4ade80; --neg: #f08a82;
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #0e1411; --surface: #161d19; --line: #27332c; --ink: #e6ece8; --muted: #9baba1;
+    --accent: #45c493; --accent-ink: #08160f; --accent-soft: #14301f;
+    --brass: #d6b263; --pos: #4ade80; --neg: #f08a82;
+  }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
-  header h1 { margin: 0 0 4px; font-size: 1.6rem; }
-  header p { margin: 0; color: var(--muted); }
-  .meta { margin-top: 10px; font-size: 0.9rem; color: var(--muted); }
-  .meta strong { color: var(--text); font-weight: 600; }
-  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0; }
-  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .tile .n { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
-  .tile .l { color: var(--muted); font-size: 0.85rem; }
-  .tile.buy .n { color: var(--buy); }
-  .tile.sell .n { color: var(--sell); }
-  .tile.hold .n { color: var(--hold); }
-  section { margin-top: 28px; }
-  h2 { font-size: 1.1rem; margin: 0 0 10px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-  .scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 600; }
-  tr:last-child td { border-bottom: 0; }
-  td.num, th.num { text-align: right; }
-  td.notes { white-space: normal; min-width: 180px; color: var(--muted); font-size: 0.9rem; }
-  .sym { font-weight: 700; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; }
-  .b-BUY { background: var(--buy-bg); color: var(--buy); }
-  .b-SELL { background: var(--sell-bg); color: var(--sell); }
-  .b-HOLDING { background: var(--hold-bg); color: var(--hold); }
-  .b-NO_SIGNAL, .b-NO_DATA { background: var(--none-bg); color: var(--muted); }
-  .b-STALE { background: var(--warn-bg); color: var(--warn); margin-left: 6px; }
-  .up { color: var(--buy); }
-  .down { color: var(--sell); }
-  .inzone { color: var(--accent); font-weight: 700; }
-  .empty { padding: 16px; color: var(--muted); }
-  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
-  .rules .card { padding: 14px 16px; }
-  .rules h3 { margin: 0 0 6px; font-size: 0.95rem; }
-  .rules ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem; }
-  footer { margin-top: 32px; font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 16px; }
-  .tile.watch .n { color: var(--warn); }
-  h2 .sub { font-size: 0.85rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
-  .banner { margin-top: 16px; padding: 10px 16px; border-radius: 10px; font-size: 0.92rem; border: 1px solid var(--border); }
-  .banner.up { background: var(--buy-bg); color: var(--buy); }
-  .banner.down { background: var(--warn-bg); color: var(--warn); }
-  .warning { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .warning:last-child { border-bottom: 0; }
-  .warning .rec { font-weight: 700; }
-  .warning p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
-  #error { display: none; background: var(--sell-bg); color: var(--sell); padding: 12px 16px; border-radius: 10px; margin-top: 16px; }
-  @media (max-width: 640px) {
-    .tiles { grid-template-columns: repeat(2, 1fr); }
-    header h1 { font-size: 1.35rem; }
-  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 Inter, system-ui, sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; }
+  h1, h2, h3 { font-family: Fraunces, Georgia, serif; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; letter-spacing: -0.01em; }
+  h2 { font-size: 1.5rem; margin-bottom: 8px; }
+  h3 { font-size: 1.05rem; font-family: Inter, sans-serif; font-weight: 600; }
+  p { margin: 0; }
+  a { color: var(--accent); }
+  section { padding-block: 40px; border-top: 1px solid var(--line); }
+  .lede { color: var(--muted); max-width: 62ch; margin-top: 12px; font-size: 1.05rem; }
+
+  header { padding-block: 56px 40px; }
+  .eyebrow { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); font-weight: 600; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+  .btn { display: inline-block; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; border: 1px solid var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.ghost { color: var(--accent); background: var(--surface); }
+
+  .status { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 28px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 0.92rem; }
+  .status div span { color: var(--muted); }
+  .status strong { font-variant-numeric: tabular-nums; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .card p { color: var(--muted); font-size: 0.93rem; margin-top: 6px; }
+
+  ol.rules { margin: 0; padding-inline-start: 20px; display: grid; gap: 6px; color: var(--muted); }
+  ol.rules b { color: var(--ink); font-weight: 600; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .stat .v { font-size: 1.7rem; font-family: Fraunces, serif; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .stat .k { color: var(--muted); font-size: 0.85rem; }
+  .pos { color: var(--pos); } .neg { color: var(--neg); }
+  .caveats { margin: 12px 0 0; padding-inline-start: 20px; color: var(--muted); font-size: 0.9rem; }
+  .caveats li { margin-bottom: 4px; }
+  .honest { border-inline-start: 4px solid var(--brass); background: var(--surface); padding: 14px 18px; border-radius: 8px; margin-top: 16px; }
+
+  .price { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .price .card { flex: 1 1 260px; }
+  .price .amount { font-family: Fraunces, serif; font-size: 2rem; }
+  .edit { color: var(--brass); font-size: 0.85rem; }
+
+  footer { border-top: 1px solid var(--line); padding-block: 24px 40px; color: var(--muted); font-size: 0.85rem; }
+  @media (max-width: 520px) { header { padding-block: 36px 28px; } }
 </style>
 </head>
 <body>
-<main>
+
+<div class="wrap">
   <header>
-    <h1>PSX Sharia Swing Scanner</h1>
-    <p>End-of-day swing scan of the <span id="universe">KMI-30</span> Sharia-compliant index.</p>
-    <div class="meta">Prices as of <strong id="price-date">—</strong> · Updated <strong id="updated">—</strong> PKT · <strong id="n-total">–</strong> stocks scanned</div>
+    <div class="eyebrow">Pakistan Stock Exchange · KMI-30</div>
+    <h1>Swing trade alerts for Sharia-compliant PSX stocks</h1>
+    <p class="lede">
+      Every trading day after close, the scanner checks all 30 KMI-30 companies against a fixed set of published
+      rules and emails you what it found — entry price, stop-loss, take-profit and the purification ratio, in rupees.
+      No predictions, no black box: every rule is written below and every past signal is on the record.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="dashboard.html">See today's live scan</a>
+      <a class="btn ghost" href="#pricing">Get the daily email</a>
+    </div>
+    <div class="status" id="status">
+      <div><span>Loading today's scan…</span></div>
+    </div>
   </header>
-  <div id="error"></div>
-  <div id="market" class="banner" hidden></div>
-
-  <div class="tiles">
-    <div class="tile buy"><div class="n" id="n-buy">–</div><div class="l">BUY today</div></div>
-    <div class="tile sell"><div class="n" id="n-sell">–</div><div class="l">SELL today</div></div>
-    <div class="tile hold"><div class="n" id="n-hold">–</div><div class="l">Open positions</div></div>
-    <div class="tile watch"><div class="n" id="n-watch">–</div><div class="l">On watchlist</div></div>
-  </div>
-
-  <section id="warnings-section" hidden>
-    <h2>Warnings</h2>
-    <div class="card" id="warnings"></div>
-  </section>
 
   <section>
-    <h2>Watchlist <span class="sub">one condition short of a BUY</span></h2>
-    <div class="card scroll">
-      <table>
-        <thead>
-          <tr><th>Symbol</th><th>Missing</th><th class="num">Close</th><th class="num">RSI (14)</th><th class="num">Volume ×</th></tr>
-        </thead>
-        <tbody id="watchlist"></tbody>
-      </table>
+    <h2>What it does</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Sharia screening built in</h3>
+        <p>Only KMI-30 companies, pulled live from PSX. Each alert carries that company's non-compliant income ratio from Al-Meezan, so you know exactly what to purify.</p>
+      </div>
+      <div class="card">
+        <h3>Respects settlement</h3>
+        <p>No sell alert before your shares actually settle into your account, so you are never told to sell something you do not yet possess.</p>
+      </div>
+      <div class="card">
+        <h3>Exit planned at entry</h3>
+        <p>Stop-loss and take-profit are set from the stock's own daily range (ATR) the moment the alert fires, and the position is closed out after 15 days either way.</p>
+      </div>
+      <div class="card">
+        <h3>Runs without you</h3>
+        <p>Scheduled in the cloud every trading day at 17:45 PKT. Nothing to install, no terminal, no laptop that has to stay on.</p>
+      </div>
     </div>
   </section>
 
   <section>
-    <h2>All stocks</h2>
-    <div class="card scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Symbol</th><th>Status</th><th class="num">Close</th><th class="num">vs 50-day EMA</th>
-            <th class="num">RSI (14)</th><th class="num">Volume ×</th><th class="num">Avg vol (20d)</th><th>Notes</th>
-          </tr>
-        </thead>
-        <tbody id="stocks"></tbody>
-      </table>
-    </div>
+    <h2>The rules, in full</h2>
+    <p class="lede">A buy alert fires only when every one of these is true on the day's closing data.</p>
+    <ol class="rules" id="rules"></ol>
   </section>
 
   <section>
-    <h2>Signal history</h2>
-    <div class="card scroll">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Symbol</th><th>Signal</th><th class="num">Price</th><th class="num">Stop-loss</th><th class="num">Take-profit</th><th>Exit reason</th></tr>
-        </thead>
-        <tbody id="history"></tbody>
-      </table>
-    </div>
+    <h2>Tested on past data</h2>
+    <p class="lede" id="bt-intro">Loading results…</p>
+    <div class="stats" id="bt-stats"></div>
+    <div class="honest" id="bt-honest" hidden></div>
+    <ul class="caveats" id="bt-caveats"></ul>
   </section>
 
   <section>
-    <h2>Rules</h2>
-    <div class="rules" id="rules"></div>
+    <h2>Live signal record</h2>
+    <p class="lede">Every alert the scanner has actually sent since it went live, scored honestly — winners and losers.</p>
+    <div class="stats" id="live-stats"></div>
+    <p class="lede"><a href="dashboard.html">Open the full dashboard →</a></p>
+  </section>
+
+  <section id="pricing">
+    <h2>Get the daily email</h2>
+    <div class="price">
+      <div class="card">
+        <div class="amount" id="price-amount">Rs. —</div>
+        <p>per month, one email every trading day: buy and sell alerts, the watchlist, and purification amounts.</p>
+        <p class="edit">Edit the price and contact details in <code>docs/index.html</code>.</p>
+      </div>
+      <div class="card">
+        <h3>To subscribe</h3>
+        <p id="contact">Contact the operator to be added to the list.</p>
+        <p>Alerts are informational only. You place your own trades with your own broker.</p>
+      </div>
+    </div>
   </section>
 
   <footer>
-    Signals mean a stock matched fixed technical rules on end-of-day data. They are not a prediction or a guarantee that the price
-    will rise, and not financial advice. Check Sharia compliance and do your own research before trading.
+    <p><strong>Not investment advice.</strong> An alert means a stock matched fixed technical rules on end-of-day data.
+    It is not a prediction, a recommendation, or a guarantee that a price will rise. Past results do not guarantee
+    future results. Trading shares carries risk, including loss of capital. Verify Sharia compliance independently
+    before you trade, and make your own decisions.</p>
   </footer>
-</main>
+</div>
 
 <script>
-  const fmt = (n, d = 2) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
-  const REASONS = { STOP_LOSS: "Stop-loss hit", TAKE_PROFIT: "Take-profit hit", MAX_HOLD: "Max holding period reached" };
-  const ORDER = { BUY: 0, SELL: 1, HOLDING: 2, "NO SIGNAL": 3, "NO DATA": 4 };
+  const num = (v, d = 1) => v === null || v === undefined ? "—" : Number(v).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const el = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
 
-  function el(tag, text, className) {
-    const node = document.createElement(tag);
-    if (text !== undefined && text !== null) node.textContent = text;
-    if (className) node.className = className;
-    return node;
+  function stat(root, value, label, tone) {
+    const box = el("div", null, "stat");
+    box.append(el("div", value, "v" + (tone ? " " + tone : "")));
+    box.append(el("div", label, "k"));
+    root.append(box);
   }
 
-  function badge(label) {
-    return el("span", label, "badge b-" + label.replace(" ", "_"));
-  }
-
-  function notesFor(s) {
-    if (s.status === "BUY") return `Stop-loss ${fmt(s.stop_loss)} · Take-profit ${fmt(s.take_profit)}`;
-    if (s.status === "HOLDING") return `Entry ${fmt(s.entry_price)} · day ${s.days_held} · SL ${fmt(s.stop_loss)} · TP ${fmt(s.take_profit)}`;
-    if (s.status === "SELL") return `${REASONS[s.reasons[0]] || s.reasons[0]} · entry ${fmt(s.entry_price)} · day ${s.days_held}`;
-    return (s.reasons || []).join(" · ");
-  }
-
-  function renderStocks(stocks, rules) {
-    const body = document.getElementById("stocks");
-    const sorted = [...stocks].sort((a, b) =>
-      (ORDER[a.status] - ORDER[b.status]) ||
-      ((a.reasons || []).length - (b.reasons || []).length) ||
-      a.symbol.localeCompare(b.symbol));
-
-    for (const s of sorted) {
-      const tr = document.createElement("tr");
-      tr.append(el("td", s.symbol, "sym"));
-
-      const status = el("td");
-      status.append(badge(s.status));
-      if (s.stale) status.append(el("span", "STALE", "badge b-STALE"));
-      tr.append(status);
-
-      if (s.close === undefined) {
-        for (let i = 0; i < 5; i++) tr.append(el("td", "—", "num"));
-      } else {
-        const gap = (s.close / s.ema_50 - 1) * 100;
-        const inZone = s.rsi >= rules.rsi_lower && s.rsi <= rules.rsi_upper;
-        const spike = s.volume_ratio >= rules.volume_spike_mult;
-        tr.append(el("td", fmt(s.close), "num"));
-        tr.append(el("td", (gap >= 0 ? "+" : "") + fmt(gap, 1) + "%", "num " + (gap >= 0 ? "up" : "down")));
-        tr.append(el("td", fmt(s.rsi, 1), "num" + (inZone ? " inzone" : "")));
-        tr.append(el("td", fmt(s.volume_ratio, 1) + "×", "num" + (spike ? " inzone" : "")));
-        tr.append(el("td", fmt(s.avg_volume, 0), "num"));
-      }
-      tr.append(el("td", notesFor(s), "notes"));
-      body.append(tr);
-    }
-  }
-
-  function renderHistory(history) {
-    const body = document.getElementById("history");
-    if (!history.length) {
-      const tr = document.createElement("tr");
-      const td = el("td", "No signals yet. BUY and SELL alerts will appear here.", "empty");
-      td.colSpan = 7;
-      tr.append(td);
-      body.append(tr);
-      return;
-    }
-    for (const h of history) {
-      const tr = document.createElement("tr");
-      tr.append(el("td", h.date));
-      tr.append(el("td", h.symbol, "sym"));
-      const sig = el("td"); sig.append(badge(h.signal_type)); tr.append(sig);
-      tr.append(el("td", fmt(h.close_price), "num"));
-      tr.append(el("td", fmt(h.stop_loss), "num"));
-      tr.append(el("td", fmt(h.take_profit), "num"));
-      tr.append(el("td", REASONS[h.exit_reason] || h.exit_reason || ""));
-      body.append(tr);
-    }
-  }
-
-  function renderMarket(m, r) {
-    const box = document.getElementById("market");
-    if (!m) {
-      box.textContent = `Market filter: ${r.market_index} data unavailable. New BUY signals are paused.`;
-      box.className = "banner down";
-    } else {
-      const trend = m.uptrend ? "above" : "below";
-      box.textContent = `Market filter: ${r.market_index} closed at ${fmt(m.close, 0)}, ${trend} its ${r.ema_period}-day EMA (${fmt(m.ema_50, 0)}). ` +
-        (m.uptrend ? "New BUY signals allowed." : "New BUY signals are paused until the index recovers.");
-      box.className = "banner " + (m.uptrend ? "up" : "down");
-    }
-    box.hidden = false;
-  }
-
-  function renderWatchlist(list) {
-    const body = document.getElementById("watchlist");
-    if (!list.length) {
-      const tr = document.createElement("tr");
-      const td = el("td", "No stock is exactly one condition away today.", "empty");
-      td.colSpan = 5;
-      tr.append(td);
-      body.append(tr);
-      return;
-    }
-    for (const w of list) {
-      const tr = document.createElement("tr");
-      tr.append(el("td", w.symbol, "sym"));
-      tr.append(el("td", w.missing, "notes"));
-      tr.append(el("td", fmt(w.close), "num"));
-      tr.append(el("td", fmt(w.rsi, 1), "num"));
-      tr.append(el("td", fmt(w.volume_ratio, 1) + "×", "num"));
-      body.append(tr);
-    }
-  }
-
-  function renderWarnings(list) {
-    if (!list.length) return;
-    const root = document.getElementById("warnings");
-    for (const w of list) {
-      const div = el("div", null, "warning");
-      const head = el("div");
-      head.append(el("span", w.symbol + " left the Sharia index · ", "sym"));
-      head.append(el("span", w.recommendation === "SELL" ? "Suggestion: sell now" : "Suggestion: can hold a few days", "rec"));
-      div.append(head);
-      div.append(el("p", `${w.reason} Entry ${fmt(w.entry_price)}, close ${fmt(w.close_price)}, day ${w.days_held}. The decision is yours.`));
-      root.append(div);
-    }
-    document.getElementById("warnings-section").hidden = false;
-  }
-
-  function renderRules(r) {
-    const pct = v => fmt(v * 100, 0) + "%";
-    const groups = [
-      ["BUY when all conditions hold", [
-        `${r.market_index} index above its ${r.ema_period}-day EMA (market filter)`,
-        `Close above the ${r.ema_period}-day EMA (uptrend)`,
-        `RSI (${r.rsi_period}) between ${r.rsi_lower} and ${r.rsi_upper} (pullback)`,
-        `Today's volume at least ${r.volume_spike_mult}× the ${r.volume_lookback}-day average`,
-        `Close within ${pct(r.support_proximity_pct)} of support (${r.ema_period}-day EMA or ${r.support_lookback}-day low)`,
-        `${r.volume_lookback}-day average volume above ${fmt(r.min_avg_volume, 0)} shares`,
-        `At most ${r.max_open_positions} open positions; strongest volume spike first`,
-      ]],
-      ["SELL an open position", [
-        `Stop-loss: ${r.atr_stop_mult} × ATR (${r.atr_period}) below entry`,
-        `Take-profit: ${r.atr_target_mult} × ATR above entry`,
-        `Or ${r.max_holding_days} days held, whichever comes first`,
-        "Checked on the closing price",
-      ]],
-      ["Sharia", [
-        `Only stocks in the ${r.market_index} Sharia index`,
-        `No SELL of any kind before day ${r.min_holding_days}: shares must settle into the account first`,
-        "Purification ratio (Al-Meezan) shown with every signal",
-        "If a held stock leaves the index: a warning with a hold-or-sell suggestion",
-      ]],
+  fetch("data.json", { cache: "no-store" }).then(r => r.json()).then(d => {
+    const status = document.getElementById("status");
+    status.textContent = "";
+    const counts = s => d.stocks.filter(x => x.status === s).length;
+    const market = d.market ? (d.market.uptrend ? "Buying allowed" : "Buys paused (index below trend)") : "Unknown";
+    const items = [
+      ["Prices as of", d.price_date],
+      ["Market", market],
+      ["Buy alerts today", counts("BUY")],
+      ["Open positions", counts("HOLDING")],
+      ["Watchlist", (d.watchlist || []).length],
     ];
-    const root = document.getElementById("rules");
-    for (const [title, items] of groups) {
-      const card = el("div", null, "card");
-      card.append(el("h3", title));
-      const ul = el("ul");
-      for (const item of items) ul.append(el("li", item));
-      card.append(ul);
-      root.append(card);
+    for (const [k, v] of items) {
+      const div = document.createElement("div");
+      div.append(el("span", k + ": "));
+      div.append(el("strong", String(v)));
+      status.append(div);
     }
-  }
 
-  fetch("data.json", { cache: "no-store" })
-    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(d => {
-      document.getElementById("universe").textContent = d.universe === "KMI30" ? "KMI-30" : d.universe;
-      document.getElementById("price-date").textContent = d.price_date || "—";
-      document.getElementById("updated").textContent = d.updated_at.replace("T", " ").slice(0, 16);
-      const count = st => d.stocks.filter(s => s.status === st).length;
-      document.getElementById("n-buy").textContent = count("BUY");
-      document.getElementById("n-sell").textContent = count("SELL");
-      document.getElementById("n-hold").textContent = count("HOLDING");
-      document.getElementById("n-total").textContent = d.stocks.length;
-      document.getElementById("n-watch").textContent = (d.watchlist || []).length;
-      renderMarket(d.market, d.rules);
-      renderWarnings(d.warnings || []);
-      renderWatchlist(d.watchlist || []);
-      renderStocks(d.stocks, d.rules);
-      renderHistory(d.history);
-      renderRules(d.rules);
-    })
-    .catch(err => {
-      const box = document.getElementById("error");
-      box.textContent = "Could not load scan results (" + err.message + ").";
-      box.style.display = "block";
-    });
+    const r = d.rules, list = document.getElementById("rules");
+    const rules = [
+      [`Market filter`, `the ${r.market_index} index is above its ${r.ema_period}-day average, so buys pause in a falling market`],
+      [`Uptrend`, `the stock closes above its ${r.ema_period}-day average`],
+      [`Pullback`, `RSI (${r.rsi_period}) sits between ${r.rsi_lower} and ${r.rsi_upper} — a dip inside that uptrend`],
+      [`Volume spike`, `today's volume is at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average`],
+      [`Near support`, `the price is within ${num(r.support_proximity_pct * 100, 0)}% of the ${r.ema_period}-day average or the ${r.support_lookback}-day low`],
+      [`Liquidity`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares`],
+      [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below, take-profit ${r.atr_target_mult}× ATR above, position closed after ${r.max_holding_days} days`],
+      [`Settlement lock`, `no sell alert before day ${r.min_holding_days}, and at most ${r.max_open_positions} positions open at once`],
+    ];
+    for (const [name, rest] of rules) {
+      const li = document.createElement("li");
+      li.append(el("b", name)); li.append(document.createTextNode(" — " + rest));
+      list.append(li);
+    }
+
+    const p = d.performance || {};
+    const live = document.getElementById("live-stats");
+    if (!p.trades) {
+      live.append(el("p", "No completed trades yet — the record starts with the first closed position.", "lede"));
+    } else {
+      stat(live, p.trades, "completed trades");
+      stat(live, num(p.win_rate) + "%", "win rate");
+      stat(live, num(p.avg_return_pct, 2) + "%", "average per trade", p.avg_return_pct >= 0 ? "pos" : "neg");
+      stat(live, num(p.cumulative_pct, 2) + "%", "compounded", p.cumulative_pct >= 0 ? "pos" : "neg");
+    }
+  });
+
+  fetch("backtest.json", { cache: "no-store" }).then(r => r.json()).then(b => {
+    const active = b.results[b.active_variant], m = active.metrics;
+    document.getElementById("bt-intro").textContent =
+      `The same rules replayed over ${b.years} years of real PSX data (${active.from} to ${active.to}), ` +
+      `with ${num(b.commission_pct * 100, 2)}% brokerage charged on every side.`;
+
+    const root = document.getElementById("bt-stats");
+    stat(root, m.trades, "trades taken");
+    stat(root, num(m.win_rate) + "%", "win rate");
+    stat(root, num(m.avg_return_pct, 2) + "%", "average per trade", m.avg_return_pct >= 0 ? "pos" : "neg");
+    stat(root, num(m.total_return_pct, 2) + "%", "total return", m.total_return_pct >= 0 ? "pos" : "neg");
+    stat(root, num(m.max_drawdown_pct, 2) + "%", "worst drawdown", "neg");
+
+    if (m.total_return_pct <= 0) {
+      const box = document.getElementById("bt-honest");
+      box.textContent = "Being straight with you: over this period the rules did not make money. " +
+        "They are published here anyway, because a screening tool that hides its test results is worth less than one that shows them. " +
+        "Use the alerts as a shortlist to research, not as a promise of profit.";
+      box.hidden = false;
+    }
+
+    const caveats = document.getElementById("bt-caveats");
+    for (const c of b.caveats) caveats.append(el("li", c));
+  });
 </script>
 </body>
 </html>

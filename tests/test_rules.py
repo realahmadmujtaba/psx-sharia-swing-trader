@@ -64,14 +64,25 @@ class TestEntryRules(unittest.TestCase):
         volume[-1] = last_volume
         return _frame(close, volume=volume)
 
-    def test_volume_spike_required(self):
+    def test_volume_spike_required_when_strict(self):
         snap = snapshot(self._pullback_frame(last_volume=500_000))
-        self.assertIn("No volume spike", entry_failures(snap))
+        with mock.patch.object(config, "STRICT_ENTRY", True):
+            self.assertIn("No volume spike", entry_failures(snap))
+
+    def test_spike_and_support_are_informational_when_relaxed(self):
+        snap = snapshot(self._pullback_frame(last_volume=500_000))
+        with mock.patch.object(config, "STRICT_ENTRY", False):
+            failures = entry_failures(snap)
+        self.assertNotIn("No volume spike", failures)
+        self.assertNotIn("Not near support", failures)
+        # The measurement is still reported, it just does not block the signal.
+        self.assertAlmostEqual(snap["volume_ratio"], 1.0, places=6)
 
     def test_spike_detected(self):
         snap = snapshot(self._pullback_frame(last_volume=900_000))
         self.assertAlmostEqual(snap["volume_ratio"], 1.8, places=6)
-        self.assertNotIn("No volume spike", entry_failures(snap))
+        with mock.patch.object(config, "STRICT_ENTRY", True):
+            self.assertNotIn("No volume spike", entry_failures(snap))
 
     def test_close_just_above_recent_low_is_near_support(self):
         # Flat at 100 (lows 99), then closes at 101: 2% above the 20-day low.
@@ -79,11 +90,12 @@ class TestEntryRules(unittest.TestCase):
         self.assertEqual(snap["support_low"], 99.0)
         self.assertTrue(snap["near_support"])
 
-    def test_far_above_support_fails(self):
+    def test_far_above_support_fails_when_strict(self):
         # Steady strong uptrend: price far above both the EMA and the 20-day low.
         snap = snapshot(_frame(np.linspace(100, 300, 120)))
         self.assertFalse(snap["near_support"])
-        self.assertIn("Not near support", entry_failures(snap))
+        with mock.patch.object(config, "STRICT_ENTRY", True):
+            self.assertIn("Not near support", entry_failures(snap))
 
 
 class TestMarketFilter(unittest.TestCase):

@@ -58,10 +58,11 @@ def entry_failures(snap: dict) -> list[str]:
         failures.append("RSI too low")
     if not snap["avg_volume"] > config.MIN_AVG_VOLUME:
         failures.append("Low volume")
-    if snap["volume_ratio"] < config.VOLUME_SPIKE_MULT:
-        failures.append("No volume spike")
-    if not snap["near_support"]:
-        failures.append("Not near support")
+    if config.STRICT_ENTRY:
+        if snap["volume_ratio"] < config.VOLUME_SPIKE_MULT:
+            failures.append("No volume spike")
+        if not snap["near_support"]:
+            failures.append("Not near support")
     return failures
 
 
@@ -130,8 +131,8 @@ def evaluate_exit(position: pd.Series, df: pd.DataFrame) -> dict | None:
         return None
 
     entry_price = float(position["close_price"])
-    shares = position.get("shares")
-    shares = int(shares) if pd.notna(shares) else None
+    # Recomputed rather than stored, so the public signal log never reveals capital.
+    shares = risk.position_size(entry_price)
 
     return {
         "symbol": position["symbol"],

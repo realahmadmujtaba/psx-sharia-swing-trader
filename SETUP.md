@@ -38,7 +38,23 @@ The alert system (`alerts/email_alert.py`) sends via SMTP using `aiosmtplib`. To
    ```
    (Any SMTP provider works, not just Gmail — just change `SMTP_HOST`/`SMTP_PORT`.)
 
-## 2. Schedule the daily 17:45 PKT run (Windows Task Scheduler)
+## Cloud run, subscribers and backtest
+
+- **The scan runs on GitHub Actions** (`.github/workflows/daily-scan.yml`), weekdays at 12:45 UTC
+  = 17:45 PKT, so your PC no longer has to be on. Settings live in repo secrets (`gh secret list`).
+  Run it by hand any time from the repo's Actions tab, or `gh workflow run "Daily EOD scan"`.
+  Because the cloud run is now the source of truth, **the Windows scheduled task must stay disabled**
+  or both would email and push at once. Re-enable it only if you turn the workflow off:
+  `schtasks /change /tn "PSX Swing EOD Scan" /enable`
+- **Adding a subscriber:** put their address in the `EMAIL_SUBSCRIBERS` secret, comma-separated.
+  They are BCC'd, so subscribers never see each other's addresses.
+  `gh secret set EMAIL_SUBSCRIBERS --repo realahmadmujtaba/psx-sharia-swing-trader`
+- **Backtest:** `python -m core.backtest --years 3 --save` writes `docs/backtest.json`, which the
+  landing page reads. It also re-runs weekly in the cloud (`weekly-backtest.yml`).
+- **`data/signals_log.csv` is now committed to the repo.** It is the agent's memory of open
+  positions; the cloud run needs it. It holds no capital or position-size data.
+
+## 2. Windows Task Scheduler (backup only, currently disabled)
 
 I built `main.py` to support both a one-shot mode and a persistent scheduler — you chose
 "both." For Windows, Task Scheduler + one-shot is the reliable option:
@@ -85,7 +101,10 @@ validated against live PSX data and synthetic edge cases.
 
 ## 4. Live dashboard
 
-https://realahmadmujtaba.github.io/psx-sharia-swing-trader/
+- Landing page: https://realahmadmujtaba.github.io/psx-sharia-swing-trader/
+- Live scan dashboard: https://realahmadmujtaba.github.io/psx-sharia-swing-trader/dashboard.html
+
+Edit the price and contact details in `docs/index.html`.
 
 After each scan, `alerts/dashboard.py` writes `docs/data.json` and commits and pushes it, and
 GitHub Pages redeploys within a minute or two. The page shows every KMI-30 stock with its latest

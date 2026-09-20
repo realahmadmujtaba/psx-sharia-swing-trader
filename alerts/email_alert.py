@@ -99,6 +99,8 @@ def _build_digest_message(result: dict) -> EmailMessage:
     message = EmailMessage()
     message["From"] = config.EMAIL_SENDER
     message["To"] = config.EMAIL_RECIPIENT
+    if config.EMAIL_SUBSCRIBERS:
+        message["Bcc"] = ", ".join(config.EMAIL_SUBSCRIBERS)
 
     headline = f"{len(buys)} BUY / {len(sells)} SELL" if signals else "No Signals"
     if warnings:

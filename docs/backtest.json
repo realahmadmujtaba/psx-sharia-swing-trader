@@ -1,0 +1,1596 @@
+{
+  "generated_at": "2026-09-20T06:44+05:00",
+  "years": 3,
+  "universe": "KMI30",
+  "commission_pct": 0.0015,
+  "start_equity": 1000000.0,
+  "active_variant": "relaxed",
+  "results": {
+    "strict": {
+      "variant": "strict",
+      "from": "2023-06-12",
+      "to": "2026-09-18",
+      "metrics": {
+        "trades": 12,
+        "trades_per_year": 3.7,
+        "win_rate": 41.7,
+        "total_return_pct": -0.47,
+        "avg_return_pct": -0.37,
+        "avg_win_pct": 5.49,
+        "avg_loss_pct": -4.56,
+        "profit_factor": 0.85,
+        "max_drawdown_pct": -2.04,
+        "avg_days_held": 14.2
+      },
+      "equity_curve": [
+        {
+          "date": "2023-06-12",
+          "equity": 1000000.0
+        },
+        {
+          "date": "2023-08-23",
+          "equity": 995925.27
+        },
+        {
+          "date": "2023-10-02",
+          "equity": 995152.06
+        },
+        {
+          "date": "2024-01-03",
+          "equity": 1003393.44
+        },
+        {
+          "date": "2024-02-12",
+          "equity": 1000735.65
+        },
+        {
+          "date": "2024-12-03",
+          "equity": 1011982.27
+        },
+        {
+          "date": "2025-01-30",
+          "equity": 1016031.97
+        },
+        {
+          "date": "2025-02-07",
+          "equity": 1006882.82
+        },
+        {
+          "date": "2025-02-12",
+          "equity": 1001625.6
+        },
+        {
+          "date": "2025-09-05",
+          "equity": 1004343.85
+        },
+        {
+          "date": "2025-10-28",
+          "equity": 1005488.86
+        },
+        {
+          "date": "2025-10-28",
+          "equity": 998863.6
+        },
+        {
+          "date": "2026-02-16",
+          "equity": 995326.95
+        }
+      ],
+      "trades": [
+        {
+          "symbol": "MLCF",
+          "entry_date": "2023-08-08",
+          "exit_date": "2023-08-23",
+          "entry_price": 30.68,
+          "exit_price": 29.52,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -4074.73,
+          "return_pct": -4.08
+        },
+        {
+          "symbol": "MEBL",
+          "entry_date": "2023-09-15",
+          "exit_date": "2023-10-02",
+          "entry_price": 117.19,
+          "exit_price": 116.63,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -773.21,
+          "return_pct": -0.78
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2023-12-26",
+          "exit_date": "2024-01-03",
+          "entry_price": 109.8,
+          "exit_price": 119.24,
+          "days_held": 8,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 8241.37,
+          "return_pct": 8.28
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2024-01-26",
+          "exit_date": "2024-02-12",
+          "entry_price": 115.16,
+          "exit_price": 112.45,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -2657.78,
+          "return_pct": -2.65
+        },
+        {
+          "symbol": "LUCK",
+          "entry_date": "2024-11-26",
+          "exit_date": "2024-12-03",
+          "entry_price": 948.07,
+          "exit_price": 1058.19,
+          "days_held": 7,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 11246.61,
+          "return_pct": 11.3
+        },
+        {
+          "symbol": "ENGROH",
+          "entry_date": "2025-01-15",
+          "exit_date": "2025-01-30",
+          "entry_price": 211.38,
+          "exit_price": 220.5,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4049.7,
+          "return_pct": 4.01
+        },
+        {
+          "symbol": "TREET",
+          "entry_date": "2025-01-23",
+          "exit_date": "2025-02-07",
+          "entry_price": 21.93,
+          "exit_price": 20.01,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -9149.15,
+          "return_pct": -9.04
+        },
+        {
+          "symbol": "SSGC",
+          "entry_date": "2025-01-28",
+          "exit_date": "2025-02-12",
+          "entry_price": 38.14,
+          "exit_price": 36.27,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -5257.22,
+          "return_pct": -5.2
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2025-08-21",
+          "exit_date": "2025-09-05",
+          "entry_price": 433.94,
+          "exit_price": 447.08,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 2718.25,
+          "return_pct": 2.72
+        },
+        {
+          "symbol": "ENGROH",
+          "entry_date": "2025-10-13",
+          "exit_date": "2025-10-28",
+          "entry_price": 232.77,
+          "exit_price": 236.13,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 1145.02,
+          "return_pct": 1.14
+        },
+        {
+          "symbol": "MLCF",
+          "entry_date": "2025-10-13",
+          "exit_date": "2025-10-28",
+          "entry_price": 100.47,
+          "exit_price": 94.13,
+          "days_held": 15,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6625.27,
+          "return_pct": -6.6
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2026-01-30",
+          "exit_date": "2026-02-16",
+          "entry_price": 588.57,
+          "exit_price": 569.38,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -3536.65,
+          "return_pct": -3.56
+        }
+      ]
+    },
+    "relaxed": {
+      "variant": "relaxed",
+      "from": "2023-06-12",
+      "to": "2026-09-18",
+      "metrics": {
+        "trades": 90,
+        "trades_per_year": 27.5,
+        "win_rate": 43.3,
+        "total_return_pct": -2.07,
+        "avg_return_pct": -0.15,
+        "avg_win_pct": 7.11,
+        "avg_loss_pct": -5.71,
+        "profit_factor": 0.93,
+        "max_drawdown_pct": -8.56,
+        "avg_days_held": 12.6
+      },
+      "equity_curve": [
+        {
+          "date": "2023-06-12",
+          "equity": 1000000.0
+        },
+        {
+          "date": "2023-07-31",
+          "equity": 1006307.6
+        },
+        {
+          "date": "2023-07-31",
+          "equity": 1005793.59
+        },
+        {
+          "date": "2023-08-03",
+          "equity": 1013329.74
+        },
+        {
+          "date": "2023-08-03",
+          "equity": 1018214.12
+        },
+        {
+          "date": "2023-08-07",
+          "equity": 1017833.28
+        },
+        {
+          "date": "2023-08-10",
+          "equity": 1008782.97
+        },
+        {
+          "date": "2023-08-21",
+          "equity": 1001893.8
+        },
+        {
+          "date": "2023-08-23",
+          "equity": 997746.55
+        },
+        {
+          "date": "2023-08-23",
+          "equity": 989503.75
+        },
+        {
+          "date": "2023-08-24",
+          "equity": 989923.95
+        },
+        {
+          "date": "2023-08-25",
+          "equity": 983953.92
+        },
+        {
+          "date": "2023-08-28",
+          "equity": 972942.18
+        },
+        {
+          "date": "2023-08-30",
+          "equity": 960349.46
+        },
+        {
+          "date": "2023-08-31",
+          "equity": 955156.28
+        },
+        {
+          "date": "2023-09-07",
+          "equity": 975914.14
+        },
+        {
+          "date": "2023-10-02",
+          "equity": 975156.41
+        },
+        {
+          "date": "2023-12-26",
+          "equity": 963475.2
+        },
+        {
+          "date": "2023-12-26",
+          "equity": 952516.85
+        },
+        {
+          "date": "2023-12-26",
+          "equity": 941657.39
+        },
+        {
+          "date": "2024-01-03",
+          "equity": 947603.06
+        },
+        {
+          "date": "2024-01-03",
+          "equity": 952345.79
+        },
+        {
+          "date": "2024-01-03",
+          "equity": 960141.44
+        },
+        {
+          "date": "2024-01-05",
+          "equity": 980731.13
+        },
+        {
+          "date": "2024-01-10",
+          "equity": 985128.96
+        },
+        {
+          "date": "2024-01-30",
+          "equity": 980015.3
+        },
+        {
+          "date": "2024-01-30",
+          "equity": 971294.69
+        },
+        {
+          "date": "2024-02-01",
+          "equity": 966382.99
+        },
+        {
+          "date": "2024-02-02",
+          "equity": 964409.12
+        },
+        {
+          "date": "2024-02-02",
+          "equity": 962620.62
+        },
+        {
+          "date": "2024-02-13",
+          "equity": 950231.04
+        },
+        {
+          "date": "2024-05-24",
+          "equity": 956065.15
+        },
+        {
+          "date": "2024-06-06",
+          "equity": 950936.53
+        },
+        {
+          "date": "2024-06-14",
+          "equity": 953179.7
+        },
+        {
+          "date": "2024-06-14",
+          "equity": 956180.9
+        },
+        {
+          "date": "2024-06-14",
+          "equity": 964126.46
+        },
+        {
+          "date": "2024-06-24",
+          "equity": 968448.46
+        },
+        {
+          "date": "2024-07-02",
+          "equity": 983143.16
+        },
+        {
+          "date": "2024-07-08",
+          "equity": 979414.69
+        },
+        {
+          "date": "2024-08-05",
+          "equity": 974141.74
+        },
+        {
+          "date": "2024-08-05",
+          "equity": 967928.87
+        },
+        {
+          "date": "2024-08-26",
+          "equity": 975414.46
+        },
+        {
+          "date": "2024-08-26",
+          "equity": 972951.46
+        },
+        {
+          "date": "2024-09-05",
+          "equity": 970785.84
+        },
+        {
+          "date": "2024-09-10",
+          "equity": 966999.09
+        },
+        {
+          "date": "2024-10-04",
+          "equity": 980973.89
+        },
+        {
+          "date": "2024-11-28",
+          "equity": 994513.14
+        },
+        {
+          "date": "2024-12-03",
+          "equity": 1005545.53
+        },
+        {
+          "date": "2024-12-03",
+          "equity": 1026271.17
+        },
+        {
+          "date": "2024-12-04",
+          "equity": 1042854.72
+        },
+        {
+          "date": "2024-12-11",
+          "equity": 1047078.94
+        },
+        {
+          "date": "2025-01-03",
+          "equity": 1049411.4
+        },
+        {
+          "date": "2025-01-23",
+          "equity": 1058530.72
+        },
+        {
+          "date": "2025-01-24",
+          "equity": 1063449.21
+        },
+        {
+          "date": "2025-01-24",
+          "equity": 1066793.83
+        },
+        {
+          "date": "2025-01-24",
+          "equity": 1070985.3
+        },
+        {
+          "date": "2025-01-24",
+          "equity": 1067005.77
+        },
+        {
+          "date": "2025-02-06",
+          "equity": 1058718.48
+        },
+        {
+          "date": "2025-02-06",
+          "equity": 1050381.03
+        },
+        {
+          "date": "2025-02-06",
+          "equity": 1043099.85
+        },
+        {
+          "date": "2025-02-07",
+          "equity": 1033530.33
+        },
+        {
+          "date": "2025-02-11",
+          "equity": 1038281.34
+        },
+        {
+          "date": "2025-02-28",
+          "equity": 1037451.86
+        },
+        {
+          "date": "2025-03-03",
+          "equity": 1046327.06
+        },
+        {
+          "date": "2025-03-21",
+          "equity": 1048324.68
+        },
+        {
+          "date": "2025-03-24",
+          "equity": 1043845.39
+        },
+        {
+          "date": "2025-04-08",
+          "equity": 1044196.63
+        },
+        {
+          "date": "2025-05-02",
+          "equity": 1051943.23
+        },
+        {
+          "date": "2025-09-04",
+          "equity": 1054990.98
+        },
+        {
+          "date": "2025-09-29",
+          "equity": 1060720.9
+        },
+        {
+          "date": "2025-10-13",
+          "equity": 1053841.99
+        },
+        {
+          "date": "2025-10-13",
+          "equity": 1046998.42
+        },
+        {
+          "date": "2025-10-13",
+          "equity": 1040719.21
+        },
+        {
+          "date": "2025-10-24",
+          "equity": 1035633.64
+        },
+        {
+          "date": "2025-10-24",
+          "equity": 1033169.31
+        },
+        {
+          "date": "2025-10-28",
+          "equity": 1034356.84
+        },
+        {
+          "date": "2025-10-28",
+          "equity": 1032141.06
+        },
+        {
+          "date": "2025-10-29",
+          "equity": 1026272.51
+        },
+        {
+          "date": "2025-10-30",
+          "equity": 1018116.65
+        },
+        {
+          "date": "2025-11-11",
+          "equity": 1013200.15
+        },
+        {
+          "date": "2025-11-12",
+          "equity": 1012821.88
+        },
+        {
+          "date": "2025-12-31",
+          "equity": 1014045.65
+        },
+        {
+          "date": "2026-01-27",
+          "equity": 1013566.61
+        },
+        {
+          "date": "2026-02-12",
+          "equity": 1006297.7
+        },
+        {
+          "date": "2026-02-12",
+          "equity": 1000003.25
+        },
+        {
+          "date": "2026-02-16",
+          "equity": 996403.82
+        },
+        {
+          "date": "2026-02-16",
+          "equity": 989525.95
+        },
+        {
+          "date": "2026-02-19",
+          "equity": 979689.03
+        },
+        {
+          "date": "2026-06-22",
+          "equity": 983001.35
+        },
+        {
+          "date": "2026-07-14",
+          "equity": 984993.93
+        },
+        {
+          "date": "2026-07-23",
+          "equity": 979325.62
+        }
+      ],
+      "trades": [
+        {
+          "symbol": "SSGC",
+          "entry_date": "2023-07-13",
+          "exit_date": "2023-07-31",
+          "entry_price": 9.52,
+          "exit_price": 10.15,
+          "days_held": 18,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 6307.6,
+          "return_pct": 6.31
+        },
+        {
+          "symbol": "SYS",
+          "entry_date": "2023-07-13",
+          "exit_date": "2023-07-31",
+          "entry_price": 445.38,
+          "exit_price": 444.42,
+          "days_held": 18,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -514.01,
+          "return_pct": -0.52
+        },
+        {
+          "symbol": "DGKC",
+          "entry_date": "2023-07-19",
+          "exit_date": "2023-08-03",
+          "entry_price": 53.38,
+          "exit_price": 57.57,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 7536.16,
+          "return_pct": 7.54
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2023-07-19",
+          "exit_date": "2023-08-03",
+          "entry_price": 23.3,
+          "exit_price": 24.51,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4884.38,
+          "return_pct": 4.89
+        },
+        {
+          "symbol": "FCCL",
+          "entry_date": "2023-07-21",
+          "exit_date": "2023-08-07",
+          "entry_price": 12.35,
+          "exit_price": 12.34,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -380.84,
+          "return_pct": -0.38
+        },
+        {
+          "symbol": "TREET",
+          "entry_date": "2023-08-04",
+          "exit_date": "2023-08-10",
+          "entry_price": 18.95,
+          "exit_price": 17.32,
+          "days_held": 6,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -9050.31,
+          "return_pct": -8.89
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2023-08-08",
+          "exit_date": "2023-08-21",
+          "entry_price": 23.46,
+          "exit_price": 21.94,
+          "days_held": 13,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6889.18,
+          "return_pct": -6.77
+        },
+        {
+          "symbol": "MLCF",
+          "entry_date": "2023-08-08",
+          "exit_date": "2023-08-23",
+          "entry_price": 30.68,
+          "exit_price": 29.52,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -4147.25,
+          "return_pct": -4.08
+        },
+        {
+          "symbol": "FFL",
+          "entry_date": "2023-08-08",
+          "exit_date": "2023-08-23",
+          "entry_price": 6.53,
+          "exit_price": 6.02,
+          "days_held": 15,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -8242.8,
+          "return_pct": -8.1
+        },
+        {
+          "symbol": "AIRLINK",
+          "entry_date": "2023-08-09",
+          "exit_date": "2023-08-24",
+          "entry_price": 23.81,
+          "exit_price": 23.98,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 420.2,
+          "return_pct": 0.41
+        },
+        {
+          "symbol": "NRL",
+          "entry_date": "2023-08-10",
+          "exit_date": "2023-08-25",
+          "entry_price": 197.55,
+          "exit_price": 186.42,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -5970.04,
+          "return_pct": -5.93
+        },
+        {
+          "symbol": "GHNI",
+          "entry_date": "2023-08-21",
+          "exit_date": "2023-08-28",
+          "entry_price": 102.48,
+          "exit_price": 91.5,
+          "days_held": 7,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -11011.74,
+          "return_pct": -11.0
+        },
+        {
+          "symbol": "HCAR",
+          "entry_date": "2023-08-25",
+          "exit_date": "2023-08-30",
+          "entry_price": 117.74,
+          "exit_price": 102.99,
+          "days_held": 5,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -12592.71,
+          "return_pct": -12.81
+        },
+        {
+          "symbol": "LUCK",
+          "entry_date": "2023-08-28",
+          "exit_date": "2023-08-31",
+          "entry_price": 590.22,
+          "exit_price": 560.28,
+          "days_held": 3,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -5193.18,
+          "return_pct": -5.37
+        },
+        {
+          "symbol": "SAZEW",
+          "entry_date": "2023-08-29",
+          "exit_date": "2023-09-07",
+          "entry_price": 66.41,
+          "exit_price": 80.8,
+          "days_held": 9,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 20757.86,
+          "return_pct": 21.34
+        },
+        {
+          "symbol": "MEBL",
+          "entry_date": "2023-09-15",
+          "exit_date": "2023-10-02",
+          "entry_price": 117.19,
+          "exit_price": 116.63,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -757.73,
+          "return_pct": -0.78
+        },
+        {
+          "symbol": "SAZEW",
+          "entry_date": "2023-12-15",
+          "exit_date": "2023-12-26",
+          "entry_price": 182.32,
+          "exit_price": 160.96,
+          "days_held": 11,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -11681.21,
+          "return_pct": -12.0
+        },
+        {
+          "symbol": "AIRLINK",
+          "entry_date": "2023-12-19",
+          "exit_date": "2023-12-26",
+          "entry_price": 55.59,
+          "exit_price": 49.5,
+          "days_held": 7,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -10958.35,
+          "return_pct": -11.24
+        },
+        {
+          "symbol": "GAL",
+          "entry_date": "2023-12-19",
+          "exit_date": "2023-12-26",
+          "entry_price": 65.02,
+          "exit_price": 57.96,
+          "days_held": 7,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -10859.46,
+          "return_pct": -11.14
+        },
+        {
+          "symbol": "MLCF",
+          "entry_date": "2023-12-19",
+          "exit_date": "2024-01-03",
+          "entry_price": 38.23,
+          "exit_price": 40.68,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 5945.67,
+          "return_pct": 6.1
+        },
+        {
+          "symbol": "GHNI",
+          "entry_date": "2023-12-19",
+          "exit_date": "2024-01-03",
+          "entry_price": 159.95,
+          "exit_price": 168.23,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4742.73,
+          "return_pct": 4.87
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2023-12-26",
+          "exit_date": "2024-01-03",
+          "entry_price": 109.8,
+          "exit_price": 119.24,
+          "days_held": 8,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 7795.65,
+          "return_pct": 8.28
+        },
+        {
+          "symbol": "HCAR",
+          "entry_date": "2023-12-26",
+          "exit_date": "2024-01-05",
+          "entry_price": 199.53,
+          "exit_price": 243.91,
+          "days_held": 10,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 20589.69,
+          "return_pct": 21.91
+        },
+        {
+          "symbol": "LUCK",
+          "entry_date": "2023-12-26",
+          "exit_date": "2024-01-10",
+          "entry_price": 743.58,
+          "exit_price": 780.77,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4397.84,
+          "return_pct": 4.69
+        },
+        {
+          "symbol": "DGKC",
+          "entry_date": "2024-01-15",
+          "exit_date": "2024-01-30",
+          "entry_price": 73.88,
+          "exit_price": 70.26,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -5113.67,
+          "return_pct": -5.19
+        },
+        {
+          "symbol": "SNGP",
+          "entry_date": "2024-01-19",
+          "exit_date": "2024-01-30",
+          "entry_price": 71.29,
+          "exit_price": 65.18,
+          "days_held": 11,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -8720.61,
+          "return_pct": -8.86
+        },
+        {
+          "symbol": "LUCK",
+          "entry_date": "2024-01-17",
+          "exit_date": "2024-02-01",
+          "entry_price": 762.97,
+          "exit_price": 727.13,
+          "days_held": 15,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -4911.69,
+          "return_pct": -4.99
+        },
+        {
+          "symbol": "HUBC",
+          "entry_date": "2024-01-18",
+          "exit_date": "2024-02-02",
+          "entry_price": 115.97,
+          "exit_price": 113.99,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -1973.87,
+          "return_pct": -2.0
+        },
+        {
+          "symbol": "NML",
+          "entry_date": "2024-01-18",
+          "exit_date": "2024-02-02",
+          "entry_price": 77.07,
+          "exit_price": 75.9,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -1788.5,
+          "return_pct": -1.82
+        },
+        {
+          "symbol": "PPL",
+          "entry_date": "2024-02-01",
+          "exit_date": "2024-02-13",
+          "entry_price": 115.8,
+          "exit_price": 101.27,
+          "days_held": 12,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -12389.57,
+          "return_pct": -12.83
+        },
+        {
+          "symbol": "EFERT",
+          "entry_date": "2024-05-09",
+          "exit_date": "2024-05-24",
+          "entry_price": 148.52,
+          "exit_price": 158.11,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 5834.11,
+          "return_pct": 6.15
+        },
+        {
+          "symbol": "ATRL",
+          "entry_date": "2024-05-29",
+          "exit_date": "2024-06-06",
+          "entry_price": 380.57,
+          "exit_price": 361.25,
+          "days_held": 8,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -5128.62,
+          "return_pct": -5.37
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2024-05-30",
+          "exit_date": "2024-06-14",
+          "entry_price": 27.92,
+          "exit_price": 28.66,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 2243.17,
+          "return_pct": 2.35
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2024-05-30",
+          "exit_date": "2024-06-14",
+          "entry_price": 139.29,
+          "exit_price": 144.09,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 3001.2,
+          "return_pct": 3.14
+        },
+        {
+          "symbol": "MEBL",
+          "entry_date": "2024-06-12",
+          "exit_date": "2024-06-14",
+          "entry_price": 223.14,
+          "exit_price": 242.49,
+          "days_held": 2,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 7945.56,
+          "return_pct": 8.36
+        },
+        {
+          "symbol": "ENGROH",
+          "entry_date": "2024-06-07",
+          "exit_date": "2024-06-24",
+          "entry_price": 153.04,
+          "exit_price": 160.47,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4322.0,
+          "return_pct": 4.55
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2024-06-25",
+          "exit_date": "2024-07-02",
+          "entry_price": 27.87,
+          "exit_price": 32.19,
+          "days_held": 7,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 14694.71,
+          "return_pct": 15.18
+        },
+        {
+          "symbol": "HCAR",
+          "entry_date": "2024-06-21",
+          "exit_date": "2024-07-08",
+          "entry_price": 292.82,
+          "exit_price": 282.35,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -3728.48,
+          "return_pct": -3.87
+        },
+        {
+          "symbol": "HUBC",
+          "entry_date": "2024-07-22",
+          "exit_date": "2024-08-05",
+          "entry_price": 150.42,
+          "exit_price": 142.76,
+          "days_held": 14,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -5272.95,
+          "return_pct": -5.38
+        },
+        {
+          "symbol": "DGKC",
+          "entry_date": "2024-07-22",
+          "exit_date": "2024-08-05",
+          "entry_price": 86.88,
+          "exit_price": 81.62,
+          "days_held": 14,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6212.87,
+          "return_pct": -6.35
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2024-08-09",
+          "exit_date": "2024-08-26",
+          "entry_price": 166.03,
+          "exit_price": 179.41,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 7485.59,
+          "return_pct": 7.75
+        },
+        {
+          "symbol": "EFERT",
+          "entry_date": "2024-08-09",
+          "exit_date": "2024-08-26",
+          "entry_price": 165.28,
+          "exit_price": 161.56,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -2463.0,
+          "return_pct": -2.55
+        },
+        {
+          "symbol": "GAL",
+          "entry_date": "2024-08-21",
+          "exit_date": "2024-09-05",
+          "entry_price": 265.75,
+          "exit_price": 260.59,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -2165.62,
+          "return_pct": -2.24
+        },
+        {
+          "symbol": "SAZEW",
+          "entry_date": "2024-08-26",
+          "exit_date": "2024-09-10",
+          "entry_price": 1009.99,
+          "exit_price": 973.52,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -3786.75,
+          "return_pct": -3.91
+        },
+        {
+          "symbol": "AIRLINK",
+          "entry_date": "2024-09-19",
+          "exit_date": "2024-10-04",
+          "entry_price": 124.54,
+          "exit_price": 142.95,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 13974.8,
+          "return_pct": 14.46
+        },
+        {
+          "symbol": "FCCL",
+          "entry_date": "2024-11-26",
+          "exit_date": "2024-11-28",
+          "entry_price": 30.58,
+          "exit_price": 34.9,
+          "days_held": 2,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 13539.25,
+          "return_pct": 13.81
+        },
+        {
+          "symbol": "LUCK",
+          "entry_date": "2024-11-26",
+          "exit_date": "2024-12-03",
+          "entry_price": 948.07,
+          "exit_price": 1058.19,
+          "days_held": 7,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 11032.39,
+          "return_pct": 11.3
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2024-11-26",
+          "exit_date": "2024-12-03",
+          "entry_price": 42.26,
+          "exit_price": 51.33,
+          "days_held": 7,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 20725.64,
+          "return_pct": 21.13
+        },
+        {
+          "symbol": "SNGP",
+          "entry_date": "2024-11-26",
+          "exit_date": "2024-12-04",
+          "entry_price": 78.23,
+          "exit_price": 91.72,
+          "days_held": 8,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 16583.55,
+          "return_pct": 16.92
+        },
+        {
+          "symbol": "EFERT",
+          "entry_date": "2024-11-26",
+          "exit_date": "2024-12-11",
+          "entry_price": 193.92,
+          "exit_price": 202.88,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4224.22,
+          "return_pct": 4.31
+        },
+        {
+          "symbol": "FCCL",
+          "entry_date": "2024-12-19",
+          "exit_date": "2025-01-03",
+          "entry_price": 33.97,
+          "exit_price": 34.83,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 2332.46,
+          "return_pct": 2.23
+        },
+        {
+          "symbol": "SEARL",
+          "entry_date": "2025-01-08",
+          "exit_date": "2025-01-23",
+          "entry_price": 98.01,
+          "exit_price": 106.84,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 9119.32,
+          "return_pct": 8.7
+        },
+        {
+          "symbol": "ATRL",
+          "entry_date": "2025-01-09",
+          "exit_date": "2025-01-24",
+          "entry_price": 602.53,
+          "exit_price": 632.65,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4918.5,
+          "return_pct": 4.69
+        },
+        {
+          "symbol": "SYS",
+          "entry_date": "2025-01-09",
+          "exit_date": "2025-01-24",
+          "entry_price": 562.88,
+          "exit_price": 582.58,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 3344.62,
+          "return_pct": 3.19
+        },
+        {
+          "symbol": "SNGP",
+          "entry_date": "2025-01-09",
+          "exit_date": "2025-01-24",
+          "entry_price": 95.49,
+          "exit_price": 99.6,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4191.47,
+          "return_pct": 4.0
+        },
+        {
+          "symbol": "NRL",
+          "entry_date": "2025-01-09",
+          "exit_date": "2025-01-24",
+          "entry_price": 271.31,
+          "exit_price": 261.8,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -3979.53,
+          "return_pct": -3.8
+        },
+        {
+          "symbol": "PPL",
+          "entry_date": "2025-01-24",
+          "exit_date": "2025-02-06",
+          "entry_price": 181.46,
+          "exit_price": 167.89,
+          "days_held": 13,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -8287.29,
+          "return_pct": -7.77
+        },
+        {
+          "symbol": "PSO",
+          "entry_date": "2025-01-27",
+          "exit_date": "2025-02-06",
+          "entry_price": 370.43,
+          "exit_price": 342.55,
+          "days_held": 10,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -8337.45,
+          "return_pct": -7.82
+        },
+        {
+          "symbol": "OGDC",
+          "entry_date": "2025-01-27",
+          "exit_date": "2025-02-06",
+          "entry_price": 209.11,
+          "exit_price": 195.44,
+          "days_held": 10,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -7281.18,
+          "return_pct": -6.83
+        },
+        {
+          "symbol": "TREET",
+          "entry_date": "2025-01-23",
+          "exit_date": "2025-02-07",
+          "entry_price": 21.93,
+          "exit_price": 20.01,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -9569.52,
+          "return_pct": -9.04
+        },
+        {
+          "symbol": "ATRL",
+          "entry_date": "2025-01-27",
+          "exit_date": "2025-02-11",
+          "entry_price": 609.27,
+          "exit_price": 638.29,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 4751.02,
+          "return_pct": 4.46
+        },
+        {
+          "symbol": "AIRLINK",
+          "entry_date": "2025-02-13",
+          "exit_date": "2025-02-28",
+          "entry_price": 188.03,
+          "exit_price": 187.09,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -829.48,
+          "return_pct": -0.8
+        },
+        {
+          "symbol": "PAEL",
+          "entry_date": "2025-02-14",
+          "exit_date": "2025-03-03",
+          "entry_price": 38.36,
+          "exit_price": 41.76,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 8875.19,
+          "return_pct": 8.55
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2025-03-06",
+          "exit_date": "2025-03-21",
+          "entry_price": 88.53,
+          "exit_price": 90.49,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 1997.63,
+          "return_pct": 1.91
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2025-03-12",
+          "exit_date": "2025-03-24",
+          "entry_price": 388.3,
+          "exit_price": 372.79,
+          "days_held": 12,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -4479.29,
+          "return_pct": -4.29
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2025-03-24",
+          "exit_date": "2025-04-08",
+          "entry_price": 89.39,
+          "exit_price": 89.96,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 351.24,
+          "return_pct": 0.34
+        },
+        {
+          "symbol": "DGKC",
+          "entry_date": "2025-04-16",
+          "exit_date": "2025-05-02",
+          "entry_price": 123.26,
+          "exit_price": 132.79,
+          "days_held": 16,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 7746.6,
+          "return_pct": 7.42
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2025-08-20",
+          "exit_date": "2025-09-04",
+          "entry_price": 436.66,
+          "exit_price": 450.69,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 3047.75,
+          "return_pct": 2.91
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2025-09-25",
+          "exit_date": "2025-09-29",
+          "entry_price": 442.18,
+          "exit_price": 467.62,
+          "days_held": 4,
+          "exit_reason": "TAKE_PROFIT",
+          "pnl": 5729.92,
+          "return_pct": 5.44
+        },
+        {
+          "symbol": "OGDC",
+          "entry_date": "2025-10-08",
+          "exit_date": "2025-10-13",
+          "entry_price": 269.56,
+          "exit_price": 252.84,
+          "days_held": 5,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6878.91,
+          "return_pct": -6.49
+        },
+        {
+          "symbol": "CPHL",
+          "entry_date": "2025-10-08",
+          "exit_date": "2025-10-13",
+          "entry_price": 94.54,
+          "exit_price": 88.71,
+          "days_held": 5,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6843.56,
+          "return_pct": -6.46
+        },
+        {
+          "symbol": "NML",
+          "entry_date": "2025-10-09",
+          "exit_date": "2025-10-13",
+          "entry_price": 154.36,
+          "exit_price": 145.67,
+          "days_held": 4,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6279.21,
+          "return_pct": -5.92
+        },
+        {
+          "symbol": "MLCF",
+          "entry_date": "2025-10-09",
+          "exit_date": "2025-10-24",
+          "entry_price": 102.1,
+          "exit_price": 97.5,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -5085.58,
+          "return_pct": -4.8
+        },
+        {
+          "symbol": "FCCL",
+          "entry_date": "2025-10-09",
+          "exit_date": "2025-10-24",
+          "entry_price": 56.75,
+          "exit_price": 55.6,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -2464.32,
+          "return_pct": -2.32
+        },
+        {
+          "symbol": "ENGROH",
+          "entry_date": "2025-10-13",
+          "exit_date": "2025-10-28",
+          "entry_price": 232.77,
+          "exit_price": 236.13,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 1187.52,
+          "return_pct": 1.14
+        },
+        {
+          "symbol": "PAEL",
+          "entry_date": "2025-10-13",
+          "exit_date": "2025-10-28",
+          "entry_price": 52.38,
+          "exit_price": 51.42,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -2215.78,
+          "return_pct": -2.13
+        },
+        {
+          "symbol": "GAL",
+          "entry_date": "2025-10-17",
+          "exit_date": "2025-10-29",
+          "entry_price": 568.06,
+          "exit_price": 537.65,
+          "days_held": 12,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -5868.55,
+          "return_pct": -5.65
+        },
+        {
+          "symbol": "DGKC",
+          "entry_date": "2025-10-24",
+          "exit_date": "2025-10-30",
+          "entry_price": 234.28,
+          "exit_price": 216.42,
+          "days_held": 6,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -8155.86,
+          "return_pct": -7.91
+        },
+        {
+          "symbol": "PSO",
+          "entry_date": "2025-10-27",
+          "exit_date": "2025-11-11",
+          "entry_price": 449.88,
+          "exit_price": 429.73,
+          "days_held": 15,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -4916.5,
+          "return_pct": -4.77
+        },
+        {
+          "symbol": "HUBC",
+          "entry_date": "2025-10-28",
+          "exit_date": "2025-11-12",
+          "entry_price": 208.13,
+          "exit_price": 207.99,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -378.27,
+          "return_pct": -0.37
+        },
+        {
+          "symbol": "TREET",
+          "entry_date": "2025-12-16",
+          "exit_date": "2025-12-31",
+          "entry_price": 31.11,
+          "exit_price": 31.58,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 1223.77,
+          "return_pct": 1.21
+        },
+        {
+          "symbol": "SYS",
+          "entry_date": "2026-01-12",
+          "exit_date": "2026-01-27",
+          "entry_price": 161.48,
+          "exit_price": 161.2,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -479.04,
+          "return_pct": -0.47
+        },
+        {
+          "symbol": "FFL",
+          "entry_date": "2026-01-30",
+          "exit_date": "2026-02-12",
+          "entry_price": 20.92,
+          "exit_price": 19.48,
+          "days_held": 13,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -7268.91,
+          "return_pct": -7.17
+        },
+        {
+          "symbol": "EFERT",
+          "entry_date": "2026-02-06",
+          "exit_date": "2026-02-12",
+          "entry_price": 235.06,
+          "exit_price": 221.14,
+          "days_held": 6,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6294.45,
+          "return_pct": -6.21
+        },
+        {
+          "symbol": "FFC",
+          "entry_date": "2026-01-30",
+          "exit_date": "2026-02-16",
+          "entry_price": 588.57,
+          "exit_price": 569.38,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": -3599.43,
+          "return_pct": -3.56
+        },
+        {
+          "symbol": "SEARL",
+          "entry_date": "2026-01-30",
+          "exit_date": "2026-02-16",
+          "entry_price": 120.17,
+          "exit_price": 112.36,
+          "days_held": 17,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -6877.86,
+          "return_pct": -6.79
+        },
+        {
+          "symbol": "NML",
+          "entry_date": "2026-02-09",
+          "exit_date": "2026-02-19",
+          "entry_price": 186.3,
+          "exit_price": 168.75,
+          "days_held": 10,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -9836.92,
+          "return_pct": -9.71
+        },
+        {
+          "symbol": "ATRL",
+          "entry_date": "2026-06-05",
+          "exit_date": "2026-06-22",
+          "entry_price": 872.46,
+          "exit_price": 904.7,
+          "days_held": 17,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 3312.32,
+          "return_pct": 3.39
+        },
+        {
+          "symbol": "HCAR",
+          "entry_date": "2026-06-29",
+          "exit_date": "2026-07-14",
+          "entry_price": 234.95,
+          "exit_price": 240.43,
+          "days_held": 15,
+          "exit_reason": "MAX_HOLD",
+          "pnl": 1992.58,
+          "return_pct": 2.03
+        },
+        {
+          "symbol": "FCCL",
+          "entry_date": "2026-07-13",
+          "exit_date": "2026-07-23",
+          "entry_price": 54.22,
+          "exit_price": 51.25,
+          "days_held": 10,
+          "exit_reason": "STOP_LOSS",
+          "pnl": -5668.31,
+          "return_pct": -5.77
+        }
+      ]
+    }
+  },
+  "caveats": [
+    "Uses today's KMI-30 members over the whole period (survivorship bias).",
+    "Assumes 0.15% brokerage per side, no slippage or taxes.",
+    "Entries and exits use closing prices; a real fill may differ.",
+    "Past results do not guarantee future results."
+  ]
+}

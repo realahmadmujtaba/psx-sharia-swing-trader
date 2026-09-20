@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 import config
+from core import performance
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = PROJECT_ROOT / "docs" / "data.json"
@@ -32,6 +33,7 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
             "volume_lookback": config.VOLUME_LOOKBACK,
             "min_avg_volume": config.MIN_AVG_VOLUME,
             "volume_spike_mult": config.VOLUME_SPIKE_MULT,
+            "strict_entry": config.STRICT_ENTRY,
             "support_lookback": config.SUPPORT_LOOKBACK,
             "support_proximity_pct": config.SUPPORT_PROXIMITY_PCT,
             "atr_period": config.ATR_PERIOD,
@@ -49,6 +51,7 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
         ],
         "warnings": result.get("warnings", []),
         "watchlist": result.get("watchlist", []),
+        "performance": performance.summarise(performance.closed_trades(log_df)),
         "history": history.to_dict(orient="records"),
     }
 
@@ -61,7 +64,8 @@ def publish(payload: dict) -> None:
     DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
     DATA_PATH.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
-    _git("add", str(DATA_PATH.relative_to(PROJECT_ROOT)))
+    # The signal log is state: it must travel with the repo so cloud runs remember open positions.
+    _git("add", str(DATA_PATH.relative_to(PROJECT_ROOT)), "data/signals_log.csv")
     if _git("diff", "--cached", "--quiet").returncode == 0:
         return
 

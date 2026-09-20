@@ -1,0 +1,43 @@
+name: Daily EOD scan
+
+on:
+  schedule:
+    # 17:45 PKT = 12:45 UTC, Monday-Friday (PSX trading days).
+    - cron: "45 12 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Configure git for the dashboard push
+        run: |
+          git config user.name "psx-agent"
+          git config user.email "actions@github.com"
+
+      - name: Run the scan
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
+          EMAIL_SUBSCRIBERS: ${{ secrets.EMAIL_SUBSCRIBERS }}
+          TRADING_CAPITAL: ${{ secrets.TRADING_CAPITAL }}
+        run: python main.py --once

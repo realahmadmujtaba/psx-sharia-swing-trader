@@ -1,5 +1,4 @@
 .env
 __pycache__/
 *.pyc
-data/signals_log.csv
 data/universe_cache.csv
