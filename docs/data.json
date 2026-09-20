@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-20T01:03+05:00",
+  "updated_at": "2026-09-20T07:09+05:00",
   "price_date": "2026-09-18",
   "universe": "KMI30",
   "market": {
@@ -17,6 +17,7 @@
     "volume_lookback": 20,
     "min_avg_volume": 100000,
     "volume_spike_mult": 1.5,
+    "strict_entry": false,
     "support_lookback": 20,
     "support_proximity_pct": 0.03,
     "atr_period": 14,
@@ -60,9 +61,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high",
-        "No volume spike",
-        "Not near support"
+        "RSI too high"
       ]
     },
     {
@@ -79,8 +78,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -97,8 +95,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -116,8 +113,7 @@
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -134,8 +130,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -171,8 +166,7 @@
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -189,8 +183,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -207,8 +200,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -226,8 +218,7 @@
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too low",
-        "No volume spike"
+        "RSI too low"
       ]
     },
     {
@@ -244,8 +235,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -262,8 +252,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -280,8 +269,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -317,8 +305,7 @@
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -336,8 +323,7 @@
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -354,8 +340,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -372,9 +357,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high",
-        "No volume spike",
-        "Not near support"
+        "RSI too high"
       ]
     },
     {
@@ -392,8 +375,7 @@
       "status": "NO SIGNAL",
       "reasons": [
         "Below 50-day EMA",
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -427,8 +409,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high",
-        "No volume spike"
+        "RSI too high"
       ]
     },
     {
@@ -445,9 +426,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "RSI too high",
-        "No volume spike",
-        "Not near support"
+        "RSI too high"
       ]
     },
     {
@@ -464,8 +443,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -482,8 +460,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -500,8 +477,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -518,8 +494,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -536,8 +511,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -554,8 +528,7 @@
       "stale": false,
       "status": "NO SIGNAL",
       "reasons": [
-        "Below 50-day EMA",
-        "No volume spike"
+        "Below 50-day EMA"
       ]
     },
     {
@@ -581,15 +554,166 @@
   "warnings": [],
   "watchlist": [
     {
+      "symbol": "ATRL",
+      "missing": "RSI too high",
+      "close": 1095.15,
+      "rsi": 52.40398483776146,
+      "ema_50": 1042.8911777864764,
+      "volume_ratio": 0.2619708973106351
+    },
+    {
+      "symbol": "CPHL",
+      "missing": "RSI too high",
+      "close": 75.38,
+      "rsi": 58.28018532460242,
+      "ema_50": 74.35635812077574,
+      "volume_ratio": 1.353442524032973
+    },
+    {
+      "symbol": "DGKC",
+      "missing": "Below 50-day EMA",
+      "close": 196.08,
+      "rsi": 42.902643629263544,
+      "ema_50": 204.9803238725556,
+      "volume_ratio": 0.8389855326839452
+    },
+    {
+      "symbol": "ENGROH",
+      "missing": "Below 50-day EMA",
+      "close": 263.02,
+      "rsi": 43.350528639606864,
+      "ema_50": 269.7620334915427,
+      "volume_ratio": 0.4513035813783853
+    },
+    {
+      "symbol": "FFL",
+      "missing": "Below 50-day EMA",
+      "close": 14.78,
+      "rsi": 37.99951294197345,
+      "ema_50": 15.834779017582042,
+      "volume_ratio": 0.8905144471198951
+    },
+    {
+      "symbol": "GAL",
+      "missing": "Below 50-day EMA",
+      "close": 543.38,
+      "rsi": 31.79149650307943,
+      "ema_50": 589.1547587680606,
+      "volume_ratio": 0.8568256588175794
+    },
+    {
+      "symbol": "HCAR",
+      "missing": "Below 50-day EMA",
+      "close": 222.54,
+      "rsi": 43.83271163797575,
+      "ema_50": 232.5066139560079,
+      "volume_ratio": 0.27305434954158253
+    },
+    {
+      "symbol": "HUBC",
+      "missing": "Below 50-day EMA",
+      "close": 203.8,
+      "rsi": 40.04785108394213,
+      "ema_50": 211.2021351005596,
+      "volume_ratio": 0.5474831526029528
+    },
+    {
+      "symbol": "LUCK",
+      "missing": "Below 50-day EMA",
+      "close": 416.0,
+      "rsi": 42.41093117981955,
+      "ema_50": 433.53744994571434,
+      "volume_ratio": 0.914507196727096
+    },
+    {
+      "symbol": "NML",
+      "missing": "Below 50-day EMA",
+      "close": 133.29,
+      "rsi": 40.086145943764265,
+      "ema_50": 142.01483398042743,
+      "volume_ratio": 1.3695371471266102
+    },
+    {
+      "symbol": "NRL",
+      "missing": "RSI too high",
+      "close": 518.61,
+      "rsi": 54.23588362251896,
+      "ema_50": 477.0914578052611,
+      "volume_ratio": 0.18743246238451242
+    },
+    {
       "symbol": "PAEL",
       "missing": "Below 50-day EMA",
       "close": 36.84,
       "rsi": 40.12419040367803,
       "ema_50": 39.81139175166876,
       "volume_ratio": 2.087617532870728
+    },
+    {
+      "symbol": "PPL",
+      "missing": "RSI too high",
+      "close": 228.8,
+      "rsi": 53.271713353117,
+      "ema_50": 227.36145224682596,
+      "volume_ratio": 1.0579397102631867
+    },
+    {
+      "symbol": "PRL",
+      "missing": "RSI too high",
+      "close": 82.97,
+      "rsi": 49.410325308972666,
+      "ema_50": 74.46112873219833,
+      "volume_ratio": 0.2905470123631945
+    },
+    {
+      "symbol": "PSO",
+      "missing": "Below 50-day EMA",
+      "close": 345.64,
+      "rsi": 42.860303576464084,
+      "ema_50": 354.2739784853205,
+      "volume_ratio": 0.35501733369596095
+    },
+    {
+      "symbol": "SAZEW",
+      "missing": "Below 50-day EMA",
+      "close": 1745.2,
+      "rsi": 34.217621280759104,
+      "ema_50": 1880.8239600243567,
+      "volume_ratio": 0.41535622488632823
+    },
+    {
+      "symbol": "SEARL",
+      "missing": "Below 50-day EMA",
+      "close": 79.69,
+      "rsi": 35.0346580764713,
+      "ema_50": 86.48637818814595,
+      "volume_ratio": 1.411788266519561
+    },
+    {
+      "symbol": "SNGP",
+      "missing": "Below 50-day EMA",
+      "close": 91.59,
+      "rsi": 34.84022038446692,
+      "ema_50": 100.2293188608267,
+      "volume_ratio": 0.7759390556549272
+    },
+    {
+      "symbol": "SSGC",
+      "missing": "Below 50-day EMA",
+      "close": 23.88,
+      "rsi": 35.546716656095796,
+      "ema_50": 26.61299476484569,
+      "volume_ratio": 0.7658929295475296
+    },
+    {
+      "symbol": "SYS",
+      "missing": "Below 50-day EMA",
+      "close": 121.95,
+      "rsi": 37.270572802780144,
+      "ema_50": 130.80069825219658,
+      "volume_ratio": 0.6208562650983026
     }
   ],
-  "history": [],
   "performance": {
     "trades": 0,
     "win_rate": null,
@@ -597,5 +721,6 @@
     "best_pct": null,
     "worst_pct": null,
     "cumulative_pct": null
-  }
+  },
+  "history": []
 }
