@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS positions (
     entry_price  REAL    NOT NULL,
     stop_loss    REAL    NOT NULL,
     take_profit  REAL    NOT NULL,
+    -- Which setup opened it: the exit rules differ per setup.
+    setup        TEXT    NOT NULL DEFAULT 'BREAKOUT',
     status       TEXT    NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED')),
     exit_date    TEXT,
     exit_price   REAL,
@@ -54,6 +56,9 @@ def connect():
 def init_db() -> None:
     with connect() as conn:
         conn.executescript(SCHEMA)
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(positions)")}
+        if "setup" not in columns:
+            conn.execute("ALTER TABLE positions ADD COLUMN setup TEXT NOT NULL DEFAULT 'BREAKOUT'")
         if not conn.execute("SELECT 1 FROM signals LIMIT 1").fetchone():
             _import_legacy_csv(conn)
 
@@ -92,10 +97,10 @@ def record_signal(signal: dict, conn: sqlite3.Connection | None = None) -> None:
     if signal["signal_type"] == "BUY":
         conn.execute(
             "INSERT OR REPLACE INTO positions"
-            " (symbol, entry_date, entry_price, stop_loss, take_profit, status)"
-            " VALUES (?, ?, ?, ?, ?, 'OPEN')",
+            " (symbol, entry_date, entry_price, stop_loss, take_profit, setup, status)"
+            " VALUES (?, ?, ?, ?, ?, ?, 'OPEN')",
             (signal["symbol"], signal_date, signal["close_price"],
-             signal["stop_loss"], signal["take_profit"]),
+             signal["stop_loss"], signal["take_profit"], signal.get("setup", "BREAKOUT")),
         )
     else:
         conn.execute(
@@ -108,12 +113,13 @@ def record_signal(signal: dict, conn: sqlite3.Connection | None = None) -> None:
 def open_positions() -> pd.DataFrame:
     with connect() as conn:
         rows = conn.execute(
-            "SELECT symbol, entry_date, entry_price, stop_loss, take_profit FROM positions"
+            "SELECT symbol, entry_date, entry_price, stop_loss, take_profit, setup FROM positions"
             " WHERE status = 'OPEN' ORDER BY entry_date"
         ).fetchall()
     df = pd.DataFrame([dict(row) for row in rows])
     if df.empty:
-        return pd.DataFrame(columns=["symbol", "entry_date", "entry_price", "stop_loss", "take_profit"])
+        return pd.DataFrame(columns=["symbol", "entry_date", "entry_price", "stop_loss",
+                                     "take_profit", "setup"])
     df["entry_date"] = pd.to_datetime(df["entry_date"]).dt.date
     return df
 

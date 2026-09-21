@@ -3,14 +3,25 @@ import math
 import config
 
 
-def calculate_risk_levels(close_price: float, atr_value: float) -> tuple[float, float]:
-    stop_loss = close_price - config.ATR_STOP_MULT * atr_value
+def calculate_risk_levels(close_price: float, atr_value: float, setup: str = "BREAKOUT",
+                          ema_50: float | None = None) -> tuple[float, float]:
+    """Entry-time stop and target.
+
+    Breakouts risk 1.5 x ATR. Pullbacks instead risk the support they bought against:
+    the stop is 2% below the 50-day EMA, which is also what sizes the position.
+    """
     take_profit = close_price + config.ATR_TARGET_MULT * atr_value
+
+    if setup == "PULLBACK" and ema_50:
+        stop_loss = ema_50 * (1 - config.PULLBACK_STOP_BELOW_EMA_PCT)
+    else:
+        stop_loss = close_price - config.ATR_STOP_MULT * atr_value
+
     return round(stop_loss, 2), round(take_profit, 2)
 
 
 def position_size(close_price: float, atr_value: float | None = None,
-                  equity: float | None = None) -> int | None:
+                  equity: float | None = None, stop_loss: float | None = None) -> int | None:
     """Shares to buy so that a stop-out costs RISK_PER_TRADE_PCT of equity.
 
     Capped by MAX_POSITION_PCT, because a tight stop would otherwise ask for more
@@ -20,10 +31,13 @@ def position_size(close_price: float, atr_value: float | None = None,
     if not equity:
         return None
 
-    if not atr_value:
+    if stop_loss is not None:
+        risk_per_share = close_price - stop_loss
+    elif atr_value:
+        risk_per_share = config.ATR_STOP_MULT * atr_value
+    else:
         return math.floor(equity * config.POSITION_PCT / close_price)
 
-    risk_per_share = config.ATR_STOP_MULT * atr_value
     if risk_per_share <= 0:
         return None
 

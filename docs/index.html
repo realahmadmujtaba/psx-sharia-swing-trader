@@ -78,6 +78,12 @@
   .price .amount { font-family: Fraunces, serif; font-size: 2rem; }
   .edit { color: var(--brass); font-size: 0.85rem; }
 
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.92rem; }
+  th, td { padding: 9px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; }
   footer { border-top: 1px solid var(--line); padding-block: 24px 40px; color: var(--muted); font-size: 0.85rem; }
   @media (max-width: 520px) { header { padding-block: 36px 28px; } }
 </style>
@@ -134,6 +140,17 @@
     <h2>Tested on past data</h2>
     <p class="lede" id="bt-intro">Loading results…</p>
     <div class="stats" id="bt-stats"></div>
+    <h3 style="margin-top:22px">Held back from the tuning: out-of-sample</h3>
+    <p class="lede">The rules were built on the earlier part of the history. This table compares that
+      period with the recent slice they never saw — the only part that tests whether the edge is real.</p>
+    <div class="card scroll" style="margin-top:12px">
+      <table id="bt-split">
+        <thead><tr><th>Period</th><th class="n">Trades</th><th class="n">Win rate</th>
+          <th class="n">Profit factor</th><th class="n">Return</th><th class="n">Index</th>
+          <th class="n">Sharpe</th><th class="n">Beta</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <div class="honest" id="bt-honest" hidden></div>
     <ul class="caveats" id="bt-caveats"></ul>
   </section>
@@ -202,9 +219,7 @@
     const r = d.rules, list = document.getElementById("rules");
     const rules = [
       [`Every stock must clear`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares, price above Rs. ${num(r.min_price, 0)}, close above the ${r.macro_ema_period}-day average, and the ${r.market_index} index above its ${r.ema_period}-day average`],
-      [`Setup A — breakout`, `ADX(${r.adx_period}) above ${r.adx_min}, a ${r.rs_lookback}-day return beating the ${r.market_index}, and volume at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average (RSI and support are ignored)`],
-      [`Setup B — pullback`, `RSI (${r.rsi_period}) below ${r.rsi_upper} with the price within ${num(r.support_proximity_pct * 100, 0)}% above the ${r.ema_period}-day average (ADX and relative strength are ignored)`],
-      [`Either one triggers a buy`, `each alert says which setup fired, so you know whether you are buying strength or a dip`],
+      [`Breakout entry`, `ADX(${r.adx_period}) above ${r.adx_min}, a ${r.rs_lookback}-day return beating the ${r.market_index}, and volume at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average`],
       [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below and take-profit ${r.atr_target_mult}× ATR above, sized so a stop-out costs about ${num(r.risk_per_trade_pct * 100, 1)}% of the account`],
       [`Trailing exit`, `the position is sold when it closes below its ${r.trail_ema_period}-day average, so winners are not cut on a fixed day`],
       [`Settlement lock`, `no sell alert before day ${r.min_holding_days}, and at most ${r.max_open_positions} positions open at once`],
@@ -228,34 +243,55 @@
   });
 
   fetch("backtest.json", { cache: "no-store" }).then(r => r.json()).then(b => {
-    const active = b.results[b.active_variant], m = active.metrics, bm = b.benchmark;
+    const split = b.results[b.active_variant], full = split.full, m = full.metrics, bm = b.benchmark;
     document.getElementById("bt-intro").textContent =
-      `The same rules replayed over ${b.years} years of real PSX data (${active.from} to ${active.to}) ` +
+      `The same rules replayed over ${b.years} years of real PSX data (${full.from} to ${full.to}) ` +
       `across ${b.universe_size} stocks, with ${num(b.commission_pct * 100, 2)}% brokerage charged on every side.`;
 
     const root = document.getElementById("bt-stats");
     stat(root, m.trades, "trades taken");
     stat(root, num(m.win_rate) + "%", "win rate");
-    stat(root, num(m.avg_return_pct, 2) + "%", "average per trade", m.avg_return_pct >= 0 ? "pos" : "neg");
+    stat(root, num(m.profit_factor, 2), "profit factor", m.profit_factor >= 1 ? "pos" : "neg");
     stat(root, num(m.total_return_pct, 2) + "%", "total return", m.total_return_pct >= 0 ? "pos" : "neg");
-    stat(root, num(m.max_drawdown_pct, 2) + "%", "worst drawdown", "neg");
-    if (bm) {
-      stat(root, num(bm.total_return_pct, 2) + "%", `holding ${bm.index} instead`,
-           bm.total_return_pct >= 0 ? "pos" : "neg");
+    stat(root, num(bm.total_return_pct, 2) + "%", `holding ${bm.index} instead`,
+         bm.total_return_pct >= 0 ? "pos" : "neg");
+    stat(root, num(m.sharpe, 2), `Sharpe (index ${num(bm.sharpe, 2)})`, m.sharpe >= 0 ? "pos" : "neg");
+
+    const rows = [
+      ["In-sample (built on)", split.in_sample, b.benchmark_in_sample],
+      ["Out-of-sample (held back)", split.out_of_sample, b.benchmark_out_of_sample],
+    ];
+    const body = document.querySelector("#bt-split tbody");
+    for (const [label, result, bench] of rows) {
+      const x = result.metrics, tr = document.createElement("tr");
+      const cell = (text, cls) => { const td = el("td", text, "n" + (cls ? " " + cls : "")); tr.append(td); };
+      tr.append(el("td", `${label} · ${result.from} to ${result.to}`));
+      cell(x.trades);
+      cell(num(x.win_rate) + "%");
+      cell(num(x.profit_factor, 2), x.profit_factor >= 1 ? "pos" : "neg");
+      cell(num(x.total_return_pct, 2) + "%", x.total_return_pct >= 0 ? "pos" : "neg");
+      cell(num(bench.total_return_pct, 2) + "%");
+      cell(num(x.sharpe, 2), x.sharpe >= 0 ? "pos" : "neg");
+      cell(num(x.beta, 2));
+      body.append(tr);
     }
 
+    const oos = split.out_of_sample.metrics, oosBench = b.benchmark_out_of_sample;
     const box = document.getElementById("bt-honest");
-    if (m.total_return_pct <= 0) {
-      box.textContent = "Being straight with you: over this period the rules did not make money. " +
-        "They are published here anyway, because a screening tool that hides its test results is worth less than one that shows them. " +
-        "Use the alerts as a shortlist to research, not as a promise of profit.";
+    if (oos.profit_factor === null || oos.profit_factor < 1 || oos.total_return_pct < oosBench.total_return_pct) {
+      box.textContent = "Being straight with you: on the held-back period the rules lost to simply holding the index " +
+        `(${num(oos.total_return_pct, 1)}% against ${num(oosBench.total_return_pct, 1)}%), with a profit factor of ` +
+        `${num(oos.profit_factor, 2)}. The earlier period looks better because the rules were built on it. ` +
+        "Nothing here demonstrates an edge yet, so treat the alerts as a shortlist to research, not a promise of profit.";
       box.hidden = false;
-    } else if (bm && m.total_return_pct - bm.total_return_pct < 25) {
-      box.textContent = `Read that against the benchmark: holding ${bm.index} over the same window returned ` +
-        `${num(bm.total_return_pct, 1)}%, so most of the gain is the market rising, not the rules. ` +
-        `The test also only covers stocks that are liquid today, which flatters any strategy. ` +
-        `Treat these alerts as a shortlist to research, not as a promise of profit.`;
-      box.hidden = false;
+    }
+
+    if (b.retired_setups) {
+      for (const [name, info] of Object.entries(b.retired_setups)) {
+        document.getElementById("bt-caveats").append(
+          el("li", `${name} entries were removed: out-of-sample profit factor ${info.oos_profit_factor} ` +
+                   `against a ${info.threshold} keep threshold.`));
+      }
     }
 
     const caveats = document.getElementById("bt-caveats");

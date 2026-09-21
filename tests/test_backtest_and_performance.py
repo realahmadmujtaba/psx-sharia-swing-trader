@@ -71,23 +71,43 @@ class TestPrepareTagsSetups(unittest.TestCase):
 
 
 class TestMetrics(unittest.TestCase):
+    TRADES = [
+        {"return_pct": 10.0, "pnl": 100.0, "days_held": 5},
+        {"return_pct": -5.0, "pnl": -50.0, "days_held": 3},
+        {"return_pct": 4.0, "pnl": 40.0, "days_held": 7},
+    ]
+
+    def _series(self, values):
+        return pd.Series(values, index=pd.date_range("2025-01-01", periods=len(values), freq="D"))
+
     def test_empty_is_zeroed(self):
-        self.assertEqual(_metrics([], [], 100.0, 1)["trades"], 0)
+        self.assertEqual(_metrics([], pd.Series(dtype=float), pd.Series(dtype=float), 100.0, 1)["trades"], 0)
 
     def test_win_rate_drawdown_and_profit_factor(self):
-        trades = [
-            {"return_pct": 10.0, "pnl": 100.0, "days_held": 5},
-            {"return_pct": -5.0, "pnl": -50.0, "days_held": 3},
-            {"return_pct": 4.0, "pnl": 40.0, "days_held": 7},
-        ]
-        curve = [{"equity": 1000.0}, {"equity": 1100.0}, {"equity": 1050.0}, {"equity": 1090.0}]
-        m = _metrics(trades, curve, 1000.0, 2.0)
+        equity = self._series([1000.0, 1100.0, 1050.0, 1090.0])
+        m = _metrics(self.TRADES, equity, self._series([100.0] * 4), 1000.0, 2.0)
         self.assertEqual(m["trades"], 3)
         self.assertEqual(m["trades_per_year"], 1.5)
         self.assertAlmostEqual(m["win_rate"], 66.7, places=1)
         self.assertEqual(m["profit_factor"], 2.8)
         self.assertAlmostEqual(m["max_drawdown_pct"], -4.55, places=2)
         self.assertEqual(m["total_return_pct"], 9.0)
+
+    def test_beta_is_one_when_tracking_the_benchmark(self):
+        moves = [1000.0, 1010.0, 1005.0, 1020.0, 1015.0, 1030.0]
+        m = _metrics(self.TRADES, self._series(moves), self._series(moves), 1000.0, 1.0)
+        self.assertAlmostEqual(m["beta"], 1.0, places=2)
+
+    def test_beta_is_zero_against_a_flat_market(self):
+        equity = self._series([1000.0, 1010.0, 1005.0, 1020.0, 1015.0, 1030.0])
+        flat = self._series([100.0, 101.0, 100.0, 101.0, 100.0, 101.0])
+        m = _metrics(self.TRADES, equity, flat, 1000.0, 1.0)
+        self.assertLess(abs(m["beta"]), 1.0)
+
+    def test_sharpe_is_negative_when_returns_trail_the_risk_free_rate(self):
+        flatish = self._series([1000.0, 1001.0, 1000.5, 1001.5, 1001.0, 1002.0])
+        m = _metrics(self.TRADES, flatish, self._series([100.0] * 6), 1000.0, 1.0)
+        self.assertLess(m["sharpe"], 0)
 
 
 class TestPerformance(unittest.TestCase):

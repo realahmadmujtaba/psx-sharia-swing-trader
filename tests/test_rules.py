@@ -10,6 +10,7 @@ from alerts import dashboard
 from alerts.email_alert import _build_digest_message
 from core import indicators, risk
 from core.signal_engine import (
+    SETUPS,
     baseline_failures,
     benchmark_rolling_return,
     breakout_failures,
@@ -17,7 +18,6 @@ from core.signal_engine import (
     entry_failures,
     entry_setup,
     market_status,
-    pullback_failures,
     snapshot,
 )
 from fetchers.purification import parse_pdf_text, purification_amount
@@ -160,36 +160,20 @@ class TestSetupA(unittest.TestCase):
         self.assertEqual(breakout_failures(_snap(relative_strength=None)), [])
 
 
-class TestSetupB(unittest.TestCase):
-    """Pullback: RSI below 45 near the 50-day EMA. ADX and relative strength ignored."""
+class TestSetupBRetired(unittest.TestCase):
+    """Pullback entries were removed after failing out-of-sample (PF 0.60 vs 1.20)."""
 
-    def test_triggers_without_momentum(self):
-        # Weak ADX, lagging the index, no volume spike: only Setup B can fire.
-        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8)
-        self.assertEqual(pullback_failures(snap), [])
-        self.assertEqual(entry_setup(snap), "PULLBACK")
+    def test_only_breakout_remains(self):
+        self.assertEqual(list(SETUPS), ["BREAKOUT"])
 
-    def test_high_rsi_rejected(self):
-        self.assertIn(f"RSI above {config.RSI_UPPER}", pullback_failures(_snap(rsi=50.0)))
-
-    def test_far_from_support_rejected(self):
-        failures = pullback_failures(_snap(near_support=False))
-        self.assertTrue(any("50-day EMA support" in f for f in failures))
-
-    def test_deeply_oversold_still_allowed(self):
-        # The old 30 floor is gone: RSI 20 inside an uptrend is a valid pullback.
-        self.assertEqual(pullback_failures(_snap(rsi=20.0)), [])
-
-
-class TestEitherSetupTriggers(unittest.TestCase):
-    def test_failing_both_setups_gives_no_signal(self):
-        snap = _snap(adx=10.0, volume_ratio=0.8, rsi=60.0, near_support=False)
+    def test_a_pure_pullback_no_longer_triggers(self):
+        # Dip near support with weak momentum: used to fire Setup B, now nothing.
+        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8, rsi=35.0)
         self.assertIsNone(entry_setup(snap))
 
-    def test_reported_reasons_come_from_the_nearest_setup(self):
-        # Fails Setup A on three counts, Setup B on one: report the single closest miss.
-        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8, rsi=60.0)
-        self.assertEqual(entry_failures(snap), [f"RSI above {config.RSI_UPPER}"])
+    def test_reasons_come_from_the_breakout_rules(self):
+        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8, rsi=35.0)
+        self.assertEqual(entry_failures(snap), breakout_failures(snap))
 
 
 class TestBenchmarkReturn(unittest.TestCase):

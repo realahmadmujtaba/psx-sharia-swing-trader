@@ -7,7 +7,7 @@ import pandas as pd
 
 from core import db
 
-POSITION_COLUMNS = ["symbol", "date", "close_price", "stop_loss", "take_profit"]
+POSITION_COLUMNS = ["symbol", "date", "close_price", "stop_loss", "take_profit", "setup"]
 
 
 def _as_position(row: dict) -> pd.Series:
@@ -17,6 +17,7 @@ def _as_position(row: dict) -> pd.Series:
         "close_price": float(row["entry_price"]),
         "stop_loss": float(row["stop_loss"]),
         "take_profit": float(row["take_profit"]),
+        "setup": row.get("setup") or "BREAKOUT",
     })
 
 

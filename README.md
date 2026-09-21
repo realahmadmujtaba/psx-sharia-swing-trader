@@ -34,15 +34,12 @@ call to the liquid ones (~85 scanned per run).
 **Baseline — every candidate must clear:** KMI-30 index above its 50-day EMA (market filter);
 close above the 100-day EMA; 20-day average volume above 500,000 shares; price above Rs. 10.
 
-Then **either** setup triggers a BUY, and the alert says which:
+**Entry (breakout):** ADX(14) above 20, a 20-day return beating the KMI-30, and volume at least
+1.5× its 20-day average.
 
-| | Setup A — breakout | Setup B — pullback |
-|---|---|---|
-| Requires | ADX(14) > 20, 20-day return beating the KMI-30, volume ≥ 1.5× its 20-day average | RSI(14) < 45, price within 3% above the 50-day EMA |
-| Ignores | RSI, support | ADX, relative strength |
-
-Momentum and mean-reversion rules are kept apart deliberately: intersecting them produced 14 trades
-in three years, too few to judge.
+A pullback setup (RSI < 45 near the 50-day EMA, with mean-reversion exits) was built and then
+**removed**: out-of-sample profit factor 0.60 against a 1.20 keep threshold. `core/backtest.py`
+still tags pullbacks so that decision can be re-checked.
 
 Exits: stop-loss at 1.5 × ATR, take-profit at 3 × ATR, or a trailing exit when price closes below
 its 20-day EMA. There is no time-based exit — winners are allowed to run. Nothing sells before
@@ -87,11 +84,16 @@ directly in `core/indicators.py` with Wilder smoothing and unit-tested against k
 
 ## Results, honestly
 
-`docs/backtest.json` holds the latest replay and is published on the landing page, always next to
-the benchmark. Over 2023-03 to 2026-09 the rules returned **+262%** against **+244%** for simply
-holding the KMI-30, with a deeper drawdown (−29% vs −22%) and 679 trades' worth of brokerage. In
-other words almost all of it is the market, which roughly tripled in that window, and the universe
-is today's survivors, which flatters any backtest.
+`python -m core.backtest --years 3 --save` reports the full period, the first 70% (in-sample) and
+the held-back 30% (out-of-sample) separately, each against buy-and-hold. Latest run:
 
-Split by setup: breakout carried it (603 trades, +1.24% average), pullback alone lost money
-(−10.8% total). Treat the alerts as a screening shortlist, not investment advice.
+| Period | Trades | Win rate | Profit factor | Return | Index | Sharpe | Beta |
+|---|---|---|---|---|---|---|---|
+| Full 2023-03 → 2026-09 | 407 | 40.3% | 1.24 | +133.9% | +243.6% | 0.50 | 0.47 |
+| In-sample 2023-03 → 2025-09 | 287 | 43.2% | 1.45 | +148.3% | +203.6% | 0.99 | 0.47 |
+| **Out-of-sample 2025-09 → 2026-09** | **131** | **30.5%** | **0.88** | **−12.1%** | **+12.5%** | **−0.96** | **0.27** |
+
+The strategy underperforms simply holding the KMI-30 in every window, and loses money on the
+held-back period. Beta near 0.5 says roughly half the movement is just the market. Nothing here
+demonstrates an edge. The landing page publishes this table as-is; treat the alerts as a screening
+shortlist, not investment advice.

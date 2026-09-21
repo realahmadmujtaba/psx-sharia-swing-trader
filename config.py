@@ -72,9 +72,18 @@ MACRO_EMA_PERIOD = 100
 # alert (not even stop-loss/take-profit) fires until this many days after entry.
 MIN_HOLDING_DAYS = 2
 
-# Trailing exit: a position closes when price closes below this EMA, so winners are
-# allowed to run instead of being cut on a fixed calendar day.
+# Exits are per setup. Breakouts trail a rising EMA; pullbacks take profit when price
+# reverts to that same EMA, because a pullback entry starts below it by construction.
 TRAIL_EMA_PERIOD = 20
+# Setup B hard stop: support is broken when price closes this far below the 50-day EMA.
+PULLBACK_STOP_BELOW_EMA_PCT = 0.02
+
+# Annualised risk-free rate used for the Sharpe ratio (Pakistan T-bill territory).
+RISK_FREE_RATE = 0.15
+# Out-of-sample split: the first share of history is train, the remainder is test.
+TRAIN_FRACTION = 0.70
+# A setup must clear this profit factor out-of-sample to stay in the engine.
+MIN_OOS_PROFIT_FACTOR = 1.20
 
 # Above this, a company is only compliant under a special PSX Shariah exception.
 PURIFICATION_WARN_PCT = 5.0

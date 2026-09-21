@@ -85,17 +85,10 @@ def breakout_failures(snap: dict) -> list[str]:
     return failures
 
 
-def pullback_failures(snap: dict) -> list[str]:
-    """Setup B: dip inside an uptrend. Ignores ADX and relative strength."""
-    failures = []
-    if snap["rsi"] >= config.RSI_UPPER:
-        failures.append(f"RSI above {config.RSI_UPPER}")
-    if not snap["near_support"]:
-        failures.append(f"Not within {config.SUPPORT_PROXIMITY_PCT:.0%} of 50-day EMA support")
-    return failures
-
-
-SETUPS = {"BREAKOUT": breakout_failures, "PULLBACK": pullback_failures}
+# Setup B (pullback) was removed after out-of-sample testing: profit factor 0.60 against a
+# 1.20 keep threshold, and it lost money in every period once its own exits were used.
+# core/backtest.py still tags pullbacks so the decision stays reproducible.
+SETUPS = {"BREAKOUT": breakout_failures}
 
 
 def entry_setup(snap: dict) -> str | None:
@@ -148,8 +141,8 @@ def evaluate_symbol(symbol: str, df: pd.DataFrame, benchmark_return: float | Non
     if setup is None:
         return None
 
-    stop_loss, take_profit = risk.calculate_risk_levels(snap["close"], snap["atr"])
-    shares = risk.position_size(snap["close"], snap["atr"])
+    stop_loss, take_profit = risk.calculate_risk_levels(snap["close"], snap["atr"], setup, snap["ema_50"])
+    shares = risk.position_size(snap["close"], snap["atr"], stop_loss=stop_loss)
 
     return {
         "symbol": symbol,
@@ -185,6 +178,7 @@ def evaluate_exit(position: pd.Series, df: pd.DataFrame) -> dict | None:
 
     stop_loss = float(position["stop_loss"])
     take_profit = float(position["take_profit"])
+    setup = position.get("setup") or "BREAKOUT"
     ema_trail = indicators.ema(df["close"], config.TRAIL_EMA_PERIOD).iloc[-1]
 
     if latest_close <= stop_loss:
@@ -203,6 +197,7 @@ def evaluate_exit(position: pd.Series, df: pd.DataFrame) -> dict | None:
     return {
         "symbol": position["symbol"],
         "signal_type": "SELL",
+        "setup": setup,
         "close_price": latest_close,
         "entry_price": entry_price,
         "stop_loss": stop_loss,
