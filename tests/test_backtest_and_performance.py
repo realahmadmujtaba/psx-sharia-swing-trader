@@ -13,7 +13,8 @@ from core import performance
 from core.backtest import _metrics, _qualifies
 
 ROW = pd.Series({
-    "close": 100.0, "ema_50": 98.0, "rsi": 40.0, "atr": 3.0,
+    "close": 100.0, "ema_50": 98.0, "ema_100": 92.0, "ema_slope": 0.4, "adx": 25.0,
+    "rsi": 40.0, "atr": 3.0, "atr_pct": 0.03, "return_20d": 0.09,
     "avg_volume": 500_000.0, "volume_ratio": 2.0, "support_low": 98.5,
 })
 
@@ -21,6 +22,16 @@ ROW = pd.Series({
 class TestQualifies(unittest.TestCase):
     def test_all_conditions_pass(self):
         self.assertTrue(_qualifies(ROW, "strict"))
+
+    def test_quant_filters_only_apply_to_their_variants(self):
+        quiet = pd.Series({**ROW, "atr_pct": 0.01})
+        self.assertFalse(_qualifies(quiet, "strict"))
+        self.assertFalse(_qualifies(quiet, "relaxed"))
+        self.assertTrue(_qualifies(quiet, "legacy"))
+
+    def test_relative_strength_needs_to_beat_the_index(self):
+        self.assertFalse(_qualifies(ROW, "relaxed", benchmark_return=0.15))
+        self.assertTrue(_qualifies(ROW, "relaxed", benchmark_return=0.02))
 
     def test_missing_indicator_rejects(self):
         self.assertFalse(_qualifies(pd.Series({**ROW, "atr": float("nan")}), "strict"))

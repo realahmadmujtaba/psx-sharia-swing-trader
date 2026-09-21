@@ -6,12 +6,17 @@ import numpy as np
 import pandas as pd
 
 import config
-from core import indicators
+from core import indicators, risk
 from fetchers.psx_fetcher import fetch_ohlcv
 from fetchers.universe import get_universe
 
 RESULT_PATH = config.DOCS_DIR / "backtest.json"
-VARIANTS = ("strict", "relaxed")
+# legacy = the rules before the quant upgrade, kept as the comparison baseline.
+VARIANTS = {
+    "legacy": {"spike_support": False, "quant_filters": False},
+    "relaxed": {"spike_support": False, "quant_filters": True},
+    "strict": {"spike_support": True, "quant_filters": True},
+}
 
 
 def _prepare(df: pd.DataFrame) -> pd.DataFrame | None:
@@ -22,8 +27,13 @@ def _prepare(df: pd.DataFrame) -> pd.DataFrame | None:
 
     volume = df["volume"].astype(float)
     df["ema_50"] = indicators.ema(df["close"], config.EMA_PERIOD)
+    df["ema_100"] = indicators.ema(df["close"], config.MACRO_EMA_PERIOD)
+    df["ema_slope"] = indicators.slope(df["ema_50"], config.EMA_SLOPE_LOOKBACK)
+    df["adx"] = indicators.adx(df["high"], df["low"], df["close"], config.ADX_PERIOD)
     df["rsi"] = indicators.rsi(df["close"], config.RSI_PERIOD)
     df["atr"] = indicators.atr(df["high"], df["low"], df["close"], config.ATR_PERIOD)
+    df["atr_pct"] = df["atr"] / df["close"]
+    df["return_20d"] = indicators.rolling_return(df["close"], config.RS_LOOKBACK)
     df["avg_volume"] = indicators.avg_volume(volume, config.VOLUME_LOOKBACK)
     df["volume_ratio"] = volume / volume.shift(1).rolling(config.VOLUME_LOOKBACK).mean()
     df["support_low"] = df["low"].shift(1).rolling(config.SUPPORT_LOOKBACK).min()
@@ -31,7 +41,8 @@ def _prepare(df: pd.DataFrame) -> pd.DataFrame | None:
     return df.set_index("date")
 
 
-def _qualifies(row: pd.Series, variant: str) -> bool:
+def _qualifies(row: pd.Series, variant: str, benchmark_return: float | None = None) -> bool:
+    flags = VARIANTS[variant]
     if row[["ema_50", "rsi", "atr", "avg_volume", "volume_ratio", "support_low"]].isna().any():
         return False
     if not (row["close"] > row["ema_50"]):
@@ -40,11 +51,27 @@ def _qualifies(row: pd.Series, variant: str) -> bool:
         return False
     if not (row["avg_volume"] > config.MIN_AVG_VOLUME):
         return False
-    if variant == "relaxed":
-        return True
-    near_support = (row["close"] / row["ema_50"] - 1 <= config.SUPPORT_PROXIMITY_PCT
-                    or row["close"] / row["support_low"] - 1 <= config.SUPPORT_PROXIMITY_PCT)
-    return row["volume_ratio"] >= config.VOLUME_SPIKE_MULT and near_support
+
+    if flags["quant_filters"]:
+        if row[["ema_100", "ema_slope", "atr_pct", "return_20d"]].isna().any():
+            return False
+        if not (row["close"] > row["ema_100"]):
+            return False
+        adx_ok = not pd.isna(row["adx"]) and row["adx"] > config.ADX_MIN
+        if not (row["ema_slope"] > 0 or adx_ok):
+            return False
+        if row["atr_pct"] < config.MIN_ATR_PCT:
+            return False
+        if benchmark_return is not None and row["return_20d"] <= benchmark_return:
+            return False
+
+    if flags["spike_support"]:
+        near_support = (row["close"] / row["ema_50"] - 1 <= config.SUPPORT_PROXIMITY_PCT
+                        or row["close"] / row["support_low"] - 1 <= config.SUPPORT_PROXIMITY_PCT)
+        if not (row["volume_ratio"] >= config.VOLUME_SPIKE_MULT and near_support):
+            return False
+
+    return True
 
 
 def _metrics(trades: list[dict], equity_curve: list[dict], start_equity: float, years: float) -> dict:
@@ -123,18 +150,22 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
         if free_slots <= 0:
             continue
 
+        benchmark_return = market.loc[today, "return_20d"] if "return_20d" in market.columns else None
+        if benchmark_return is not None and pd.isna(benchmark_return):
+            benchmark_return = None
+
         candidates = []
         for symbol, df in history.items():
             if symbol in open_positions or today not in df.index:
                 continue
             row = df.loc[today]
-            if _qualifies(row, variant):
+            if _qualifies(row, variant, benchmark_return):
                 candidates.append((float(row["volume_ratio"]), symbol, row))
 
         candidates.sort(key=lambda item: item[0], reverse=True)
         for _, symbol, row in candidates[:free_slots]:
             close, atr_value = float(row["close"]), float(row["atr"])
-            shares = int(equity * config.POSITION_PCT // close)
+            shares = risk.position_size(close, atr_value, equity) or 0
             if shares <= 0:
                 continue
             open_positions[symbol] = {
@@ -164,6 +195,7 @@ def load_history(years: int) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
     if market is None:
         raise RuntimeError(f"No usable history for the {config.MARKET_INDEX} index")
     market["uptrend"] = market["close"] > market["ema_50"]
+    market["return_20d"] = indicators.rolling_return(market["close"], config.RS_LOOKBACK)
 
     history = {}
     for symbol in get_universe():
@@ -191,14 +223,13 @@ def main() -> None:
               f"profit factor {m['profit_factor']}")
 
     if args.save:
-        strict = results["strict"]["metrics"]["trades_per_year"]
         payload = {
             "generated_at": datetime.now(config.TIMEZONE).isoformat(timespec="minutes"),
             "years": args.years,
             "universe": config.UNIVERSE_INDEX,
             "commission_pct": config.COMMISSION_PCT,
             "start_equity": 1_000_000.0,
-            "active_variant": "relaxed" if strict < config.MIN_TRADES_PER_YEAR else "strict",
+            "active_variant": "strict" if config.STRICT_ENTRY else "relaxed",
             "results": results,
             "caveats": [
                 "Uses today's KMI-30 members over the whole period (survivorship bias).",

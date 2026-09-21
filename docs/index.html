@@ -202,12 +202,15 @@
     const r = d.rules, list = document.getElementById("rules");
     const rules = [
       [`Market filter`, `the ${r.market_index} index is above its ${r.ema_period}-day average, so buys pause in a falling market`],
-      [`Uptrend`, `the stock closes above its ${r.ema_period}-day average`],
+      [`Uptrend`, `the stock closes above its ${r.ema_period}-day and ${r.macro_ema_period}-day averages`],
+      [`Trend strength`, `the ${r.ema_period}-day average is rising over ${r.ema_slope_lookback} days, or ADX(${r.adx_period}) is above ${r.adx_min}`],
+      [`Enough movement`, `the daily range (ATR) is at least ${num(r.min_atr_pct * 100, 0)}% of the price, so the target is reachable in time`],
+      [`Beating the index`, `the stock's ${r.rs_lookback}-day return is higher than the ${r.market_index}'s`],
       [`Pullback`, `RSI (${r.rsi_period}) sits between ${r.rsi_lower} and ${r.rsi_upper} — a dip inside that uptrend`],
       [`Volume spike`, `today's volume is at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average`],
       [`Near support`, `the price is within ${num(r.support_proximity_pct * 100, 0)}% of the ${r.ema_period}-day average or the ${r.support_lookback}-day low`],
       [`Liquidity`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares`],
-      [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below, take-profit ${r.atr_target_mult}× ATR above, position closed after ${r.max_holding_days} days`],
+      [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below, take-profit ${r.atr_target_mult}× ATR above, position closed after ${r.max_holding_days} days, sized so a stop-out costs about ${num(r.risk_per_trade_pct * 100, 1)}% of the account`],
       [`Settlement lock`, `no sell alert before day ${r.min_holding_days}, and at most ${r.max_open_positions} positions open at once`],
     ];
     for (const [name, rest] of rules) {

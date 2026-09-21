@@ -9,7 +9,13 @@ import config
 from alerts import dashboard
 from alerts.email_alert import _build_digest_message
 from core import indicators, risk
-from core.signal_engine import delisting_advice, entry_failures, market_status, snapshot
+from core.signal_engine import (
+    benchmark_rolling_return,
+    delisting_advice,
+    entry_failures,
+    market_status,
+    snapshot,
+)
 from fetchers.purification import parse_pdf_text, purification_amount
 
 
@@ -47,13 +53,26 @@ class TestRisk(unittest.TestCase):
         stop, target = risk.calculate_risk_levels(200.0, 10.0)
         self.assertEqual((stop, target), (185.0, 230.0))
 
-    def test_position_size_is_ten_percent_of_capital(self):
+    def test_size_risks_exactly_the_budget(self):
+        # Risk per share = 1.5 x ATR = Rs. 15; budget = 1.5% of 1,000,000 = Rs. 15,000.
+        with mock.patch.object(config, "TRADING_CAPITAL", 1_000_000):
+            shares = risk.position_size(200.0, atr_value=10.0)
+        self.assertEqual(shares, 1000)
+        self.assertAlmostEqual(shares * 15.0, 1_000_000 * config.RISK_PER_TRADE_PCT)
+
+    def test_tight_stop_is_capped_by_cash_not_risk(self):
+        # Risk per share = Rs. 0.15 would ask for 100,000 shares = Rs. 20m of stock.
+        with mock.patch.object(config, "TRADING_CAPITAL", 1_000_000):
+            shares = risk.position_size(200.0, atr_value=0.1)
+        self.assertEqual(shares, int(1_000_000 * config.MAX_POSITION_PCT / 200.0))
+
+    def test_falls_back_to_flat_percent_without_atr(self):
         with mock.patch.object(config, "TRADING_CAPITAL", 1_000_000):
             self.assertEqual(risk.position_size(263.02), 380)
 
     def test_position_size_absent_without_capital(self):
         with mock.patch.object(config, "TRADING_CAPITAL", None):
-            self.assertIsNone(risk.position_size(263.02))
+            self.assertIsNone(risk.position_size(263.02, 10.0))
 
 
 class TestEntryRules(unittest.TestCase):
@@ -86,7 +105,7 @@ class TestEntryRules(unittest.TestCase):
 
     def test_close_just_above_recent_low_is_near_support(self):
         # Flat at 100 (lows 99), then closes at 101: 2% above the 20-day low.
-        snap = snapshot(_frame([100.0] * 99 + [101.0]))
+        snap = snapshot(_frame([100.0] * 129 + [101.0]))
         self.assertEqual(snap["support_low"], 99.0)
         self.assertTrue(snap["near_support"])
 
@@ -96,6 +115,66 @@ class TestEntryRules(unittest.TestCase):
         self.assertFalse(snap["near_support"])
         with mock.patch.object(config, "STRICT_ENTRY", True):
             self.assertIn("Not near support", entry_failures(snap))
+
+
+class TestQuantFilters(unittest.TestCase):
+    """The four filters added in the quant upgrade."""
+
+    def _snap(self, **overrides):
+        base = {"close": 100.0, "ema_50": 95.0, "ema_100": 90.0, "ema_slope": 0.5, "adx": 25.0,
+                "rsi": 40.0, "avg_volume": 500_000.0, "volume_ratio": 2.0, "atr": 3.0,
+                "atr_pct": 0.03, "support_low": 98.0, "near_support": True,
+                "return_20d": 0.08, "benchmark_return_20d": 0.02, "relative_strength": 0.06}
+        return {**base, **overrides}
+
+    def test_clean_setup_has_no_failures(self):
+        self.assertEqual(entry_failures(self._snap()), [])
+
+    def test_below_macro_ema_rejected(self):
+        self.assertIn("Below 100-day EMA", entry_failures(self._snap(ema_100=105.0)))
+
+    def test_flat_ema_with_low_adx_rejected(self):
+        failures = entry_failures(self._snap(ema_slope=-0.1, adx=15.0))
+        self.assertIn("Flat trend (EMA not rising, ADX low)", failures)
+
+    def test_flat_ema_survives_on_strong_adx(self):
+        self.assertEqual(entry_failures(self._snap(ema_slope=-0.1, adx=30.0)), [])
+
+    def test_missing_adx_falls_back_to_slope(self):
+        self.assertEqual(entry_failures(self._snap(adx=None)), [])
+        self.assertIn("Flat trend (EMA not rising, ADX low)",
+                      entry_failures(self._snap(adx=None, ema_slope=-0.2)))
+
+    def test_too_quiet_rejected(self):
+        self.assertIn("Too quiet (ATR below 2% of price)", entry_failures(self._snap(atr_pct=0.015)))
+
+    def test_lagging_the_index_rejected(self):
+        failures = entry_failures(self._snap(relative_strength=-0.01))
+        self.assertIn(f"Lagging the {config.MARKET_INDEX} index", failures)
+
+    def test_no_benchmark_skips_relative_strength(self):
+        self.assertEqual(entry_failures(self._snap(relative_strength=None)), [])
+
+
+class TestBenchmarkReturn(unittest.TestCase):
+    def test_matches_manual_rolling_return(self):
+        df = _frame([100.0] * 30 + [110.0])
+        self.assertAlmostEqual(benchmark_rolling_return(df), 0.10, places=6)
+
+    def test_short_history_returns_none(self):
+        self.assertIsNone(benchmark_rolling_return(_frame([100.0] * 5)))
+
+
+class TestADX(unittest.TestCase):
+    def test_steady_uptrend_is_strong(self):
+        close = pd.Series(range(100, 160), dtype=float)
+        result = indicators.adx(close + 1, close - 1, close, period=14)
+        self.assertGreater(result.iloc[-1], config.ADX_MIN)
+
+    def test_choppy_market_is_weak(self):
+        close = pd.Series([100.0 + (1 if i % 2 else -1) for i in range(60)])
+        result = indicators.adx(close + 1, close - 1, close, period=14)
+        self.assertLess(result.iloc[-1], config.ADX_MIN)
 
 
 class TestMarketFilter(unittest.TestCase):

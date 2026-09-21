@@ -23,8 +23,16 @@ EMAIL_SUBSCRIBERS = [a.strip() for a in os.getenv("EMAIL_SUBSCRIBERS", "").split
 
 # Private: only used for the share count in emails, never published to the dashboard.
 TRADING_CAPITAL = float(os.getenv("TRADING_CAPITAL", "0")) or None
-POSITION_PCT = 0.10
-MAX_OPEN_POSITIONS = 5
+# Risk-based sizing: shares = (equity * RISK_PER_TRADE_PCT) / (ATR_STOP_MULT * ATR).
+RISK_PER_TRADE_PCT = 0.015
+# A tight stop would otherwise demand more cash than the account holds.
+MAX_POSITION_PCT = 0.20
+POSITION_PCT = 0.10  # fallback sizing when ATR is unavailable
+MAX_OPEN_POSITIONS = 8
+
+# Optional webhook for Telegram or Discord; empty disables it.
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 UNIVERSE_INDEX = "KMI30"
 # No new BUY while this index closes below its own EMA_PERIOD-day EMA.
@@ -49,6 +57,17 @@ SUPPORT_PROXIMITY_PCT = 0.03
 ATR_PERIOD = 14
 ATR_STOP_MULT = 1.5
 ATR_TARGET_MULT = 3.0
+
+# Trend strength: the 50-day EMA must be rising over EMA_SLOPE_LOOKBACK days, OR ADX above the floor.
+EMA_SLOPE_LOOKBACK = 5
+ADX_PERIOD = 14
+ADX_MIN = 20.0
+# Volatility gate: the stock must move enough to reach a 3x ATR target inside the holding window.
+MIN_ATR_PCT = 0.02
+# Relative strength: the stock's N-day return must beat the index's over the same window.
+RS_LOOKBACK = 20
+# Macro trend: close must also be above this longer EMA.
+MACRO_EMA_PERIOD = 100
 
 # Shares must settle into the account (T+2) before they can be sold, so no SELL
 # alert (not even stop-loss/take-profit) fires until this many days after entry.

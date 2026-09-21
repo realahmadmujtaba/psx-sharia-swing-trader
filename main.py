@@ -6,10 +6,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import config
-from alerts import dashboard
+from alerts import dashboard, webhook
 from alerts.email_alert import send_digest
 from core import state
 from core.signal_engine import (
+    benchmark_rolling_return,
     delisting_advice,
     entry_failures,
     evaluate_exit,
@@ -48,22 +49,26 @@ def run_scan() -> dict:
     log_df = state.load_log()
     ratios = load_ratios()
     universe = get_universe()
-    held_outside = [s for s in state.open_positions(log_df)["symbol"] if s not in universe] if not log_df.empty else []
-    open_count = len(state.open_positions(log_df))
-    market = market_status(fetch_ohlcv(config.MARKET_INDEX, start, end))
+    positions = state.open_positions()
+    held_outside = [s for s in positions["symbol"] if s not in universe]
+    open_count = len(positions)
+
+    market_df = fetch_ohlcv(config.MARKET_INDEX, start, end)
+    market = market_status(market_df)
+    benchmark_return = benchmark_rolling_return(market_df)
 
     signals, rows, warnings, watchlist, candidates = [], [], [], [], []
 
     for symbol in [*universe, *held_outside]:
         df = fetch_ohlcv(symbol, start, end)
-        snap = snapshot(df) if not df.empty else None
+        snap = snapshot(df, benchmark_return) if not df.empty else None
         if snap is None:
             rows.append({"symbol": symbol, "status": "NO DATA", "reasons": ["No usable price history from PSX"]})
             continue
 
         row = {"symbol": symbol, **snap, "stale": (end - snap["date"]).days > STALE_AFTER_DAYS}
 
-        open_position = state.get_open_position(log_df, symbol)
+        open_position = state.get_open_position(symbol)
         if open_position is not None:
             exit_signal = evaluate_exit(open_position, df)
             row.update(
@@ -110,7 +115,7 @@ def run_scan() -> dict:
                 row.update(status="NO SIGNAL", reasons=[full])
                 watchlist.append(_watch(row, full))
                 continue
-            entry_signal = evaluate_symbol(row["symbol"], df)
+            entry_signal = evaluate_symbol(row["symbol"], df, benchmark_return)
             _attach_purification(entry_signal, ratios)
             signals.append(entry_signal)
             state.append_signal(entry_signal)
@@ -124,6 +129,7 @@ def run_once() -> None:
     result = run_scan()
     dashboard.publish(dashboard.build_payload(result, state.load_log()))
     asyncio.run(send_digest(result))
+    webhook.notify(result)
 
 
 def run_scheduled() -> None:

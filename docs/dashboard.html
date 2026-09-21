@@ -309,7 +309,10 @@
     const groups = [
       ["BUY when all conditions hold", [
         `${r.market_index} index above its ${r.ema_period}-day EMA (market filter)`,
-        `Close above the ${r.ema_period}-day EMA (uptrend)`,
+        `Close above the ${r.ema_period}-day and ${r.macro_ema_period}-day EMAs`,
+        `${r.ema_period}-day EMA rising over ${r.ema_slope_lookback} days, or ADX above ${r.adx_min}`,
+        `ATR at least ${fmt(r.min_atr_pct * 100, 0)}% of price (enough movement)`,
+        `${r.rs_lookback}-day return above the ${r.market_index}'s`,
         `RSI (${r.rsi_period}) between ${r.rsi_lower} and ${r.rsi_upper} (pullback)`,
         `Today's volume at least ${r.volume_spike_mult}× the ${r.volume_lookback}-day average`,
         `Close within ${pct(r.support_proximity_pct)} of support (${r.ema_period}-day EMA or ${r.support_lookback}-day low)`,

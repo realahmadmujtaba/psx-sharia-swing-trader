@@ -39,10 +39,16 @@ def _format_buy(signal: dict) -> str:
         f"  ATR (14): {rs(signal['atr'])}\n"
     )
     if signal.get("shares"):
-        text += (f"  Suggested size: {signal['shares']:,} shares = {rs(signal['shares'] * close)} "
-                 f"({config.POSITION_PCT:.0%} of capital)\n")
+        risk_per_share = close - signal["stop_loss"]
+        text += (f"  Suggested size: {signal['shares']:,} shares = {rs(signal['shares'] * close)}\n"
+                 f"  Risk if stopped out: {rs(signal['shares'] * risk_per_share)} "
+                 f"(target {config.RISK_PER_TRADE_PCT:.1%} of capital)\n")
     text += (
         f"  RSI (14): {signal['rsi']:.1f}   50-day EMA: {rs(signal['ema_50'])}\n"
+        f"  Daily move (ATR): {signal['atr_pct']:.1%} of price"
+        + (f"   ADX: {signal['adx']:.0f}" if signal.get("adx") is not None else "")
+        + (f"   vs index (20d): {signal['relative_strength'] * 100:+.1f}%"
+           if signal.get("relative_strength") is not None else "") + "\n"
         f"  Volume today: {signal['volume_ratio']:.1f} x the 20-day average\n"
         f"  Support: 50-day EMA {rs(signal['ema_50'])} / 20-day low {rs(signal['support_low'])}\n"
         f"{_purification_line(signal)}"

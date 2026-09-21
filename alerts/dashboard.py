@@ -39,6 +39,13 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
             "atr_period": config.ATR_PERIOD,
             "atr_stop_mult": config.ATR_STOP_MULT,
             "atr_target_mult": config.ATR_TARGET_MULT,
+            "macro_ema_period": config.MACRO_EMA_PERIOD,
+            "adx_period": config.ADX_PERIOD,
+            "adx_min": config.ADX_MIN,
+            "ema_slope_lookback": config.EMA_SLOPE_LOOKBACK,
+            "min_atr_pct": config.MIN_ATR_PCT,
+            "rs_lookback": config.RS_LOOKBACK,
+            "risk_per_trade_pct": config.RISK_PER_TRADE_PCT,
             "min_holding_days": config.MIN_HOLDING_DAYS,
             "max_holding_days": config.MAX_HOLDING_DAYS,
             "max_open_positions": config.MAX_OPEN_POSITIONS,
@@ -67,8 +74,9 @@ def publish(payload: dict) -> None:
     # The signal log is state: it must travel with the repo so cloud runs remember open positions.
     # It only exists once a signal has fired, and git add fails the whole call on a missing path.
     paths = [str(DATA_PATH.relative_to(PROJECT_ROOT))]
-    if (PROJECT_ROOT / "data" / "signals_log.csv").exists():
-        paths.append("data/signals_log.csv")
+    for state_file in ("data/signals.db", "data/signals_log.csv"):
+        if (PROJECT_ROOT / state_file).exists():
+            paths.append(state_file)
     _git("add", *paths)
     if _git("diff", "--cached", "--quiet").returncode == 0:
         return

@@ -1,54 +1,45 @@
-from pathlib import Path
+"""Position and signal state, backed by SQLite (see core/db.py).
 
+Positions are exposed in the shape the signal engine expects: `date` is the entry
+date and `close_price` the entry price.
+"""
 import pandas as pd
 
-LOG_PATH = Path(__file__).resolve().parent.parent / "data" / "signals_log.csv"
-LOG_COLUMNS = ["date", "symbol", "signal_type", "close_price", "stop_loss", "take_profit", "exit_reason"]
+from core import db
+
+POSITION_COLUMNS = ["symbol", "date", "close_price", "stop_loss", "take_profit"]
+
+
+def _as_position(row: dict) -> pd.Series:
+    return pd.Series({
+        "symbol": row["symbol"],
+        "date": row["entry_date"],
+        "close_price": float(row["entry_price"]),
+        "stop_loss": float(row["stop_loss"]),
+        "take_profit": float(row["take_profit"]),
+    })
 
 
 def load_log() -> pd.DataFrame:
-    if not LOG_PATH.exists():
-        return pd.DataFrame(columns=LOG_COLUMNS)
-    log_df = pd.read_csv(LOG_PATH, parse_dates=["date"])
-    log_df["date"] = log_df["date"].dt.date
-    log_df["exit_reason"] = log_df["exit_reason"].fillna("")
-    return log_df
+    db.init_db()
+    return db.history()
 
 
-def open_positions(log_df: pd.DataFrame) -> pd.DataFrame:
-    if log_df.empty:
-        return log_df
-    latest = log_df.sort_values("date").groupby("symbol").tail(1)
-    return latest[latest["signal_type"] == "BUY"]
+def open_positions() -> pd.DataFrame:
+    db.init_db()
+    rows = db.open_positions()
+    if rows.empty:
+        return pd.DataFrame(columns=POSITION_COLUMNS)
+    return pd.DataFrame([_as_position(row) for _, row in rows.iterrows()])
 
 
-def get_open_position(log_df: pd.DataFrame, symbol: str) -> pd.Series | None:
-    if log_df.empty:
-        return None
-
-    symbol_log = log_df[log_df["symbol"] == symbol].sort_values("date")
-    if symbol_log.empty:
-        return None
-
-    last_row = symbol_log.iloc[-1]
-    return last_row if last_row["signal_type"] == "BUY" else None
+def get_open_position(symbol: str) -> pd.Series | None:
+    db.init_db()
+    row = db.open_position(symbol)
+    return None if row is None else _as_position(row)
 
 
 def append_signal(signal: dict) -> None:
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    row = pd.DataFrame(
-        [
-            {
-                "date": signal["timestamp"].date(),
-                "symbol": signal["symbol"],
-                "signal_type": signal["signal_type"],
-                "close_price": signal["close_price"],
-                "stop_loss": signal["stop_loss"],
-                "take_profit": signal["take_profit"],
-                "exit_reason": signal.get("exit_reason", ""),
-            }
-        ],
-        columns=LOG_COLUMNS,
-    )
-    header = not LOG_PATH.exists()
-    row.to_csv(LOG_PATH, mode="a", header=header, index=False)
+    db.init_db()
+    db.record_signal(signal)
+    db.export_csv()
