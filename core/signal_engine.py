@@ -17,7 +17,7 @@ def _clean(df: pd.DataFrame) -> pd.DataFrame:
 
 def snapshot(df: pd.DataFrame, benchmark_return: float | None = None) -> dict | None:
     df = _clean(df)
-    if len(df) < max(MIN_HISTORY_ROWS, config.SUPPORT_LOOKBACK + 1):
+    if len(df) < MIN_HISTORY_ROWS:
         return None
 
     close, high, low = df["close"], df["high"], df["low"]
@@ -38,15 +38,14 @@ def snapshot(df: pd.DataFrame, benchmark_return: float | None = None) -> dict | 
 
     last_close = float(close.iloc[-1])
     prior_avg_volume = volume.iloc[-config.VOLUME_LOOKBACK - 1 : -1].mean()
-    support_low = float(low.iloc[-config.SUPPORT_LOOKBACK - 1 : -1].min())
-    near_ema = last_close / ema_50_last - 1 <= config.SUPPORT_PROXIMITY_PCT
-    near_low = last_close / support_low - 1 <= config.SUPPORT_PROXIMITY_PCT
+    ema_trail = indicators.ema(close, config.TRAIL_EMA_PERIOD).iloc[-1]
 
     return {
         "date": pd.Timestamp(df["date"].iloc[-1]).date(),
         "close": last_close,
         "ema_50": float(ema_50_last),
         "ema_100": float(ema_100),
+        "ema_trail": float(ema_trail),
         "ema_slope": float(ema_slope),
         # ADX is NaN until enough bars exist; the slope test can still carry the trend check.
         "adx": None if pd.isna(adx_14) else float(adx_14),
@@ -55,38 +54,66 @@ def snapshot(df: pd.DataFrame, benchmark_return: float | None = None) -> dict | 
         "volume_ratio": float(volume.iloc[-1] / prior_avg_volume) if prior_avg_volume else 0.0,
         "atr": float(atr_14),
         "atr_pct": float(atr_14) / last_close,
-        "support_low": support_low,
-        "near_support": bool(near_ema or near_low),
+        "near_support": bool(0 <= last_close / ema_50_last - 1 <= config.SUPPORT_PROXIMITY_PCT),
         "return_20d": float(stock_return),
         "benchmark_return_20d": benchmark_return,
         "relative_strength": None if benchmark_return is None else float(stock_return) - benchmark_return,
     }
 
 
-def entry_failures(snap: dict) -> list[str]:
+def baseline_failures(snap: dict) -> list[str]:
+    """Liquidity, price floor and macro trend — every setup must clear these."""
     failures = []
-    if not snap["close"] > snap["ema_50"]:
-        failures.append("Below 50-day EMA")
+    if not snap["avg_volume"] > config.MIN_AVG_VOLUME:
+        failures.append(f"Average volume below {config.MIN_AVG_VOLUME:,}")
+    if not snap["close"] > config.MIN_PRICE:
+        failures.append(f"Price below Rs. {config.MIN_PRICE:,.0f}")
     if not snap["close"] > snap["ema_100"]:
         failures.append(f"Below {config.MACRO_EMA_PERIOD}-day EMA")
-    if not (snap["ema_slope"] > 0 or (snap["adx"] is not None and snap["adx"] > config.ADX_MIN)):
-        failures.append("Flat trend (EMA not rising, ADX low)")
-    if snap["atr_pct"] < config.MIN_ATR_PCT:
-        failures.append("Too quiet (ATR below 2% of price)")
+    return failures
+
+
+def breakout_failures(snap: dict) -> list[str]:
+    """Setup A: momentum leadership. Ignores RSI and support."""
+    failures = []
+    if snap["adx"] is None or snap["adx"] <= config.ADX_MIN:
+        failures.append(f"ADX below {config.ADX_MIN:.0f}")
     if snap["relative_strength"] is not None and snap["relative_strength"] <= 0:
         failures.append(f"Lagging the {config.MARKET_INDEX} index")
-    if snap["rsi"] > config.RSI_UPPER:
-        failures.append("RSI too high")
-    elif snap["rsi"] < config.RSI_LOWER:
-        failures.append("RSI too low")
-    if not snap["avg_volume"] > config.MIN_AVG_VOLUME:
-        failures.append("Low volume")
-    if config.STRICT_ENTRY:
-        if snap["volume_ratio"] < config.VOLUME_SPIKE_MULT:
-            failures.append("No volume spike")
-        if not snap["near_support"]:
-            failures.append("Not near support")
+    if snap["volume_ratio"] < config.VOLUME_SPIKE_MULT:
+        failures.append("No volume spike")
     return failures
+
+
+def pullback_failures(snap: dict) -> list[str]:
+    """Setup B: dip inside an uptrend. Ignores ADX and relative strength."""
+    failures = []
+    if snap["rsi"] >= config.RSI_UPPER:
+        failures.append(f"RSI above {config.RSI_UPPER}")
+    if not snap["near_support"]:
+        failures.append(f"Not within {config.SUPPORT_PROXIMITY_PCT:.0%} of 50-day EMA support")
+    return failures
+
+
+SETUPS = {"BREAKOUT": breakout_failures, "PULLBACK": pullback_failures}
+
+
+def entry_setup(snap: dict) -> str | None:
+    """The setup this stock triggers today, or None."""
+    if baseline_failures(snap):
+        return None
+    for name, check in SETUPS.items():
+        if not check(snap):
+            return name
+    return None
+
+
+def entry_failures(snap: dict) -> list[str]:
+    """Why there is no BUY: baseline misses, else the nearest setup's misses."""
+    baseline = baseline_failures(snap)
+    if baseline:
+        return baseline
+    return min((check(snap) for check in SETUPS.values()), key=len)
 
 
 def benchmark_rolling_return(index_df: pd.DataFrame) -> float | None:
@@ -115,7 +142,10 @@ def market_status(index_df: pd.DataFrame) -> dict | None:
 
 def evaluate_symbol(symbol: str, df: pd.DataFrame, benchmark_return: float | None = None) -> dict | None:
     snap = snapshot(df, benchmark_return)
-    if snap is None or entry_failures(snap):
+    if snap is None:
+        return None
+    setup = entry_setup(snap)
+    if setup is None:
         return None
 
     stop_loss, take_profit = risk.calculate_risk_levels(snap["close"], snap["atr"])
@@ -124,12 +154,12 @@ def evaluate_symbol(symbol: str, df: pd.DataFrame, benchmark_return: float | Non
     return {
         "symbol": symbol,
         "signal_type": "BUY",
+        "setup": setup,
         "close_price": snap["close"],
         "rsi": snap["rsi"],
         "ema_50": snap["ema_50"],
         "avg_volume": snap["avg_volume"],
         "volume_ratio": snap["volume_ratio"],
-        "support_low": snap["support_low"],
         "atr": snap["atr"],
         "atr_pct": snap["atr_pct"],
         "adx": snap["adx"],
@@ -155,13 +185,14 @@ def evaluate_exit(position: pd.Series, df: pd.DataFrame) -> dict | None:
 
     stop_loss = float(position["stop_loss"])
     take_profit = float(position["take_profit"])
+    ema_trail = indicators.ema(df["close"], config.TRAIL_EMA_PERIOD).iloc[-1]
 
     if latest_close <= stop_loss:
         exit_reason = "STOP_LOSS"
     elif latest_close >= take_profit:
         exit_reason = "TAKE_PROFIT"
-    elif days_held >= config.MAX_HOLDING_DAYS:
-        exit_reason = "MAX_HOLD"
+    elif not pd.isna(ema_trail) and latest_close < float(ema_trail):
+        exit_reason = "TRAIL_EMA"
     else:
         return None
 

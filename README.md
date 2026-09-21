@@ -28,21 +28,25 @@ them today's data through the same code path.
 
 ## Entry rules
 
-A BUY requires all of:
+The universe is the PSX **KMI All-Share** Sharia index (~313 names), pre-filtered by one screener
+call to the liquid ones (~85 scanned per run).
 
-1. KMI-30 index above its 50-day EMA (market filter)
-2. Close above the 50-day EMA **and** above the 100-day EMA (macro trend)
-3. 50-day EMA rising over 5 days **or** ADX(14) above 20 (trend strength)
-4. RSI(14) between 30 and 45 (pullback)
-5. ATR(14) at least 2% of price (volatility gate)
-6. 20-day return above the KMI-30's 20-day return (relative strength)
-7. 20-day average volume above 100,000 shares (liquidity)
+**Baseline — every candidate must clear:** KMI-30 index above its 50-day EMA (market filter);
+close above the 100-day EMA; 20-day average volume above 500,000 shares; price above Rs. 10.
 
-Volume spike (≥1.5× average) and proximity to support are reported with every signal but do not
-block one; set `STRICT_ENTRY = True` in `config.py` to require them.
+Then **either** setup triggers a BUY, and the alert says which:
 
-Exits: stop-loss at 1.5 × ATR, take-profit at 3 × ATR, or 15 days — whichever comes first, and
-never before day 2 (T+2 settlement, so the shares are actually possessed before being sold).
+| | Setup A — breakout | Setup B — pullback |
+|---|---|---|
+| Requires | ADX(14) > 20, 20-day return beating the KMI-30, volume ≥ 1.5× its 20-day average | RSI(14) < 45, price within 3% above the 50-day EMA |
+| Ignores | RSI, support | ADX, relative strength |
+
+Momentum and mean-reversion rules are kept apart deliberately: intersecting them produced 14 trades
+in three years, too few to judge.
+
+Exits: stop-loss at 1.5 × ATR, take-profit at 3 × ATR, or a trailing exit when price closes below
+its 20-day EMA. There is no time-based exit — winners are allowed to run. Nothing sells before
+day 2 (T+2 settlement, so the shares are actually possessed before being sold).
 
 ## Position sizing
 
@@ -83,8 +87,11 @@ directly in `core/indicators.py` with Wilder smoothing and unit-tested against k
 
 ## Results, honestly
 
-`docs/backtest.json` holds the latest replay, published on the landing page including the periods
-where the rules lost money. A train/test grid over stop and target multiples found no setting that
-was profitable in both halves of the sample, so the parameters are not tuned to the past. The
-current filters produce roughly 4 trades a year — too few to claim a proven edge. Treat the alerts
-as a screening shortlist, not investment advice.
+`docs/backtest.json` holds the latest replay and is published on the landing page, always next to
+the benchmark. Over 2023-03 to 2026-09 the rules returned **+262%** against **+244%** for simply
+holding the KMI-30, with a deeper drawdown (−29% vs −22%) and 679 trades' worth of brokerage. In
+other words almost all of it is the market, which roughly tripled in that window, and the universe
+is today's survivors, which flatters any backtest.
+
+Split by setup: breakout carried it (603 trades, +1.24% average), pullback alone lost money
+(−10.8% total). Treat the alerts as a screening shortlist, not investment advice.

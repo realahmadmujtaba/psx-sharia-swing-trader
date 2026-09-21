@@ -34,24 +34,25 @@ MAX_OPEN_POSITIONS = 8
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-UNIVERSE_INDEX = "KMI30"
-# No new BUY while this index closes below its own EMA_PERIOD-day EMA.
+UNIVERSE_INDEX = "KMIALLSHR"
+# Benchmark for the market filter and for relative strength (the tradable Sharia index).
 MARKET_INDEX = "KMI30"
+# Cheap pre-filter from the one-shot screener table, so ~300 symbols are not all fetched.
+# Deliberately looser than MIN_AVG_VOLUME; the exact 20-day SMA still decides.
+PREFILTER_AVG_VOLUME = 300_000
 
 EMA_PERIOD = 50
 RSI_PERIOD = 14
 RSI_LOWER = 30
 RSI_UPPER = 45
 VOLUME_LOOKBACK = 20
-MIN_AVG_VOLUME = 100_000
+# Baseline liquidity for the wider universe: 20-day SMA of volume, and a price floor
+# that keeps out penny stocks whose tick size swamps a 1.5 x ATR stop.
+MIN_AVG_VOLUME = 500_000
+MIN_PRICE = 10.0
 
-# Requiring both a volume spike and near-support left only 3.7 trades a year in the
-# 3-year backtest, so they are reported with every signal but do not block one.
-STRICT_ENTRY = False
 VOLUME_SPIKE_MULT = 1.5
-# Support = the 50-day EMA or the lowest low of the prior SUPPORT_LOOKBACK sessions;
-# "near" = close no more than SUPPORT_PROXIMITY_PCT above it.
-SUPPORT_LOOKBACK = 20
+# Setup B support test: close no more than this far above the 50-day EMA.
 SUPPORT_PROXIMITY_PCT = 0.03
 
 ATR_PERIOD = 14
@@ -62,8 +63,6 @@ ATR_TARGET_MULT = 3.0
 EMA_SLOPE_LOOKBACK = 5
 ADX_PERIOD = 14
 ADX_MIN = 20.0
-# Volatility gate: the stock must move enough to reach a 3x ATR target inside the holding window.
-MIN_ATR_PCT = 0.02
 # Relative strength: the stock's N-day return must beat the index's over the same window.
 RS_LOOKBACK = 20
 # Macro trend: close must also be above this longer EMA.
@@ -73,17 +72,14 @@ MACRO_EMA_PERIOD = 100
 # alert (not even stop-loss/take-profit) fires until this many days after entry.
 MIN_HOLDING_DAYS = 2
 
-# Longest end of the swing window; an open position is force-exited (SELL) if
-# neither the stop-loss nor take-profit has been hit by this many days after entry.
-MAX_HOLDING_DAYS = 15
+# Trailing exit: a position closes when price closes below this EMA, so winners are
+# allowed to run instead of being cut on a fixed calendar day.
+TRAIL_EMA_PERIOD = 20
 
 # Above this, a company is only compliant under a special PSX Shariah exception.
 PURIFICATION_WARN_PCT = 5.0
 
 # PSX brokerage per side, applied in the backtest so results are not flattering.
 COMMISSION_PCT = 0.0015
-# Below this many trades a year, the strict rules are too tight to be usable.
-MIN_TRADES_PER_YEAR = 10
-
 EOD_CRON_HOUR = 17
 EOD_CRON_MINUTE = 45

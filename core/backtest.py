@@ -1,6 +1,6 @@
 import argparse
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -11,67 +11,50 @@ from fetchers.psx_fetcher import fetch_ohlcv
 from fetchers.universe import get_universe
 
 RESULT_PATH = config.DOCS_DIR / "backtest.json"
-# legacy = the rules before the quant upgrade, kept as the comparison baseline.
+CACHE_DIR = config.DATA_DIR / "history_cache"
+# "both" is what runs live; the single-setup runs show which half carries the result.
 VARIANTS = {
-    "legacy": {"spike_support": False, "quant_filters": False},
-    "relaxed": {"spike_support": False, "quant_filters": True},
-    "strict": {"spike_support": True, "quant_filters": True},
+    "both": ("BREAKOUT", "PULLBACK"),
+    "breakout": ("BREAKOUT",),
+    "pullback": ("PULLBACK",),
 }
 
 
-def _prepare(df: pd.DataFrame) -> pd.DataFrame | None:
+def _prepare(df: pd.DataFrame, benchmark_return: pd.Series | None) -> pd.DataFrame | None:
     df = df.sort_values("date")
     df = df[~df["is_anomaly"]].drop_duplicates("date", keep="last").reset_index(drop=True)
-    if len(df) < config.EMA_PERIOD + config.SUPPORT_LOOKBACK:
+    if len(df) < config.MACRO_EMA_PERIOD + config.RS_LOOKBACK:
         return None
 
-    volume = df["volume"].astype(float)
-    df["ema_50"] = indicators.ema(df["close"], config.EMA_PERIOD)
-    df["ema_100"] = indicators.ema(df["close"], config.MACRO_EMA_PERIOD)
-    df["ema_slope"] = indicators.slope(df["ema_50"], config.EMA_SLOPE_LOOKBACK)
-    df["adx"] = indicators.adx(df["high"], df["low"], df["close"], config.ADX_PERIOD)
-    df["rsi"] = indicators.rsi(df["close"], config.RSI_PERIOD)
-    df["atr"] = indicators.atr(df["high"], df["low"], df["close"], config.ATR_PERIOD)
-    df["atr_pct"] = df["atr"] / df["close"]
-    df["return_20d"] = indicators.rolling_return(df["close"], config.RS_LOOKBACK)
+    close, volume = df["close"], df["volume"].astype(float)
+    df["date"] = pd.to_datetime(df["date"]).dt.date
+    df["ema_50"] = indicators.ema(close, config.EMA_PERIOD)
+    df["ema_100"] = indicators.ema(close, config.MACRO_EMA_PERIOD)
+    df["ema_trail"] = indicators.ema(close, config.TRAIL_EMA_PERIOD)
+    df["adx"] = indicators.adx(df["high"], df["low"], close, config.ADX_PERIOD)
+    df["rsi"] = indicators.rsi(close, config.RSI_PERIOD)
+    df["atr"] = indicators.atr(df["high"], df["low"], close, config.ATR_PERIOD)
+    df["return_20d"] = indicators.rolling_return(close, config.RS_LOOKBACK)
     df["avg_volume"] = indicators.avg_volume(volume, config.VOLUME_LOOKBACK)
     df["volume_ratio"] = volume / volume.shift(1).rolling(config.VOLUME_LOOKBACK).mean()
-    df["support_low"] = df["low"].shift(1).rolling(config.SUPPORT_LOOKBACK).min()
-    df["date"] = pd.to_datetime(df["date"]).dt.date
-    return df.set_index("date")
+    df = df.set_index("date")
 
+    gap = df["close"] / df["ema_50"] - 1
+    baseline = ((df["avg_volume"] > config.MIN_AVG_VOLUME)
+                & (df["close"] > config.MIN_PRICE)
+                & (df["close"] > df["ema_100"]))
 
-def _qualifies(row: pd.Series, variant: str, benchmark_return: float | None = None) -> bool:
-    flags = VARIANTS[variant]
-    if row[["ema_50", "rsi", "atr", "avg_volume", "volume_ratio", "support_low"]].isna().any():
-        return False
-    if not (row["close"] > row["ema_50"]):
-        return False
-    if not (config.RSI_LOWER <= row["rsi"] <= config.RSI_UPPER):
-        return False
-    if not (row["avg_volume"] > config.MIN_AVG_VOLUME):
-        return False
+    breakout = baseline & (df["adx"] > config.ADX_MIN) & (df["volume_ratio"] >= config.VOLUME_SPIKE_MULT)
+    if benchmark_return is not None:
+        aligned = benchmark_return.reindex(df.index)
+        breakout &= df["return_20d"] > aligned
 
-    if flags["quant_filters"]:
-        if row[["ema_100", "ema_slope", "atr_pct", "return_20d"]].isna().any():
-            return False
-        if not (row["close"] > row["ema_100"]):
-            return False
-        adx_ok = not pd.isna(row["adx"]) and row["adx"] > config.ADX_MIN
-        if not (row["ema_slope"] > 0 or adx_ok):
-            return False
-        if row["atr_pct"] < config.MIN_ATR_PCT:
-            return False
-        if benchmark_return is not None and row["return_20d"] <= benchmark_return:
-            return False
+    pullback = (baseline & (df["rsi"] < config.RSI_UPPER)
+                & (gap >= 0) & (gap <= config.SUPPORT_PROXIMITY_PCT))
 
-    if flags["spike_support"]:
-        near_support = (row["close"] / row["ema_50"] - 1 <= config.SUPPORT_PROXIMITY_PCT
-                        or row["close"] / row["support_low"] - 1 <= config.SUPPORT_PROXIMITY_PCT)
-        if not (row["volume_ratio"] >= config.VOLUME_SPIKE_MULT and near_support):
-            return False
-
-    return True
+    df["setup"] = np.where(breakout.fillna(False), "BREAKOUT",
+                           np.where(pullback.fillna(False), "PULLBACK", None))
+    return df
 
 
 def _metrics(trades: list[dict], equity_curve: list[dict], start_equity: float, years: float) -> dict:
@@ -83,7 +66,8 @@ def _metrics(trades: list[dict], equity_curve: list[dict], start_equity: float, 
     returns = np.array([t["return_pct"] for t in trades])
     wins, losses = returns[returns > 0], returns[returns <= 0]
     equity = np.array([point["equity"] for point in equity_curve])
-    drawdown = (equity - np.maximum.accumulate(equity)) / np.maximum.accumulate(equity)
+    peak = np.maximum.accumulate(equity)
+    drawdown = (equity - peak) / peak
     gross_win = sum(t["pnl"] for t in trades if t["pnl"] > 0)
     gross_loss = -sum(t["pnl"] for t in trades if t["pnl"] <= 0)
 
@@ -103,7 +87,20 @@ def _metrics(trades: list[dict], equity_curve: list[dict], start_equity: float, 
 
 def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
         start_equity: float = 1_000_000.0) -> dict:
+    allowed = VARIANTS[variant]
+    # Pre-index everything the day loop needs, so it never touches pandas lookups.
+    bars = {s: {d: (row.close, row.ema_trail) for d, row in df[["close", "ema_trail"]].iterrows()}
+            for s, df in history.items()}
+    entries: dict[date, list[tuple]] = {}
+    for symbol, df in history.items():
+        hits = df[df["setup"].isin(allowed)]
+        for entry_date, row in hits[["close", "atr", "volume_ratio", "setup"]].iterrows():
+            if not np.isnan(row.atr):
+                entries.setdefault(entry_date, []).append(
+                    (row.volume_ratio, symbol, row.close, row.atr, row.setup))
+
     dates = sorted({d for df in history.values() for d in df.index})
+    uptrend = market["uptrend"].to_dict()
     open_positions: dict[str, dict] = {}
     trades: list[dict] = []
     equity = start_equity
@@ -112,20 +109,20 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
     for today in dates:
         for symbol in list(open_positions):
             position = open_positions[symbol]
-            row = history[symbol].loc[today] if today in history[symbol].index else None
-            if row is None:
+            bar = bars[symbol].get(today)
+            if bar is None:
                 continue
+            close, ema_trail = bar
             days_held = (today - position["entry_date"]).days
             if days_held < config.MIN_HOLDING_DAYS:
                 continue
 
-            close = float(row["close"])
             if close <= position["stop_loss"]:
                 reason = "STOP_LOSS"
             elif close >= position["take_profit"]:
                 reason = "TAKE_PROFIT"
-            elif days_held >= config.MAX_HOLDING_DAYS:
-                reason = "MAX_HOLD"
+            elif not np.isnan(ema_trail) and close < ema_trail:
+                reason = "TRAIL_EMA"
             else:
                 continue
 
@@ -135,7 +132,8 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
             pnl = proceeds - cost - fees
             equity += pnl
             trades.append({
-                "symbol": symbol, "entry_date": str(position["entry_date"]), "exit_date": str(today),
+                "symbol": symbol, "setup": position["setup"],
+                "entry_date": str(position["entry_date"]), "exit_date": str(today),
                 "entry_price": round(position["entry_price"], 2), "exit_price": round(close, 2),
                 "days_held": days_held, "exit_reason": reason, "pnl": round(pnl, 2),
                 "return_pct": round(pnl / cost * 100, 2),
@@ -143,75 +141,99 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
             equity_curve.append({"date": str(today), "equity": round(equity, 2)})
             del open_positions[symbol]
 
-        if today not in market.index or not bool(market.loc[today, "uptrend"]):
+        if not uptrend.get(today, False):
             continue
 
         free_slots = config.MAX_OPEN_POSITIONS - len(open_positions)
         if free_slots <= 0:
             continue
 
-        benchmark_return = market.loc[today, "return_20d"] if "return_20d" in market.columns else None
-        if benchmark_return is not None and pd.isna(benchmark_return):
-            benchmark_return = None
-
-        candidates = []
-        for symbol, df in history.items():
-            if symbol in open_positions or today not in df.index:
-                continue
-            row = df.loc[today]
-            if _qualifies(row, variant, benchmark_return):
-                candidates.append((float(row["volume_ratio"]), symbol, row))
-
-        candidates.sort(key=lambda item: item[0], reverse=True)
-        for _, symbol, row in candidates[:free_slots]:
-            close, atr_value = float(row["close"]), float(row["atr"])
-            shares = risk.position_size(close, atr_value, equity) or 0
+        candidates = sorted((c for c in entries.get(today, []) if c[1] not in open_positions),
+                            key=lambda item: item[0], reverse=True)
+        for _, symbol, close, atr_value, setup in candidates[:free_slots]:
+            shares = risk.position_size(float(close), float(atr_value), equity) or 0
             if shares <= 0:
                 continue
             open_positions[symbol] = {
-                "entry_date": today,
-                "entry_price": close,
-                "shares": shares,
+                "entry_date": today, "entry_price": float(close), "shares": shares, "setup": setup,
                 "stop_loss": close - config.ATR_STOP_MULT * atr_value,
                 "take_profit": close + config.ATR_TARGET_MULT * atr_value,
             }
 
     years = max((dates[-1] - dates[0]).days / 365.25, 1e-9) if dates else 1
+    by_setup = {}
+    for name in ("BREAKOUT", "PULLBACK"):
+        picked = [t for t in trades if t["setup"] == name]
+        if picked:
+            by_setup[name] = {
+                "trades": len(picked),
+                "win_rate": round(sum(t["return_pct"] > 0 for t in picked) / len(picked) * 100, 1),
+                "avg_return_pct": round(float(np.mean([t["return_pct"] for t in picked])), 2),
+            }
+
     return {
         "variant": variant,
         "from": str(dates[0]) if dates else None,
         "to": str(dates[-1]) if dates else None,
         "metrics": _metrics(trades, equity_curve, start_equity, years),
+        "by_setup": by_setup,
         "equity_curve": equity_curve,
-        "trades": trades,
+        "trades": trades[-200:],
     }
 
 
-def load_history(years: int) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
-    end = datetime.now(config.TIMEZONE).date()
-    start = end - timedelta(days=round(years * 365.25) + config.EMA_PERIOD * 2)
+def _cached_fetch(symbol: str, start: date, end: date, refresh: bool) -> pd.DataFrame:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    path = CACHE_DIR / f"{symbol}.csv"
+    if path.exists() and not refresh:
+        cached = pd.read_csv(path, parse_dates=["date"])
+        if not cached.empty and cached["date"].max().date() >= end - timedelta(days=5):
+            return cached
 
-    market = _prepare(fetch_ohlcv(config.MARKET_INDEX, start, end))
+    df = fetch_ohlcv(symbol, start, end)
+    if not df.empty:
+        df.to_csv(path, index=False)
+    return df
+
+
+def load_history(years: int, refresh: bool = False) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
+    end = datetime.now(config.TIMEZONE).date()
+    start = end - timedelta(days=round(years * 365.25) + config.MACRO_EMA_PERIOD * 2)
+
+    market_raw = _cached_fetch(config.MARKET_INDEX, start, end, refresh)
+    market = _prepare(market_raw, None)
     if market is None:
         raise RuntimeError(f"No usable history for the {config.MARKET_INDEX} index")
     market["uptrend"] = market["close"] > market["ema_50"]
-    market["return_20d"] = indicators.rolling_return(market["close"], config.RS_LOOKBACK)
 
     history = {}
     for symbol in get_universe():
-        prepared = _prepare(fetch_ohlcv(symbol, start, end))
+        prepared = _prepare(_cached_fetch(symbol, start, end, refresh), market["return_20d"])
         if prepared is not None:
             history[symbol] = prepared
     return history, market
 
 
+def benchmark_buy_and_hold(market: pd.DataFrame, start: str, end: str) -> dict:
+    """What simply holding the index over the same window would have returned."""
+    window = market.loc[date.fromisoformat(start):date.fromisoformat(end), "close"]
+    drawdown = (window / window.cummax() - 1).min()
+    return {
+        "index": config.MARKET_INDEX,
+        "total_return_pct": round((window.iloc[-1] / window.iloc[0] - 1) * 100, 2),
+        "max_drawdown_pct": round(float(drawdown) * 100, 2),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Backtest the swing rules over past PSX data")
     parser.add_argument("--years", type=int, default=3)
+    parser.add_argument("--refresh", action="store_true", help="Ignore the local history cache")
     parser.add_argument("--save", action="store_true", help="Write docs/backtest.json for the dashboard")
     args = parser.parse_args()
 
-    history, market = load_history(args.years)
+    history, market = load_history(args.years, args.refresh)
+    print(f"Universe: {len(history)} symbols with usable history")
     results = {variant: run(history, market, variant) for variant in VARIANTS}
 
     for variant, result in results.items():
@@ -221,18 +243,31 @@ def main() -> None:
               f"avg {m['avg_return_pct']}%   held {m['avg_days_held']}d")
         print(f"  total return {m['total_return_pct']}%   max drawdown {m['max_drawdown_pct']}%   "
               f"profit factor {m['profit_factor']}")
+        for setup, stats in result["by_setup"].items():
+            print(f"    {setup:9} {stats['trades']:>4} trades  win {stats['win_rate']}%  "
+                  f"avg {stats['avg_return_pct']}%")
+
+    active = results["both"]
+    benchmark = benchmark_buy_and_hold(market, active["from"], active["to"])
+    print(f"\nBenchmark: holding {benchmark['index']} over the same window returned "
+          f"{benchmark['total_return_pct']}% with a {benchmark['max_drawdown_pct']}% drawdown.")
 
     if args.save:
         payload = {
             "generated_at": datetime.now(config.TIMEZONE).isoformat(timespec="minutes"),
             "years": args.years,
             "universe": config.UNIVERSE_INDEX,
+            "universe_size": len(history),
             "commission_pct": config.COMMISSION_PCT,
             "start_equity": 1_000_000.0,
-            "active_variant": "strict" if config.STRICT_ENTRY else "relaxed",
+            "active_variant": "both",
+            "benchmark": benchmark,
             "results": results,
             "caveats": [
-                "Uses today's KMI-30 members over the whole period (survivorship bias).",
+                "Uses today's index members, already filtered by today's price and liquidity, "
+                "over the whole period — so it is biased towards stocks that survived and did well.",
+                "Compare the return against the benchmark above, not against zero: most of it is "
+                "the market itself, which rose sharply over this window.",
                 f"Assumes {config.COMMISSION_PCT * 100:.2f}% brokerage per side, no slippage or taxes.",
                 "Entries and exits use closing prices; a real fill may differ.",
                 "Past results do not guarantee future results.",

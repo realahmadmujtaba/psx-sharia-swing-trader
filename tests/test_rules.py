@@ -10,10 +10,14 @@ from alerts import dashboard
 from alerts.email_alert import _build_digest_message
 from core import indicators, risk
 from core.signal_engine import (
+    baseline_failures,
     benchmark_rolling_return,
+    breakout_failures,
     delisting_advice,
     entry_failures,
+    entry_setup,
     market_status,
+    pullback_failures,
     snapshot,
 )
 from fetchers.purification import parse_pdf_text, purification_amount
@@ -75,85 +79,117 @@ class TestRisk(unittest.TestCase):
             self.assertIsNone(risk.position_size(263.02, 10.0))
 
 
-class TestEntryRules(unittest.TestCase):
+class TestSnapshotMeasurements(unittest.TestCase):
     def _pullback_frame(self, last_volume):
-        n = 115
+        n = 130
         close = np.concatenate([np.linspace(100, 160, n - 8), np.linspace(159, 152, 8)])
         volume = np.full(n, 500_000.0)
         volume[-1] = last_volume
         return _frame(close, volume=volume)
 
-    def test_volume_spike_required_when_strict(self):
-        snap = snapshot(self._pullback_frame(last_volume=500_000))
-        with mock.patch.object(config, "STRICT_ENTRY", True):
-            self.assertIn("No volume spike", entry_failures(snap))
-
-    def test_spike_and_support_are_informational_when_relaxed(self):
-        snap = snapshot(self._pullback_frame(last_volume=500_000))
-        with mock.patch.object(config, "STRICT_ENTRY", False):
-            failures = entry_failures(snap)
-        self.assertNotIn("No volume spike", failures)
-        self.assertNotIn("Not near support", failures)
-        # The measurement is still reported, it just does not block the signal.
-        self.assertAlmostEqual(snap["volume_ratio"], 1.0, places=6)
-
-    def test_spike_detected(self):
+    def test_volume_ratio_measured_against_prior_average(self):
         snap = snapshot(self._pullback_frame(last_volume=900_000))
         self.assertAlmostEqual(snap["volume_ratio"], 1.8, places=6)
-        with mock.patch.object(config, "STRICT_ENTRY", True):
-            self.assertNotIn("No volume spike", entry_failures(snap))
 
-    def test_close_just_above_recent_low_is_near_support(self):
-        # Flat at 100 (lows 99), then closes at 101: 2% above the 20-day low.
-        snap = snapshot(_frame([100.0] * 129 + [101.0]))
-        self.assertEqual(snap["support_low"], 99.0)
+    def test_close_just_above_the_50_day_ema_is_near_support(self):
+        snap = snapshot(self._pullback_frame(last_volume=500_000))
+        gap = snap["close"] / snap["ema_50"] - 1
+        self.assertTrue(0 <= gap <= config.SUPPORT_PROXIMITY_PCT)
         self.assertTrue(snap["near_support"])
 
-    def test_far_above_support_fails_when_strict(self):
-        # Steady strong uptrend: price far above both the EMA and the 20-day low.
-        snap = snapshot(_frame(np.linspace(100, 300, 120)))
+    def test_far_above_the_ema_is_not_near_support(self):
+        snap = snapshot(_frame(np.linspace(100, 300, 140)))
         self.assertFalse(snap["near_support"])
-        with mock.patch.object(config, "STRICT_ENTRY", True):
-            self.assertIn("Not near support", entry_failures(snap))
+
+    def test_below_the_ema_is_not_near_support_either(self):
+        falling = list(np.linspace(200, 100, 140))
+        self.assertFalse(snapshot(_frame(falling))["near_support"])
 
 
-class TestQuantFilters(unittest.TestCase):
-    """The four filters added in the quant upgrade."""
+def _snap(**overrides):
+    """A stock clearing the baseline and both setups; override to break one rule."""
+    base = {"close": 100.0, "ema_50": 98.0, "ema_100": 90.0, "ema_trail": 97.0, "ema_slope": 0.5,
+            "adx": 25.0, "rsi": 40.0, "avg_volume": 900_000.0, "volume_ratio": 2.0, "atr": 3.0,
+            "atr_pct": 0.03, "near_support": True, "return_20d": 0.08,
+            "benchmark_return_20d": 0.02, "relative_strength": 0.06}
+    return {**base, **overrides}
 
-    def _snap(self, **overrides):
-        base = {"close": 100.0, "ema_50": 95.0, "ema_100": 90.0, "ema_slope": 0.5, "adx": 25.0,
-                "rsi": 40.0, "avg_volume": 500_000.0, "volume_ratio": 2.0, "atr": 3.0,
-                "atr_pct": 0.03, "support_low": 98.0, "near_support": True,
-                "return_20d": 0.08, "benchmark_return_20d": 0.02, "relative_strength": 0.06}
-        return {**base, **overrides}
 
-    def test_clean_setup_has_no_failures(self):
-        self.assertEqual(entry_failures(self._snap()), [])
+class TestBaseline(unittest.TestCase):
+    def test_clean_stock_passes(self):
+        self.assertEqual(baseline_failures(_snap()), [])
+
+    def test_thin_volume_rejected(self):
+        self.assertIn(f"Average volume below {config.MIN_AVG_VOLUME:,}",
+                      baseline_failures(_snap(avg_volume=400_000.0)))
+
+    def test_penny_stock_rejected(self):
+        self.assertIn(f"Price below Rs. {config.MIN_PRICE:,.0f}",
+                      baseline_failures(_snap(close=8.0, ema_100=5.0)))
 
     def test_below_macro_ema_rejected(self):
-        self.assertIn("Below 100-day EMA", entry_failures(self._snap(ema_100=105.0)))
+        self.assertIn("Below 100-day EMA", baseline_failures(_snap(ema_100=105.0)))
 
-    def test_flat_ema_with_low_adx_rejected(self):
-        failures = entry_failures(self._snap(ema_slope=-0.1, adx=15.0))
-        self.assertIn("Flat trend (EMA not rising, ADX low)", failures)
+    def test_baseline_miss_blocks_both_setups(self):
+        self.assertIsNone(entry_setup(_snap(avg_volume=100.0)))
 
-    def test_flat_ema_survives_on_strong_adx(self):
-        self.assertEqual(entry_failures(self._snap(ema_slope=-0.1, adx=30.0)), [])
 
-    def test_missing_adx_falls_back_to_slope(self):
-        self.assertEqual(entry_failures(self._snap(adx=None)), [])
-        self.assertIn("Flat trend (EMA not rising, ADX low)",
-                      entry_failures(self._snap(adx=None, ema_slope=-0.2)))
+class TestSetupA(unittest.TestCase):
+    """Breakout: ADX, relative strength and a volume spike. RSI and support ignored."""
 
-    def test_too_quiet_rejected(self):
-        self.assertIn("Too quiet (ATR below 2% of price)", entry_failures(self._snap(atr_pct=0.015)))
+    def test_triggers_when_momentum_conditions_hold(self):
+        # RSI high and far from support: only Setup A can fire.
+        snap = _snap(rsi=65.0, near_support=False)
+        self.assertEqual(breakout_failures(snap), [])
+        self.assertEqual(entry_setup(snap), "BREAKOUT")
+
+    def test_weak_adx_rejected(self):
+        self.assertIn(f"ADX below {config.ADX_MIN:.0f}", breakout_failures(_snap(adx=15.0)))
+
+    def test_missing_adx_rejected(self):
+        self.assertIn(f"ADX below {config.ADX_MIN:.0f}", breakout_failures(_snap(adx=None)))
 
     def test_lagging_the_index_rejected(self):
-        failures = entry_failures(self._snap(relative_strength=-0.01))
-        self.assertIn(f"Lagging the {config.MARKET_INDEX} index", failures)
+        self.assertIn(f"Lagging the {config.MARKET_INDEX} index",
+                      breakout_failures(_snap(relative_strength=-0.01)))
+
+    def test_no_volume_spike_rejected(self):
+        self.assertIn("No volume spike", breakout_failures(_snap(volume_ratio=1.1)))
 
     def test_no_benchmark_skips_relative_strength(self):
-        self.assertEqual(entry_failures(self._snap(relative_strength=None)), [])
+        self.assertEqual(breakout_failures(_snap(relative_strength=None)), [])
+
+
+class TestSetupB(unittest.TestCase):
+    """Pullback: RSI below 45 near the 50-day EMA. ADX and relative strength ignored."""
+
+    def test_triggers_without_momentum(self):
+        # Weak ADX, lagging the index, no volume spike: only Setup B can fire.
+        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8)
+        self.assertEqual(pullback_failures(snap), [])
+        self.assertEqual(entry_setup(snap), "PULLBACK")
+
+    def test_high_rsi_rejected(self):
+        self.assertIn(f"RSI above {config.RSI_UPPER}", pullback_failures(_snap(rsi=50.0)))
+
+    def test_far_from_support_rejected(self):
+        failures = pullback_failures(_snap(near_support=False))
+        self.assertTrue(any("50-day EMA support" in f for f in failures))
+
+    def test_deeply_oversold_still_allowed(self):
+        # The old 30 floor is gone: RSI 20 inside an uptrend is a valid pullback.
+        self.assertEqual(pullback_failures(_snap(rsi=20.0)), [])
+
+
+class TestEitherSetupTriggers(unittest.TestCase):
+    def test_failing_both_setups_gives_no_signal(self):
+        snap = _snap(adx=10.0, volume_ratio=0.8, rsi=60.0, near_support=False)
+        self.assertIsNone(entry_setup(snap))
+
+    def test_reported_reasons_come_from_the_nearest_setup(self):
+        # Fails Setup A on three counts, Setup B on one: report the single closest miss.
+        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8, rsi=60.0)
+        self.assertEqual(entry_failures(snap), [f"RSI above {config.RSI_UPPER}"])
 
 
 class TestBenchmarkReturn(unittest.TestCase):

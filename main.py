@@ -13,6 +13,7 @@ from core.signal_engine import (
     benchmark_rolling_return,
     delisting_advice,
     entry_failures,
+    entry_setup,
     evaluate_exit,
     evaluate_symbol,
     market_status,
@@ -91,8 +92,8 @@ def run_scan() -> dict:
             rows.append(row)
             continue
 
-        failures = entry_failures(snap)
-        if failures:
+        if entry_setup(snap) is None:
+            failures = entry_failures(snap)
             row.update(status="NO SIGNAL", reasons=failures)
             if len(failures) == 1:
                 watchlist.append(_watch(row, failures[0]))
@@ -119,8 +120,8 @@ def run_scan() -> dict:
             _attach_purification(entry_signal, ratios)
             signals.append(entry_signal)
             state.append_signal(entry_signal)
-            row.update(status="BUY", reasons=[], stop_loss=entry_signal["stop_loss"],
-                       take_profit=entry_signal["take_profit"])
+            row.update(status="BUY", reasons=[], setup=entry_signal["setup"],
+                       stop_loss=entry_signal["stop_loss"], take_profit=entry_signal["take_profit"])
 
     return {"signals": signals, "rows": rows, "market": market, "warnings": warnings, "watchlist": watchlist}
 

@@ -5,52 +5,69 @@ from datetime import date
 from pathlib import Path
 from unittest import mock
 
+import numpy as np
 import pandas as pd
 
 import config
 from alerts import dashboard
 from core import performance
-from core.backtest import _metrics, _qualifies
-
-ROW = pd.Series({
-    "close": 100.0, "ema_50": 98.0, "ema_100": 92.0, "ema_slope": 0.4, "adx": 25.0,
-    "rsi": 40.0, "atr": 3.0, "atr_pct": 0.03, "return_20d": 0.09,
-    "avg_volume": 500_000.0, "volume_ratio": 2.0, "support_low": 98.5,
-})
+from core.backtest import _metrics, _prepare
 
 
-class TestQualifies(unittest.TestCase):
-    def test_all_conditions_pass(self):
-        self.assertTrue(_qualifies(ROW, "strict"))
+def _frame(closes, volumes=None, highs=None):
+    closes = np.asarray(closes, dtype=float)
+    n = len(closes)
+    return pd.DataFrame({
+        "date": pd.date_range("2025-01-01", periods=n, freq="D"),
+        "open": closes,
+        "high": closes + 1 if highs is None else highs,
+        "low": closes - 1,
+        "close": closes,
+        "volume": np.full(n, 900_000.0) if volumes is None else volumes,
+        "is_anomaly": False,
+    })
 
-    def test_quant_filters_only_apply_to_their_variants(self):
-        quiet = pd.Series({**ROW, "atr_pct": 0.01})
-        self.assertFalse(_qualifies(quiet, "strict"))
-        self.assertFalse(_qualifies(quiet, "relaxed"))
-        self.assertTrue(_qualifies(quiet, "legacy"))
 
-    def test_relative_strength_needs_to_beat_the_index(self):
-        self.assertFalse(_qualifies(ROW, "relaxed", benchmark_return=0.15))
-        self.assertTrue(_qualifies(ROW, "relaxed", benchmark_return=0.02))
+class TestPrepareTagsSetups(unittest.TestCase):
+    """The backtest must tag the same setups the live engine would."""
 
-    def test_missing_indicator_rejects(self):
-        self.assertFalse(_qualifies(pd.Series({**ROW, "atr": float("nan")}), "strict"))
+    def test_pullback_series_is_tagged_pullback(self):
+        n = 200
+        closes = np.concatenate([np.linspace(50, 120, n - 6), np.linspace(119, 113, 6)])
+        prepared = _prepare(_frame(closes), None)
+        self.assertEqual(prepared["setup"].iloc[-1], "PULLBACK")
 
-    def test_strict_needs_volume_spike_but_relaxed_does_not(self):
-        row = pd.Series({**ROW, "volume_ratio": 1.0})
-        self.assertFalse(_qualifies(row, "strict"))
-        self.assertTrue(_qualifies(row, "relaxed"))
+    def test_strong_trend_with_volume_spike_is_tagged_breakout(self):
+        n = 200
+        closes = np.linspace(50, 200, n)
+        volumes = np.full(n, 900_000.0)
+        volumes[-1] = 3_000_000.0  # spike on the last bar
+        prepared = _prepare(_frame(closes, volumes=volumes), None)
+        self.assertEqual(prepared["setup"].iloc[-1], "BREAKOUT")
 
-    def test_strict_needs_support_but_relaxed_does_not(self):
-        # Far above both the EMA and the 20-day low.
-        row = pd.Series({**ROW, "close": 130.0})
-        self.assertFalse(_qualifies(row, "strict"))
-        self.assertTrue(_qualifies(row, "relaxed"))
+    def test_penny_stock_is_never_tagged(self):
+        closes = np.linspace(2, 9, 200)
+        prepared = _prepare(_frame(closes), None)
+        self.assertIsNone(prepared["setup"].iloc[-1])
 
-    def test_rsi_outside_band_rejected_by_both(self):
-        row = pd.Series({**ROW, "rsi": config.RSI_UPPER + 5})
-        self.assertFalse(_qualifies(row, "strict"))
-        self.assertFalse(_qualifies(row, "relaxed"))
+    def test_illiquid_stock_is_never_tagged(self):
+        closes = np.linspace(50, 200, 200)
+        prepared = _prepare(_frame(closes, volumes=np.full(200, 100_000.0)), None)
+        self.assertIsNone(prepared["setup"].iloc[-1])
+
+    def test_breakout_requires_beating_the_benchmark(self):
+        n = 200
+        closes = np.linspace(50, 200, n)
+        volumes = np.full(n, 900_000.0)
+        volumes[-1] = 3_000_000.0
+        frame = _frame(closes, volumes=volumes)
+        dates = pd.to_datetime(frame["date"]).dt.date
+        racing_index = pd.Series(np.full(n, 5.0), index=dates)  # index up 500% in 20 days
+        prepared = _prepare(frame, racing_index)
+        self.assertNotEqual(prepared["setup"].iloc[-1], "BREAKOUT")
+
+    def test_short_history_returns_none(self):
+        self.assertIsNone(_prepare(_frame(np.linspace(50, 60, 40)), None))
 
 
 class TestMetrics(unittest.TestCase):

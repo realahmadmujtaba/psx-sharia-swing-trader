@@ -177,7 +177,9 @@
 
 <script>
   const fmt = (n, d = 2) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
-  const REASONS = { STOP_LOSS: "Stop-loss hit", TAKE_PROFIT: "Take-profit hit", MAX_HOLD: "Max holding period reached" };
+  const REASONS = { STOP_LOSS: "Stop-loss hit", TAKE_PROFIT: "Take-profit hit",
+                    TRAIL_EMA: "Closed below the 20-day EMA", MAX_HOLD: "Max holding period reached" };
+  const SETUPS = { BREAKOUT: "Setup A · breakout", PULLBACK: "Setup B · pullback" };
   const ORDER = { BUY: 0, SELL: 1, HOLDING: 2, "NO SIGNAL": 3, "NO DATA": 4 };
 
   function el(tag, text, className) {
@@ -192,7 +194,7 @@
   }
 
   function notesFor(s) {
-    if (s.status === "BUY") return `Stop-loss ${fmt(s.stop_loss)} · Take-profit ${fmt(s.take_profit)}`;
+    if (s.status === "BUY") return `${SETUPS[s.setup] || ""} · Stop-loss ${fmt(s.stop_loss)} · Take-profit ${fmt(s.take_profit)}`;
     if (s.status === "HOLDING") return `Entry ${fmt(s.entry_price)} · day ${s.days_held} · SL ${fmt(s.stop_loss)} · TP ${fmt(s.take_profit)}`;
     if (s.status === "SELL") return `${REASONS[s.reasons[0]] || s.reasons[0]} · entry ${fmt(s.entry_price)} · day ${s.days_held}`;
     return (s.reasons || []).join(" · ");
@@ -307,22 +309,28 @@
   function renderRules(r) {
     const pct = v => fmt(v * 100, 0) + "%";
     const groups = [
-      ["BUY when all conditions hold", [
+      ["Baseline — every stock", [
         `${r.market_index} index above its ${r.ema_period}-day EMA (market filter)`,
-        `Close above the ${r.ema_period}-day and ${r.macro_ema_period}-day EMAs`,
-        `${r.ema_period}-day EMA rising over ${r.ema_slope_lookback} days, or ADX above ${r.adx_min}`,
-        `ATR at least ${fmt(r.min_atr_pct * 100, 0)}% of price (enough movement)`,
-        `${r.rs_lookback}-day return above the ${r.market_index}'s`,
-        `RSI (${r.rsi_period}) between ${r.rsi_lower} and ${r.rsi_upper} (pullback)`,
-        `Today's volume at least ${r.volume_spike_mult}× the ${r.volume_lookback}-day average`,
-        `Close within ${pct(r.support_proximity_pct)} of support (${r.ema_period}-day EMA or ${r.support_lookback}-day low)`,
+        `Close above the ${r.macro_ema_period}-day EMA (macro trend)`,
         `${r.volume_lookback}-day average volume above ${fmt(r.min_avg_volume, 0)} shares`,
+        `Price above Rs. ${fmt(r.min_price, 0)}`,
         `At most ${r.max_open_positions} open positions; strongest volume spike first`,
+      ]],
+      ["Setup A — breakout", [
+        `ADX (${r.adx_period}) above ${r.adx_min}`,
+        `${r.rs_lookback}-day return above the ${r.market_index}'s`,
+        `Volume at least ${r.volume_spike_mult}× the ${r.volume_lookback}-day average`,
+        "RSI and support are ignored",
+      ]],
+      ["Setup B — pullback", [
+        `RSI (${r.rsi_period}) below ${r.rsi_upper}`,
+        `Close within ${pct(r.support_proximity_pct)} above the ${r.ema_period}-day EMA`,
+        "ADX and relative strength are ignored",
       ]],
       ["SELL an open position", [
         `Stop-loss: ${r.atr_stop_mult} × ATR (${r.atr_period}) below entry`,
         `Take-profit: ${r.atr_target_mult} × ATR above entry`,
-        `Or ${r.max_holding_days} days held, whichever comes first`,
+        `Trailing exit: closes below the ${r.trail_ema_period}-day EMA`,
         "Checked on the closing price",
       ]],
       ["Sharia", [

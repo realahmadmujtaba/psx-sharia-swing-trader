@@ -8,7 +8,8 @@ import config
 EXIT_REASONS = {
     "STOP_LOSS": "Stop-loss hit",
     "TAKE_PROFIT": "Take-profit hit",
-    "MAX_HOLD": f"Max holding period ({config.MAX_HOLDING_DAYS} days) reached",
+    "TRAIL_EMA": f"Closed below the {config.TRAIL_EMA_PERIOD}-day EMA (trailing stop)",
+    "MAX_HOLD": "Max holding period reached",  # retired rule; kept for old log rows
 }
 
 
@@ -31,8 +32,10 @@ def _purification_line(signal: dict) -> str:
 def _format_buy(signal: dict) -> str:
     close = signal["close_price"]
     earliest_sell = signal["timestamp"].date() + timedelta(days=config.MIN_HOLDING_DAYS)
+    setup_label = {"BREAKOUT": "Setup A - breakout/momentum",
+                   "PULLBACK": "Setup B - pullback to support"}.get(signal.get("setup"), "")
     text = (
-        f"{signal['symbol']} - BUY (matches all swing-entry rules)\n"
+        f"{signal['symbol']} - BUY ({setup_label})\n"
         f"  Close: {rs(close)}\n"
         f"  Stop-loss: {rs(signal['stop_loss'])}  ({config.ATR_STOP_MULT:g} x ATR below; risk {rs(close - signal['stop_loss'])}/share)\n"
         f"  Take-profit: {rs(signal['take_profit'])}  ({config.ATR_TARGET_MULT:g} x ATR above; reward {rs(signal['take_profit'] - close)}/share)\n"
@@ -50,7 +53,6 @@ def _format_buy(signal: dict) -> str:
         + (f"   vs index (20d): {signal['relative_strength'] * 100:+.1f}%"
            if signal.get("relative_strength") is not None else "") + "\n"
         f"  Volume today: {signal['volume_ratio']:.1f} x the 20-day average\n"
-        f"  Support: 50-day EMA {rs(signal['ema_50'])} / 20-day low {rs(signal['support_low'])}\n"
         f"{_purification_line(signal)}"
         f"  Earliest sell alert: {earliest_sell} (after settlement)\n"
     )

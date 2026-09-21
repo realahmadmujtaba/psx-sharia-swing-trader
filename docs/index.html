@@ -201,16 +201,12 @@
 
     const r = d.rules, list = document.getElementById("rules");
     const rules = [
-      [`Market filter`, `the ${r.market_index} index is above its ${r.ema_period}-day average, so buys pause in a falling market`],
-      [`Uptrend`, `the stock closes above its ${r.ema_period}-day and ${r.macro_ema_period}-day averages`],
-      [`Trend strength`, `the ${r.ema_period}-day average is rising over ${r.ema_slope_lookback} days, or ADX(${r.adx_period}) is above ${r.adx_min}`],
-      [`Enough movement`, `the daily range (ATR) is at least ${num(r.min_atr_pct * 100, 0)}% of the price, so the target is reachable in time`],
-      [`Beating the index`, `the stock's ${r.rs_lookback}-day return is higher than the ${r.market_index}'s`],
-      [`Pullback`, `RSI (${r.rsi_period}) sits between ${r.rsi_lower} and ${r.rsi_upper} — a dip inside that uptrend`],
-      [`Volume spike`, `today's volume is at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average`],
-      [`Near support`, `the price is within ${num(r.support_proximity_pct * 100, 0)}% of the ${r.ema_period}-day average or the ${r.support_lookback}-day low`],
-      [`Liquidity`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares`],
-      [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below, take-profit ${r.atr_target_mult}× ATR above, position closed after ${r.max_holding_days} days, sized so a stop-out costs about ${num(r.risk_per_trade_pct * 100, 1)}% of the account`],
+      [`Every stock must clear`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares, price above Rs. ${num(r.min_price, 0)}, close above the ${r.macro_ema_period}-day average, and the ${r.market_index} index above its ${r.ema_period}-day average`],
+      [`Setup A — breakout`, `ADX(${r.adx_period}) above ${r.adx_min}, a ${r.rs_lookback}-day return beating the ${r.market_index}, and volume at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average (RSI and support are ignored)`],
+      [`Setup B — pullback`, `RSI (${r.rsi_period}) below ${r.rsi_upper} with the price within ${num(r.support_proximity_pct * 100, 0)}% above the ${r.ema_period}-day average (ADX and relative strength are ignored)`],
+      [`Either one triggers a buy`, `each alert says which setup fired, so you know whether you are buying strength or a dip`],
+      [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below and take-profit ${r.atr_target_mult}× ATR above, sized so a stop-out costs about ${num(r.risk_per_trade_pct * 100, 1)}% of the account`],
+      [`Trailing exit`, `the position is sold when it closes below its ${r.trail_ema_period}-day average, so winners are not cut on a fixed day`],
       [`Settlement lock`, `no sell alert before day ${r.min_holding_days}, and at most ${r.max_open_positions} positions open at once`],
     ];
     for (const [name, rest] of rules) {
@@ -232,10 +228,10 @@
   });
 
   fetch("backtest.json", { cache: "no-store" }).then(r => r.json()).then(b => {
-    const active = b.results[b.active_variant], m = active.metrics;
+    const active = b.results[b.active_variant], m = active.metrics, bm = b.benchmark;
     document.getElementById("bt-intro").textContent =
-      `The same rules replayed over ${b.years} years of real PSX data (${active.from} to ${active.to}), ` +
-      `with ${num(b.commission_pct * 100, 2)}% brokerage charged on every side.`;
+      `The same rules replayed over ${b.years} years of real PSX data (${active.from} to ${active.to}) ` +
+      `across ${b.universe_size} stocks, with ${num(b.commission_pct * 100, 2)}% brokerage charged on every side.`;
 
     const root = document.getElementById("bt-stats");
     stat(root, m.trades, "trades taken");
@@ -243,12 +239,22 @@
     stat(root, num(m.avg_return_pct, 2) + "%", "average per trade", m.avg_return_pct >= 0 ? "pos" : "neg");
     stat(root, num(m.total_return_pct, 2) + "%", "total return", m.total_return_pct >= 0 ? "pos" : "neg");
     stat(root, num(m.max_drawdown_pct, 2) + "%", "worst drawdown", "neg");
+    if (bm) {
+      stat(root, num(bm.total_return_pct, 2) + "%", `holding ${bm.index} instead`,
+           bm.total_return_pct >= 0 ? "pos" : "neg");
+    }
 
+    const box = document.getElementById("bt-honest");
     if (m.total_return_pct <= 0) {
-      const box = document.getElementById("bt-honest");
       box.textContent = "Being straight with you: over this period the rules did not make money. " +
         "They are published here anyway, because a screening tool that hides its test results is worth less than one that shows them. " +
         "Use the alerts as a shortlist to research, not as a promise of profit.";
+      box.hidden = false;
+    } else if (bm && m.total_return_pct - bm.total_return_pct < 25) {
+      box.textContent = `Read that against the benchmark: holding ${bm.index} over the same window returned ` +
+        `${num(bm.total_return_pct, 1)}%, so most of the gain is the market rising, not the rules. ` +
+        `The test also only covers stocks that are liquid today, which flatters any strategy. ` +
+        `Treat these alerts as a shortlist to research, not as a promise of profit.`;
       box.hidden = false;
     }
 
