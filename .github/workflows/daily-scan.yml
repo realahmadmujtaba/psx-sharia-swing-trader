@@ -1,9 +1,9 @@
-name: Friday Top 10 scan
+name: Daily market intelligence
 
 on:
   schedule:
-    # 15:00 PKT = 10:00 UTC, before Friday's market close.
-    - cron: "0 10 * * 5"
+    # 20:00 PKT = 15:00 UTC.
+    - cron: "0 15 * * *"
   workflow_dispatch:
 
 permissions:
@@ -42,6 +42,7 @@ jobs:
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TRADING_CAPITAL: ${{ secrets.TRADING_CAPITAL }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

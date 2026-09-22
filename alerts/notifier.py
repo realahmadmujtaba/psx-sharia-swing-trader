@@ -10,7 +10,11 @@ import aiosmtplib
 import config
 
 
-def build_portfolio_message(portfolio: list[dict], market: dict | None) -> EmailMessage:
+def build_portfolio_message(
+    portfolio: list[dict],
+    market: dict | None,
+    intelligence: dict | None = None,
+) -> EmailMessage:
     message = EmailMessage()
     sender = config.SMTP_EMAIL or config.EMAIL_SENDER
     recipient = config.RECIPIENT_EMAIL or config.EMAIL_RECIPIENT
@@ -21,6 +25,7 @@ def build_portfolio_message(portfolio: list[dict], market: dict | None) -> Email
         f"<tr><td>{item['symbol']}</td><td>{item.get('pe', 'N/A')}</td>"
         f"<td>{item.get('dividend_yield', 'N/A')}</td>"
         f"<td>{item.get('momentum_score', 0):.2f}</td>"
+        f"<td>{item.get('qualitative_flag', '—')}</td>"
         f"<td>{item.get('composite_score', 0):.2f}</td></tr>"
         for item in portfolio
     )
@@ -28,22 +33,42 @@ def build_portfolio_message(portfolio: list[dict], market: dict | None) -> Email
     html = (
         f"<h2>PSX Top 10 Multi-Factor Portfolio</h2><p>Market regime: <b>{regime}</b></p>"
         "<table border='1' cellpadding='6'><tr><th>Ticker</th><th>P/E</th>"
-        "<th>Dividend Yield</th><th>Momentum Score</th><th>Total Score</th></tr>"
+        "<th>Dividend Yield</th><th>Momentum Score</th><th>Total Score</th><th>News Flag</th></tr>"
         f"{rows}</table>"
+    )
+    intelligence = intelligence or {}
+    takeaways = intelligence.get("takeaways", ["No sentiment report available."])
+    bullets = "".join(f"<li>{item}</li>" for item in takeaways[:4])
+    html += (
+        "<h2>Daily Market &amp; News Intelligence</h2>"
+        f"<p>Sentiment: <b>{intelligence.get('market_sentiment', 'Unavailable')}</b> "
+        f"(confidence {intelligence.get('confidence', 0):.0%})</p>"
+        f"<ul>{bullets}</ul>"
+        "<h2>Buy/Sell Improvement Insights</h2><ul>"
+        + "".join(f"<li>{item}</li>" for item in intelligence.get("divergence_insights", []))
+        + "</ul>"
     )
     message.set_content(f"Market regime: {regime}\nTop 10: " + ", ".join(i["symbol"] for i in portfolio))
     message.add_alternative(html, subtype="html")
     return message
 
 
-async def send_portfolio_alert(result: dict) -> None:
+async def send_portfolio_alert(result: dict, intelligence: dict | None = None) -> None:
     sender = config.SMTP_EMAIL or config.EMAIL_SENDER
     password = config.SMTP_PASSWORD or config.EMAIL_PASSWORD
     recipient = config.RECIPIENT_EMAIL or config.EMAIL_RECIPIENT
     if not (sender and password and recipient):
         raise RuntimeError("SMTP_EMAIL/SMTP_PASSWORD/RECIPIENT_EMAIL must be set.")
+    flags = {
+        item.get("symbol"): item.get("sentiment", "Neutral")
+        for item in (intelligence or {}).get("stock_flags", [])
+    }
+    enriched = [
+        {**item, "qualitative_flag": flags.get(item.get("symbol"), "—")}
+        for item in result.get("portfolio", [])
+    ]
     await aiosmtplib.send(
-        build_portfolio_message(result.get("portfolio", []), result.get("market")),
+        build_portfolio_message(enriched, result.get("market"), intelligence),
         hostname=config.SMTP_HOST,
         port=config.SMTP_PORT,
         username=sender,

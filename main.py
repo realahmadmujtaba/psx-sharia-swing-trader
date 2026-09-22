@@ -10,6 +10,7 @@ from alerts import dashboard, notifier, webhook
 from alerts.email_alert import send_digest
 from core import state
 from core import scoring
+from core import sentiment
 from core.fundamentals import fetch_many
 from core.signal_engine import benchmark_rolling_return, market_status, snapshot
 from fetchers.psx_fetcher import fetch_ohlcv
@@ -100,8 +101,19 @@ def run_once() -> None:
     result = run_scan()
     dashboard.publish(dashboard.build_payload(result, state.load_log()))
     asyncio.run(send_digest(result))
-    if datetime.now(config.TIMEZONE).weekday() == 4:
-        asyncio.run(notifier.send_portfolio_alert(result))
+    tickers = [item["symbol"] for item in result.get("portfolio", [])]
+    try:
+        intelligence = sentiment.daily_report(tickers, config.YOUTUBE_VIDEO_IDS)
+    except (RuntimeError, OSError, ValueError) as exc:
+        print(f"[sentiment] report unavailable: {exc}")
+        intelligence = {
+            "market_sentiment": "Unavailable",
+            "confidence": 0,
+            "takeaways": ["Daily intelligence provider unavailable."],
+            "stock_flags": [],
+            "divergence_insights": [],
+        }
+    asyncio.run(notifier.send_portfolio_alert(result, intelligence))
     webhook.notify(result)
 
 
