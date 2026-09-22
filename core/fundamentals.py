@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 from pathlib import Path
 
 import config
 
 CACHE_PATH = config.DATA_DIR / "fundamentals.json"
 DEFAULT_TTL_DAYS = 7
+CACHE_LOCK = Lock()
 
 
 def _load() -> dict:
@@ -54,8 +57,10 @@ def fetch(symbol: str, ttl_days: int = DEFAULT_TTL_DAYS) -> dict:
         "pe": float(pe) if pe is not None else None,
         "dividend_yield": float(dividend_yield) if dividend_yield is not None else None,
     }
-    cache[symbol] = {**result, "fetched_at": datetime.now().isoformat(timespec="seconds")}
-    _save(cache)
+    with CACHE_LOCK:
+        cache = _load()
+        cache[symbol] = {**result, "fetched_at": datetime.now().isoformat(timespec="seconds")}
+        _save(cache)
     return result
 
 
@@ -63,12 +68,15 @@ def fetch_many(symbols: list[str]) -> dict[str, dict]:
     """Fetch symbols independently; one provider failure does not hide others."""
     results = {}
     failures = []
-    for symbol in symbols:
-        try:
-            results[symbol] = fetch(symbol)
-        except (RuntimeError, OSError, ValueError) as exc:
-            failures.append(f"{symbol}: {exc}")
-            results[symbol] = {"pe": None, "dividend_yield": None}
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        pending = {executor.submit(fetch, symbol): symbol for symbol in symbols}
+        for future in as_completed(pending):
+            symbol = pending[future]
+            try:
+                results[symbol] = future.result()
+            except (RuntimeError, OSError, ValueError) as exc:
+                failures.append(f"{symbol}: {exc}")
+                results[symbol] = {"pe": None, "dividend_yield": None}
     if failures:
         print("[fundamentals] unavailable: " + "; ".join(failures[:5]))
     return results

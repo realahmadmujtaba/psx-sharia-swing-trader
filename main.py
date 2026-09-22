@@ -74,7 +74,9 @@ def run_scan() -> dict:
     ranked = scoring.rank_snapshots(snapshots, config.PORTFOLIO_SIZE)
     ranked_symbols = {row["symbol"] for row in ranked}
     bullish = bool(market and market["uptrend"])
-    portfolio = ranked if bullish else []
+    # The ranking remains visible in bearish regimes as a watchlist. The regime
+    # gate controls new BUY execution, not visibility of the strongest stocks.
+    portfolio = ranked
     for row in rows:
         scored = next((item for item in ranked if item["symbol"] == row["symbol"]), None)
         if scored:

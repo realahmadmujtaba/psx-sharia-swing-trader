@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 data/universe_cache.csv
 data/history_cache/
+data/fundamentals.json
