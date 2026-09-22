@@ -9,104 +9,103 @@ MIN_HISTORY_ROWS = config.MACRO_EMA_PERIOD + 1
 OVERBOUGHT_RSI = 70
 
 
+def _weekly(df: pd.DataFrame) -> pd.DataFrame:
+    indexed = df.copy()
+    indexed["date"] = pd.to_datetime(indexed["date"])
+    indexed = indexed.set_index("date").sort_index()
+    weekly = indexed.resample("W-FRI").agg(
+        open=("open", "first"),
+        high=("high", "max"),
+        low=("low", "min"),
+        close=("close", "last"),
+        volume=("volume", "sum"),
+        is_anomaly=("is_anomaly", "all"),
+    ).dropna(subset=["close"])
+    weekly["date"] = weekly.index
+    return weekly.reset_index(drop=True)
+
+
+def _fundamental_status(fundamentals: dict | None, avg_volume: float, close: float) -> dict:
+    if fundamentals is None:
+        return {
+            "pe": None,
+            "dividend_yield": None,
+            "fundamental_status": "PROXY",
+            "value_pass": avg_volume > config.MIN_AVG_VOLUME and close > config.MIN_PRICE,
+        }
+    pe = fundamentals.get("pe")
+    dividend_yield = fundamentals.get("dividend_yield")
+    value_pass = (
+        pe is not None and dividend_yield is not None
+        and float(pe) < config.VALUE_MAX_PE
+        and float(dividend_yield) > config.VALUE_MIN_DIVIDEND_YIELD
+    )
+    return {
+        "pe": None if pe is None else float(pe),
+        "dividend_yield": None if dividend_yield is None else float(dividend_yield),
+        "fundamental_status": "LIVE",
+        "value_pass": value_pass,
+    }
+
+
 def _clean(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values("date")
     df = df[~df["is_anomaly"]].drop_duplicates("date", keep="last")
     return df.reset_index(drop=True)
 
 
-def snapshot(df: pd.DataFrame, benchmark_return: float | None = None) -> dict | None:
+def snapshot(
+    df: pd.DataFrame,
+    benchmark_return: float | None = None,
+    fundamentals: dict | None = None,
+) -> dict | None:
     df = _clean(df)
-    if len(df) < MIN_HISTORY_ROWS:
+    weekly = _weekly(df)
+    if len(weekly) < config.RSI_PERIOD + 1:
         return None
 
-    close, high, low = df["close"], df["high"], df["low"]
+    close, high, low = weekly["close"], weekly["high"], weekly["low"]
     volume = df["volume"].astype(float)
-    ema_50 = indicators.ema(close, config.EMA_PERIOD)
-    ema_50_last = ema_50.iloc[-1]
-    rsi_14 = indicators.rsi(close, config.RSI_PERIOD).iloc[-1]
-    avg_vol_20 = indicators.avg_volume(volume, config.VOLUME_LOOKBACK).iloc[-1]
-    atr_14 = indicators.atr(high, low, close, config.ATR_PERIOD).iloc[-1]
-    ema_100 = indicators.ema(close, config.MACRO_EMA_PERIOD).iloc[-1]
-    adx_14 = indicators.adx(high, low, close, config.ADX_PERIOD).iloc[-1]
-    ema_slope = indicators.slope(ema_50, config.EMA_SLOPE_LOOKBACK).iloc[-1]
-    stock_return = indicators.rolling_return(close, config.RS_LOOKBACK).iloc[-1]
-
-    required = [ema_50_last, rsi_14, avg_vol_20, atr_14, ema_100, ema_slope, stock_return]
+    daily_close = df["close"]
+    daily_ema_50 = indicators.ema(daily_close, config.EMA_PERIOD).iloc[-1]
+    daily_ema_200 = indicators.ema(daily_close, 200).iloc[-1]
+    open_price = weekly["open"]
+    ema_20 = indicators.ema(close, config.WEEKLY_EMA_PERIOD)
+    rsi_14 = indicators.rsi(close, config.RSI_PERIOD)
+    atr_14 = indicators.atr(high, low, close, config.ATR_PERIOD)
+    avg_vol_20 = indicators.avg_volume(volume, config.VOLUME_LOOKBACK)
+    ema_100 = indicators.ema(close, config.MACRO_EMA_PERIOD)
+    last_close = float(close.iloc[-1])
+    roc_12w = indicators.rolling_return(close, 12).iloc[-1]
+    value = _fundamental_status(fundamentals, float(avg_vol_20.iloc[-1]), last_close)
+    prior_volume = volume.iloc[-config.VOLUME_LOOKBACK - 1:-1].mean()
+    required = [ema_20.iloc[-1], rsi_14.iloc[-1], atr_14.iloc[-1], avg_vol_20.iloc[-1], roc_12w]
     if any(pd.isna(value) for value in required):
         return None
 
-    last_close = float(close.iloc[-1])
-    prior_avg_volume = volume.iloc[-config.VOLUME_LOOKBACK - 1 : -1].mean()
-    ema_trail = indicators.ema(close, config.TRAIL_EMA_PERIOD).iloc[-1]
-
     return {
-        "date": pd.Timestamp(df["date"].iloc[-1]).date(),
+        "date": pd.Timestamp(weekly["date"].iloc[-1]).date(),
         "close": last_close,
-        "ema_50": float(ema_50_last),
-        "ema_100": float(ema_100),
-        "ema_trail": float(ema_trail),
-        "ema_slope": float(ema_slope),
-        # ADX is NaN until enough bars exist; the slope test can still carry the trend check.
-        "adx": None if pd.isna(adx_14) else float(adx_14),
-        "rsi": float(rsi_14),
-        "avg_volume": float(avg_vol_20),
-        "volume_ratio": float(volume.iloc[-1] / prior_avg_volume) if prior_avg_volume else 0.0,
-        "atr": float(atr_14),
-        "atr_pct": float(atr_14) / last_close,
-        "near_support": bool(0 <= last_close / ema_50_last - 1 <= config.SUPPORT_PROXIMITY_PCT),
-        "return_20d": float(stock_return),
+        "open": float(open_price.iloc[-1]),
+        "bullish": bool(last_close > float(open_price.iloc[-1])),
+        "ema_20": float(ema_20.iloc[-1]),
+        "ema_50": float(daily_ema_50),
+        "ema_200": float(daily_ema_200),
+        "ema_100": float(ema_100.iloc[-1]),
+        "rsi": float(rsi_14.iloc[-1]),
+        "avg_volume": float(avg_vol_20.iloc[-1]),
+        "volume_ratio": float(volume.iloc[-1] / prior_volume) if prior_volume else 0.0,
+        "near_support": bool(
+            min(abs(last_close / daily_ema_50 - 1), abs(last_close / daily_ema_200 - 1))
+            <= config.SUPPORT_PROXIMITY_PCT
+        ),
+        "atr": float(atr_14.iloc[-1]),
+        "atr_pct": float(atr_14.iloc[-1]) / last_close,
+        "weekly_trend": bool(last_close > ema_20.iloc[-1] and rsi_14.iloc[-1] > config.WEEKLY_RSI_MIN),
+        "roc_12w": float(roc_12w),
         "benchmark_return_20d": benchmark_return,
-        "relative_strength": None if benchmark_return is None else float(stock_return) - benchmark_return,
+        **value,
     }
-
-
-def baseline_failures(snap: dict) -> list[str]:
-    """Liquidity, price floor and macro trend — every setup must clear these."""
-    failures = []
-    if not snap["avg_volume"] > config.MIN_AVG_VOLUME:
-        failures.append(f"Average volume below {config.MIN_AVG_VOLUME:,}")
-    if not snap["close"] > config.MIN_PRICE:
-        failures.append(f"Price below Rs. {config.MIN_PRICE:,.0f}")
-    if not snap["close"] > snap["ema_100"]:
-        failures.append(f"Below {config.MACRO_EMA_PERIOD}-day EMA")
-    return failures
-
-
-def breakout_failures(snap: dict) -> list[str]:
-    """Setup A: momentum leadership. Ignores RSI and support."""
-    failures = []
-    if snap["adx"] is None or snap["adx"] <= config.ADX_MIN:
-        failures.append(f"ADX below {config.ADX_MIN:.0f}")
-    if snap["relative_strength"] is not None and snap["relative_strength"] <= 0:
-        failures.append(f"Lagging the {config.MARKET_INDEX} index")
-    if snap["volume_ratio"] < config.VOLUME_SPIKE_MULT:
-        failures.append("No volume spike")
-    return failures
-
-
-# Setup B (pullback) was removed after out-of-sample testing: profit factor 0.60 against a
-# 1.20 keep threshold, and it lost money in every period once its own exits were used.
-# core/backtest.py still tags pullbacks so the decision stays reproducible.
-SETUPS = {"BREAKOUT": breakout_failures}
-
-
-def entry_setup(snap: dict) -> str | None:
-    """The setup this stock triggers today, or None."""
-    if baseline_failures(snap):
-        return None
-    for name, check in SETUPS.items():
-        if not check(snap):
-            return name
-    return None
-
-
-def entry_failures(snap: dict) -> list[str]:
-    """Why there is no BUY: baseline misses, else the nearest setup's misses."""
-    baseline = baseline_failures(snap)
-    if baseline:
-        return baseline
-    return min((check(snap) for check in SETUPS.values()), key=len)
 
 
 def benchmark_rolling_return(index_df: pd.DataFrame) -> float | None:
@@ -120,59 +119,21 @@ def benchmark_rolling_return(index_df: pd.DataFrame) -> float | None:
 def market_status(index_df: pd.DataFrame) -> dict | None:
     """Regime gate: is the broad market trending up enough to take new entries?"""
     df = _clean(index_df)
-    if len(df) < config.REGIME_EMA_PERIOD + config.REGIME_SLOPE_LOOKBACK + 1:
+    if len(df) < config.REGIME_EMA_PERIOD + 1:
         return None
 
     ema = indicators.ema(df["close"], config.REGIME_EMA_PERIOD)
     ema_now = float(ema.iloc[-1])
-    ema_before = float(ema.iloc[-1 - config.REGIME_SLOPE_LOOKBACK])
     close = float(df["close"].iloc[-1])
-
     above_ema = close > ema_now
-    rising = ema_now > ema_before
 
     return {
         "index": config.REGIME_INDEX,
         "date": pd.Timestamp(df["date"].iloc[-1]).date(),
         "close": close,
         "ema_100": ema_now,
-        "ema_100_prior": ema_before,
         "above_ema": above_ema,
-        "ema_rising": rising,
-        "uptrend": above_ema and rising,
-        # Kept for the dashboard's rule copy.
-        "ema_50": float(indicators.ema(df["close"], config.EMA_PERIOD).iloc[-1]),
-    }
-
-
-def evaluate_symbol(symbol: str, df: pd.DataFrame, benchmark_return: float | None = None) -> dict | None:
-    snap = snapshot(df, benchmark_return)
-    if snap is None:
-        return None
-    setup = entry_setup(snap)
-    if setup is None:
-        return None
-
-    stop_loss, take_profit = risk.calculate_risk_levels(snap["close"], snap["atr"], setup, snap["ema_50"])
-    shares = risk.position_size(snap["close"], snap["atr"], stop_loss=stop_loss)
-
-    return {
-        "symbol": symbol,
-        "signal_type": "BUY",
-        "setup": setup,
-        "close_price": snap["close"],
-        "rsi": snap["rsi"],
-        "ema_50": snap["ema_50"],
-        "avg_volume": snap["avg_volume"],
-        "volume_ratio": snap["volume_ratio"],
-        "atr": snap["atr"],
-        "atr_pct": snap["atr_pct"],
-        "adx": snap["adx"],
-        "relative_strength": snap["relative_strength"],
-        "stop_loss": stop_loss,
-        "take_profit": take_profit,
-        "shares": shares,
-        "timestamp": datetime.now(config.TIMEZONE),
+        "uptrend": above_ema,
     }
 
 
@@ -188,17 +149,18 @@ def evaluate_exit(position: pd.Series, df: pd.DataFrame) -> dict | None:
     if days_held < config.MIN_HOLDING_DAYS:
         return None
 
+    setup = position.get("setup") or "MEAN_REVERSION"
+    close = df["close"]
+    ema_20 = indicators.ema(close, config.TRAIL_EMA_PERIOD).iloc[-1]
     stop_loss = float(position["stop_loss"])
     take_profit = float(position["take_profit"])
-    setup = position.get("setup") or "BREAKOUT"
-    ema_trail = indicators.ema(df["close"], config.TRAIL_EMA_PERIOD).iloc[-1]
 
-    if latest_close <= stop_loss:
+    if latest_close < stop_loss:
         exit_reason = "STOP_LOSS"
     elif latest_close >= take_profit:
-        exit_reason = "TAKE_PROFIT"
-    elif not pd.isna(ema_trail) and latest_close < float(ema_trail):
-        exit_reason = "TRAIL_EMA"
+        exit_reason = "ATR_TARGET"
+    elif not pd.isna(ema_20) and latest_close > float(ema_20):
+        exit_reason = "MEAN_REVERT"
     else:
         return None
 

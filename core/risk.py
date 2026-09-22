@@ -3,19 +3,11 @@ import math
 import config
 
 
-def calculate_risk_levels(close_price: float, atr_value: float, setup: str = "BREAKOUT",
+def calculate_risk_levels(close_price: float, atr_value: float, setup: str = "MEAN_REVERSION",
                           ema_50: float | None = None) -> tuple[float, float]:
-    """Entry-time stop and target.
-
-    Breakouts risk 1.5 x ATR. Pullbacks instead risk the support they bought against:
-    the stop is 2% below the 50-day EMA, which is also what sizes the position.
-    """
+    """Entry-time volatility stop and mean-reversion target."""
     take_profit = close_price + config.ATR_TARGET_MULT * atr_value
-
-    if setup == "PULLBACK" and ema_50:
-        stop_loss = ema_50 * (1 - config.PULLBACK_STOP_BELOW_EMA_PCT)
-    else:
-        stop_loss = close_price - config.ATR_STOP_MULT * atr_value
+    stop_loss = close_price - config.ATR_STOP_MULT * atr_value
 
     return round(stop_loss, 2), round(take_profit, 2)
 

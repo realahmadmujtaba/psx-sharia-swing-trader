@@ -7,53 +7,59 @@ import pandas as pd
 
 import config
 from core import indicators, risk
+from core import scoring
+from core.signal_engine import snapshot
 from fetchers.psx_fetcher import fetch_ohlcv
 from fetchers.universe import get_universe
 
 RESULT_PATH = config.DOCS_DIR / "backtest.json"
 CACHE_DIR = config.DATA_DIR / "history_cache"
 # "both" is what runs live; the single-setup runs show which half carries the result.
-VARIANTS = {
-    "both": ("BREAKOUT", "PULLBACK"),
-    "breakout": ("BREAKOUT",),
-    "pullback": ("PULLBACK",),
-}
+VARIANTS = {"multi_factor": ()}
 
 
 def _prepare(df: pd.DataFrame, benchmark_return: pd.Series | None) -> pd.DataFrame | None:
     df = df.sort_values("date")
     df = df[~df["is_anomaly"]].drop_duplicates("date", keep="last").reset_index(drop=True)
-    if len(df) < config.MACRO_EMA_PERIOD + config.RS_LOOKBACK:
+    if len(df) < 100:
         return None
 
     close, volume = df["close"], df["volume"].astype(float)
-    df["date"] = pd.to_datetime(df["date"]).dt.date
+    dates = pd.to_datetime(df["date"])
+    df["date"] = dates.dt.date
+    df["ema_20"] = indicators.ema(close, config.TRAIL_EMA_PERIOD)
     df["ema_50"] = indicators.ema(close, config.EMA_PERIOD)
+    df["ema_200"] = indicators.ema(close, 200)
     df["ema_100"] = indicators.ema(close, config.MACRO_EMA_PERIOD)
-    df["ema_trail"] = indicators.ema(close, config.TRAIL_EMA_PERIOD)
-    df["adx"] = indicators.adx(df["high"], df["low"], close, config.ADX_PERIOD)
+    weekly = (
+        df.assign(date=dates)
+        .set_index("date")
+        .resample("W-FRI")
+        .agg(open=("open", "first"), high=("high", "max"), low=("low", "min"),
+             close=("close", "last"), volume=("volume", "sum"))
+        .dropna()
+    )
+    weekly_ema = indicators.ema(weekly["close"], config.WEEKLY_EMA_PERIOD)
+    weekly_rsi = indicators.rsi(weekly["close"], config.RSI_PERIOD)
+    weekly_features = pd.DataFrame({"weekly_ema": weekly_ema, "weekly_rsi": weekly_rsi})
+    weekly_features.index = weekly_features.index.date
+    df["weekly_ema"] = df["date"].map(weekly_features["weekly_ema"])
+    df["weekly_rsi"] = df["date"].map(weekly_features["weekly_rsi"])
     df["rsi"] = indicators.rsi(close, config.RSI_PERIOD)
     df["atr"] = indicators.atr(df["high"], df["low"], close, config.ATR_PERIOD)
-    df["return_20d"] = indicators.rolling_return(close, config.RS_LOOKBACK)
     df["avg_volume"] = indicators.avg_volume(volume, config.VOLUME_LOOKBACK)
-    df["volume_ratio"] = volume / volume.shift(1).rolling(config.VOLUME_LOOKBACK).mean()
     df = df.set_index("date")
 
-    gap = df["close"] / df["ema_50"] - 1
     baseline = ((df["avg_volume"] > config.MIN_AVG_VOLUME)
                 & (df["close"] > config.MIN_PRICE)
-                & (df["close"] > df["ema_100"]))
-
-    breakout = baseline & (df["adx"] > config.ADX_MIN) & (df["volume_ratio"] >= config.VOLUME_SPIKE_MULT)
-    if benchmark_return is not None:
-        aligned = benchmark_return.reindex(df.index)
-        breakout &= df["return_20d"] > aligned
-
-    pullback = (baseline & (df["rsi"] < config.RSI_UPPER)
-                & (gap >= 0) & (gap <= config.SUPPORT_PROXIMITY_PCT))
-
-    df["setup"] = np.where(breakout.fillna(False), "BREAKOUT",
-                           np.where(pullback.fillna(False), "PULLBACK", None))
+                & (df["weekly_ema"].notna())
+                & (df["close"] > df["weekly_ema"])
+                & (df["weekly_rsi"] > config.WEEKLY_RSI_MIN))
+    df["setup"] = pd.Series(
+        ["MEAN_REVERSION" if value else None for value in baseline.fillna(False)],
+        index=df.index,
+        dtype=object,
+    )
     return df
 
 
@@ -137,23 +143,14 @@ def _metrics(trades: list[dict], daily_equity: pd.Series, benchmark: pd.Series,
     }
 
 
-def _exit_reason(position: dict, close: float, ema_trail: float, ema_50: float) -> str | None:
-    """Mirror of signal_engine.evaluate_exit: exits differ by setup."""
-    if position["setup"] == "PULLBACK":
-        if close < ema_50 * (1 - config.PULLBACK_STOP_BELOW_EMA_PCT):
-            return "SUPPORT_BROKEN"
-        if close >= position["take_profit"]:
-            return "TAKE_PROFIT"
-        if not np.isnan(ema_trail) and close >= ema_trail:
-            return "MEAN_REVERT"
-        return None
-
-    if close <= position["stop_loss"]:
+def _exit_reason(position: dict, close: float, ema_20: float) -> str | None:
+    """Mirror of signal_engine.evaluate_exit for mean reversion."""
+    if close < position["stop_loss"]:
         return "STOP_LOSS"
     if close >= position["take_profit"]:
-        return "TAKE_PROFIT"
-    if not np.isnan(ema_trail) and close < ema_trail:
-        return "TRAIL_EMA"
+        return "ATR_TARGET"
+    if not np.isnan(ema_20) and close > ema_20:
+        return "MEAN_REVERT"
     return None
 
 
@@ -161,16 +158,16 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
         start_equity: float = 1_000_000.0, period: tuple[date, date] | None = None) -> dict:
     allowed = VARIANTS[variant]
     # Pre-index everything the day loop needs, so it never touches pandas lookups.
-    bars = {s: {d: (r.close, r.ema_trail, r.ema_50)
-                for d, r in df[["close", "ema_trail", "ema_50"]].iterrows()}
+    bars = {s: {d: (r.close, r.ema_20)
+                for d, r in df[["close", "ema_20"]].iterrows()}
             for s, df in history.items()}
     entries: dict[date, list[tuple]] = {}
     for symbol, df in history.items():
         hits = df[df["setup"].isin(allowed)]
-        for entry_date, row in hits[["close", "atr", "volume_ratio", "setup", "ema_50"]].iterrows():
+        for entry_date, row in hits[["close", "atr", "setup"]].iterrows():
             if not np.isnan(row.atr):
                 entries.setdefault(entry_date, []).append(
-                    (row.volume_ratio, symbol, row.close, row.atr, row.setup, row.ema_50))
+                    (1.0, symbol, row.close, row.atr, row.setup))
 
     dates = sorted({d for df in history.values() for d in df.index})
     if period:
@@ -190,12 +187,12 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
             bar = bars[symbol].get(today)
             if bar is None:
                 continue
-            close, ema_trail, ema_50 = bar
+            close, ema_20 = bar
             last_price[symbol] = close
             if (today - position["entry_date"]).days < config.MIN_HOLDING_DAYS:
                 continue
 
-            reason = _exit_reason(position, close, ema_trail, ema_50)
+            reason = _exit_reason(position, close, ema_20)
             if reason is None:
                 continue
 
@@ -219,9 +216,9 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
             free_slots = config.MAX_OPEN_POSITIONS - len(open_positions)
             candidates = sorted((c for c in entries.get(today, []) if c[1] not in open_positions),
                                 key=lambda item: item[0], reverse=True)
-            for _, symbol, close, atr_value, setup, ema_50 in candidates[:max(free_slots, 0)]:
+            for _, symbol, close, atr_value, setup in candidates[:max(free_slots, 0)]:
                 stop_loss, take_profit = risk.calculate_risk_levels(
-                    float(close), float(atr_value), setup, float(ema_50))
+                    float(close), float(atr_value), setup)
                 shares = risk.position_size(float(close), float(atr_value), equity_now,
                                             stop_loss=stop_loss) or 0
                 spend = shares * close * (1 + config.COMMISSION_PCT)
@@ -244,7 +241,7 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
     years = max((dates[-1] - dates[0]).days / 365.25, 1e-9) if dates else 1
 
     by_setup = {}
-    for name in ("BREAKOUT", "PULLBACK"):
+    for name in ("MEAN_REVERSION",):
         picked = [t for t in trades if t["setup"] == name]
         if picked:
             by_setup[name] = {
@@ -265,6 +262,107 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
                          for d, v in equity_series.items()],
         "trades": trades[-200:],
     }
+
+
+def _weekly_rebalance_run(
+    history: dict[str, pd.DataFrame],
+    market: pd.DataFrame,
+    start_equity: float,
+    period: tuple[date, date] | None,
+) -> dict:
+    dates = sorted({d for df in history.values() for d in df.index})
+    if period:
+        dates = [d for d in dates if period[0] <= d <= period[1]]
+    if not dates:
+        return {"variant": "multi_factor", "from": None, "to": None,
+                "metrics": _metrics([], pd.Series(dtype=float), pd.Series(dtype=float),
+                                    start_equity, 1), "by_setup": {}, "equity_curve": [], "trades": []}
+
+    market_ok = market["uptrend"].reindex(dates).ffill().fillna(False)
+    prices = {symbol: df["close"].reindex(dates).ffill() for symbol, df in history.items()}
+    weekly_data = {}
+    for symbol, prepared in history.items():
+        source = prepared.reset_index()
+        source["date"] = pd.to_datetime(source["date"])
+        weekly = source.set_index("date").resample("W-FRI").agg(
+            open=("open", "first"), high=("high", "max"), low=("low", "min"),
+            close=("close", "last"), volume=("volume", "sum"),
+        ).dropna(subset=["close"])
+        weekly["ema_20"] = indicators.ema(weekly["close"], config.WEEKLY_EMA_PERIOD)
+        weekly["rsi"] = indicators.rsi(weekly["close"], config.RSI_PERIOD)
+        weekly["roc_12w"] = indicators.rolling_return(weekly["close"], 12)
+        weekly_data[symbol] = weekly
+    rebalance_dates = [d for d in dates if pd.Timestamp(d).weekday() == 4]
+    if dates[-1] not in rebalance_dates:
+        rebalance_dates.append(dates[-1])
+    holdings: list[str] = []
+    weights: dict[str, float] = {}
+    equity = start_equity
+    daily_equity: dict[date, float] = {}
+    trades: list[dict] = []
+    exposure_days = 0
+
+    for today in dates:
+        if today in rebalance_dates:
+            snapshots = []
+            for symbol, weekly in weekly_data.items():
+                available = weekly.loc[:pd.Timestamp(today)]
+                if available.empty:
+                    continue
+                latest = available.iloc[-1]
+                if any(pd.isna(latest[field]) for field in ("ema_20", "rsi", "roc_12w")):
+                    continue
+                snapshots.append({
+                    "symbol": symbol,
+                    "close": float(latest["close"]),
+                    "avg_volume": float(latest["volume"]),
+                    "pe": None,
+                    "dividend_yield": None,
+                    "roc_12w": float(latest["roc_12w"]),
+                })
+            target = scoring.rank_snapshots(snapshots, config.PORTFOLIO_SIZE) if market_ok.loc[today] else []
+            new_holdings = [row["symbol"] for row in target]
+            turnover = len(set(holdings) ^ set(new_holdings)) / max(config.PORTFOLIO_SIZE, 1)
+            if holdings and turnover:
+                equity *= 1 - turnover * config.COMMISSION_PCT
+            holdings = new_holdings
+            weights = {symbol: 1 / len(holdings) for symbol in holdings} if holdings else {}
+            if holdings:
+                trades.append({"return_pct": 0.0, "pnl": 0.0, "days_held": 7})
+
+        previous = daily_equity.get(dates[dates.index(today) - 1], equity) if dates.index(today) else equity
+        if holdings:
+            daily_returns = []
+            for symbol in holdings:
+                series = prices[symbol]
+                if today in series.index and series.index.get_loc(today) > 0:
+                    prior = series.iloc[series.index.get_loc(today) - 1]
+                    current = series.loc[today]
+                    if prior:
+                        daily_returns.append(current / prior - 1)
+            if daily_returns:
+                equity *= 1 + float(np.mean(daily_returns))
+            exposure_days += 1
+        daily_equity[today] = equity
+
+    equity_series = pd.Series(daily_equity).sort_index()
+    benchmark = market["close"].reindex(equity_series.index).ffill()
+    years = max((dates[-1] - dates[0]).days / 365.25, 1e-9)
+    return {
+        "variant": "multi_factor",
+        "from": str(dates[0]),
+        "to": str(dates[-1]),
+        "metrics": _metrics(trades, equity_series, benchmark, start_equity, years, exposure_days),
+        "by_setup": {},
+        "equity_curve": [{"date": str(d), "equity": round(v, 2)} for d, v in equity_series.items()],
+        "trades": trades[-200:],
+    }
+
+
+def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
+        start_equity: float = 1_000_000.0, period: tuple[date, date] | None = None) -> dict:
+    """Run the weekly equal-weight Top 10 multi-factor portfolio."""
+    return _weekly_rebalance_run(history, market, start_equity, period)
 
 
 def _cached_fetch(symbol: str, start: date, end: date, refresh: bool) -> pd.DataFrame:
@@ -289,18 +387,17 @@ def load_history(years: int, refresh: bool = False) -> tuple[dict[str, pd.DataFr
     if market is None:
         raise RuntimeError(f"No usable history for the {config.MARKET_INDEX} index")
 
-    # Regime gate runs on the broad index: close above a rising long EMA.
+    # Regime gate runs on the broad index: close above its 100-day EMA.
     regime = _prepare(_cached_fetch(config.REGIME_INDEX, start, end, refresh), None)
     if regime is None:
         raise RuntimeError(f"No usable history for the {config.REGIME_INDEX} index")
     regime_ema = indicators.ema(regime["close"], config.REGIME_EMA_PERIOD)
-    regime_ok = ((regime["close"] > regime_ema)
-                 & (regime_ema > regime_ema.shift(config.REGIME_SLOPE_LOOKBACK)))
+    regime_ok = regime["close"] > regime_ema
     market["uptrend"] = regime_ok.reindex(market.index).fillna(False)
 
     history = {}
     for symbol in get_universe():
-        prepared = _prepare(_cached_fetch(symbol, start, end, refresh), market["return_20d"])
+        prepared = _prepare(_cached_fetch(symbol, start, end, refresh), None)
         if prepared is not None:
             history[symbol] = prepared
     return history, market
@@ -322,6 +419,25 @@ def benchmark_buy_and_hold(market: pd.DataFrame, start: str, end: str) -> dict:
         "max_drawdown_pct": round(float(drawdown) * 100, 2),
         "sharpe": sharpe,
     }
+
+
+def generate_tearsheet(result: dict, market: pd.DataFrame, output: str | None = None) -> str | None:
+    """Write a QuantStats HTML tear sheet for the supplied portfolio run."""
+    try:
+        import quantstats as qs
+    except ImportError:
+        print("QuantStats is not installed; skipping tear sheet generation.")
+        return None
+    equity = pd.Series(
+        {pd.Timestamp(row["date"]): row["equity"] for row in result["equity_curve"]}
+    ).sort_index()
+    benchmark = market["close"].reindex(equity.index).ffill()
+    returns = equity.pct_change().dropna()
+    benchmark_returns = benchmark.pct_change().dropna()
+    target = output or str(config.DOCS_DIR / "tearsheet.html")
+    qs.reports.html(returns, benchmark=benchmark_returns, output=target,
+                    title="PSX Multi-Factor Weekly Portfolio")
+    return target
 
 
 def split_dates(history: dict[str, pd.DataFrame]) -> tuple[date, date, date, date]:
@@ -376,11 +492,11 @@ def main() -> None:
         line("IN-SAMPLE", split["in_sample"])
         line("OUT-OF-SAMPLE", split["out_of_sample"])
 
-    oos_pullback = results["pullback"]["out_of_sample"]["metrics"]["profit_factor"]
-    print(f"\nKill-switch check: Setup B profit factor out-of-sample = {oos_pullback} "
-          f"(keep threshold {config.MIN_OOS_PROFIT_FACTOR})")
+    oos_metrics = results["multi_factor"]["out_of_sample"]["metrics"]
+    print(f"\nMulti-factor OOS return = {oos_metrics['total_return_pct']}%  "
+          f"drawdown = {oos_metrics['max_drawdown_pct']}%  Sharpe = {oos_metrics['sharpe']}")
 
-    active = results["breakout"]["full"]
+    active = results["multi_factor"]["full"]
     benchmark = benchmark_buy_and_hold(market, active["from"], active["to"])
 
     if args.save:
@@ -391,21 +507,17 @@ def main() -> None:
             "universe_size": len(history),
             "commission_pct": config.COMMISSION_PCT,
             "start_equity": 1_000_000.0,
-            # The live engine is breakout-only since the Setup B kill switch fired.
-            "active_variant": "breakout",
-            "retired_setups": {"PULLBACK": {
-                "reason": "Out-of-sample profit factor below the keep threshold",
-                "oos_profit_factor": results["pullback"]["out_of_sample"]["metrics"]["profit_factor"],
-                "threshold": config.MIN_OOS_PROFIT_FACTOR,
-            }},
+            "active_variant": "multi_factor",
+            "retired_setups": {},
             "benchmark": benchmark,
             "train_fraction": config.TRAIN_FRACTION,
             "risk_free_rate": config.RISK_FREE_RATE,
             "benchmark_in_sample": benchmark_buy_and_hold(
-                market, results["breakout"]["in_sample"]["from"], results["breakout"]["in_sample"]["to"]),
+                market, results["multi_factor"]["in_sample"]["from"],
+                results["multi_factor"]["in_sample"]["to"]),
             "benchmark_out_of_sample": benchmark_buy_and_hold(
-                market, results["breakout"]["out_of_sample"]["from"],
-                results["breakout"]["out_of_sample"]["to"]),
+                market, results["multi_factor"]["out_of_sample"]["from"],
+                results["multi_factor"]["out_of_sample"]["to"]),
             "results": results,
             "caveats": [
                 "Uses today's index members, already filtered by today's price and liquidity, "
@@ -418,6 +530,7 @@ def main() -> None:
             ],
         }
         RESULT_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        generate_tearsheet(active, market)
         print(f"\nWrote {RESULT_PATH}")
 
 

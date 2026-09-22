@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS positions (
     stop_loss    REAL    NOT NULL,
     take_profit  REAL    NOT NULL,
     -- Which setup opened it: the exit rules differ per setup.
-    setup        TEXT    NOT NULL DEFAULT 'BREAKOUT',
+    setup        TEXT    NOT NULL DEFAULT 'MEAN_REVERSION',
     status       TEXT    NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED')),
     exit_date    TEXT,
     exit_price   REAL,
@@ -58,7 +58,7 @@ def init_db() -> None:
         conn.executescript(SCHEMA)
         columns = {row["name"] for row in conn.execute("PRAGMA table_info(positions)")}
         if "setup" not in columns:
-            conn.execute("ALTER TABLE positions ADD COLUMN setup TEXT NOT NULL DEFAULT 'BREAKOUT'")
+            conn.execute("ALTER TABLE positions ADD COLUMN setup TEXT NOT NULL DEFAULT 'MEAN_REVERSION'")
         if not conn.execute("SELECT 1 FROM signals LIMIT 1").fetchone():
             _import_legacy_csv(conn)
 
@@ -100,7 +100,7 @@ def record_signal(signal: dict, conn: sqlite3.Connection | None = None) -> None:
             " (symbol, entry_date, entry_price, stop_loss, take_profit, setup, status)"
             " VALUES (?, ?, ?, ?, ?, ?, 'OPEN')",
             (signal["symbol"], signal_date, signal["close_price"],
-             signal["stop_loss"], signal["take_profit"], signal.get("setup", "BREAKOUT")),
+             signal["stop_loss"], signal["take_profit"], signal.get("setup", "MEAN_REVERSION")),
         )
     else:
         conn.execute(

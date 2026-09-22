@@ -21,6 +21,12 @@ def avg_volume(series: pd.Series, period: int = 20) -> pd.Series:
     return series.rolling(window=period).mean()
 
 
+def bollinger_width(series: pd.Series, period: int = 20, deviations: float = 2.0) -> pd.Series:
+    middle = series.rolling(window=period).mean()
+    deviation = series.rolling(window=period).std()
+    return (2 * deviations * deviation) / middle
+
+
 def true_range(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
     prev_close = close.shift(1)
     return pd.concat(

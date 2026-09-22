@@ -18,17 +18,24 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 EMAIL_RECIPIENT = os.getenv("EMAIL_RECIPIENT")
+SMTP_EMAIL = os.getenv("SMTP_EMAIL", EMAIL_SENDER)
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", EMAIL_PASSWORD)
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", EMAIL_RECIPIENT)
 # Extra subscribers, comma-separated; they are BCC'd so addresses stay private.
 EMAIL_SUBSCRIBERS = [a.strip() for a in os.getenv("EMAIL_SUBSCRIBERS", "").split(",") if a.strip()]
 
 # Private: only used for the share count in emails, never published to the dashboard.
 TRADING_CAPITAL = float(os.getenv("TRADING_CAPITAL", "0")) or None
-# Risk-based sizing: shares = (equity * RISK_PER_TRADE_PCT) / (ATR_STOP_MULT * ATR).
+# Risk-based sizing: shares = (equity * RISK_PER_TRADE_PCT) / (ATR stop distance).
 RISK_PER_TRADE_PCT = 0.015
 # A tight stop would otherwise demand more cash than the account holds.
 MAX_POSITION_PCT = 0.20
 POSITION_PCT = 0.10  # fallback sizing when ATR is unavailable
 MAX_OPEN_POSITIONS = 8
+PORTFOLIO_SIZE = 10
+VALUE_WEIGHT = 0.4
+INCOME_WEIGHT = 0.4
+MOMENTUM_WEIGHT = 0.2
 
 # Optional webhook for Telegram or Discord; empty disables it.
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
@@ -38,11 +45,9 @@ UNIVERSE_INDEX = "KMIALLSHR"
 # Benchmark for relative strength and for return comparisons (the tradable Sharia index).
 MARKET_INDEX = "KMI30"
 # Regime gate: the broad Sharia market. No new BUY unless it closes above its own
-# REGIME_EMA_PERIOD EMA *and* that EMA is higher than it was REGIME_SLOPE_LOOKBACK days ago,
-# so the engine sits in cash through sideways markets instead of being chopped up.
+# 100-day EMA.
 REGIME_INDEX = "KMIALLSHR"
 REGIME_EMA_PERIOD = 100
-REGIME_SLOPE_LOOKBACK = 5
 # Cheap pre-filter from the one-shot screener table, so ~300 symbols are not all fetched.
 # Deliberately looser than MIN_AVG_VOLUME; the exact 20-day SMA still decides.
 PREFILTER_AVG_VOLUME = 300_000
@@ -52,21 +57,27 @@ RSI_PERIOD = 14
 RSI_LOWER = 30
 RSI_UPPER = 45
 VOLUME_LOOKBACK = 20
-# Baseline liquidity for the wider universe: 20-day SMA of volume, and a price floor
-# that keeps out penny stocks whose tick size swamps a 1.5 x ATR stop.
-MIN_AVG_VOLUME = 500_000
+# Baseline liquidity for mean-reversion candidates.
+MIN_AVG_VOLUME = 200_000
 MIN_PRICE = 10.0
+VALUE_MAX_PE = 12.0
+VALUE_MIN_DIVIDEND_YIELD = 0.04
+WEEKLY_EMA_PERIOD = 20
+WEEKLY_RSI_MIN = 45.0
 
 VOLUME_SPIKE_MULT = 1.5
-# Setup B support test: close no more than this far above the 50-day EMA.
-SUPPORT_PROXIMITY_PCT = 0.03
+BB_PERIOD = 20
+BB_DEVIATIONS = 2.0
+BB_SQUEEZE_LOOKBACK = 30
+BB_SQUEEZE_PERCENTILE = 0.30
+SUPPORT_PROXIMITY_PCT = 0.04
+MEAN_REVERSION_RSI_MAX = 38.0
+MEAN_REVERSION_SUPPORT_PERIODS = (50, 200)
 
 ATR_PERIOD = 14
-ATR_STOP_MULT = 1.5
-ATR_TARGET_MULT = 3.0
+ATR_STOP_MULT = 2.0
+ATR_TARGET_MULT = 2.5
 
-# Trend strength: the 50-day EMA must be rising over EMA_SLOPE_LOOKBACK days, OR ADX above the floor.
-EMA_SLOPE_LOOKBACK = 5
 ADX_PERIOD = 14
 ADX_MIN = 20.0
 # Relative strength: the stock's N-day return must beat the index's over the same window.
@@ -78,11 +89,7 @@ MACRO_EMA_PERIOD = 100
 # alert (not even stop-loss/take-profit) fires until this many days after entry.
 MIN_HOLDING_DAYS = 2
 
-# Exits are per setup. Breakouts trail a rising EMA; pullbacks take profit when price
-# reverts to that same EMA, because a pullback entry starts below it by construction.
 TRAIL_EMA_PERIOD = 20
-# Setup B hard stop: support is broken when price closes this far below the 50-day EMA.
-PULLBACK_STOP_BELOW_EMA_PCT = 0.02
 
 # Annualised risk-free rate used for the Sharpe ratio (Pakistan T-bill territory).
 RISK_FREE_RATE = 0.15

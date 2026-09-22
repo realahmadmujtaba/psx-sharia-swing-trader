@@ -16,7 +16,7 @@ PRIVATE_FIELDS = {"timestamp", "shares", "pnl_total", "purification_on_profit"}
 
 
 def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
-    rows = result["rows"]
+    rows = result.get("portfolio", result["rows"])
     history = log_df.drop(columns=["shares"], errors="ignore").sort_values("date", ascending=False).head(HISTORY_LIMIT)
     price_dates = [row["date"] for row in rows if row.get("date")]
 
@@ -26,39 +26,21 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
         "universe": config.UNIVERSE_INDEX,
         "market": result.get("market"),
         "rules": {
-            "ema_period": config.EMA_PERIOD,
-            "rsi_period": config.RSI_PERIOD,
-            "rsi_lower": config.RSI_LOWER,
-            "rsi_upper": config.RSI_UPPER,
-            "volume_lookback": config.VOLUME_LOOKBACK,
-            "min_avg_volume": config.MIN_AVG_VOLUME,
-            "volume_spike_mult": config.VOLUME_SPIKE_MULT,
-            "min_price": config.MIN_PRICE,
-            "support_proximity_pct": config.SUPPORT_PROXIMITY_PCT,
-            "atr_period": config.ATR_PERIOD,
-            "atr_stop_mult": config.ATR_STOP_MULT,
-            "atr_target_mult": config.ATR_TARGET_MULT,
-            "macro_ema_period": config.MACRO_EMA_PERIOD,
-            "adx_period": config.ADX_PERIOD,
-            "adx_min": config.ADX_MIN,
-            "ema_slope_lookback": config.EMA_SLOPE_LOOKBACK,
-            "rs_lookback": config.RS_LOOKBACK,
+            "value_weight": config.VALUE_WEIGHT,
+            "income_weight": config.INCOME_WEIGHT,
+            "momentum_weight": config.MOMENTUM_WEIGHT,
+            "portfolio_size": config.PORTFOLIO_SIZE,
             "regime_index": config.REGIME_INDEX,
             "regime_ema_period": config.REGIME_EMA_PERIOD,
-            "regime_slope_lookback": config.REGIME_SLOPE_LOOKBACK,
-            "risk_per_trade_pct": config.RISK_PER_TRADE_PCT,
-            "trail_ema_period": config.TRAIL_EMA_PERIOD,
-            "min_holding_days": config.MIN_HOLDING_DAYS,
-            "max_open_positions": config.MAX_OPEN_POSITIONS,
-            "market_index": config.MARKET_INDEX,
+            "value_max_pe": config.VALUE_MAX_PE,
+            "value_min_dividend_yield": config.VALUE_MIN_DIVIDEND_YIELD,
+            "smtp_weekly_alert_day": "Friday",
         },
         "stocks": rows,
-        "signals_today": [
-            {key: value for key, value in signal.items() if key not in PRIVATE_FIELDS}
-            for signal in result["signals"]
-        ],
+        "portfolio": rows,
+        "signals_today": [],
         "warnings": result.get("warnings", []),
-        "watchlist": result.get("watchlist", []),
+        "watchlist": [],
         "performance": performance.summarise(performance.closed_trades(log_df)),
         "history": history.to_dict(orient="records"),
     }
@@ -75,6 +57,9 @@ def publish(payload: dict) -> None:
     # The signal log is state: it must travel with the repo so cloud runs remember open positions.
     # It only exists once a signal has fired, and git add fails the whole call on a missing path.
     paths = [str(DATA_PATH.relative_to(PROJECT_ROOT))]
+    for generated in ("docs/dashboard.html", "docs/tearsheet.html"):
+        if (PROJECT_ROOT / generated).exists():
+            paths.append(generated)
     for state_file in ("data/signals.db", "data/signals_log.csv"):
         if (PROJECT_ROOT / state_file).exists():
             paths.append(state_file)

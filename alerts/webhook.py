@@ -35,7 +35,8 @@ def build_summary(result: dict) -> str | None:
     market = result.get("market")
     if market:
         lines.append(f"Market regime: {config.REGIME_INDEX} "
-                     f"{'up' if market['uptrend'] else 'sideways/down'} vs {config.REGIME_EMA_PERIOD}-day EMA")
+                     f"{'up' if market['uptrend'] else 'sideways/chop'} "
+                     f"(100-day EMA)")
     return "PSX Sharia Swing Scanner\n" + "\n".join(lines)
 
 

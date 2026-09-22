@@ -17,7 +17,7 @@ def _as_position(row: dict) -> pd.Series:
         "close_price": float(row["entry_price"]),
         "stop_loss": float(row["stop_loss"]),
         "take_profit": float(row["take_profit"]),
-        "setup": row.get("setup") or "BREAKOUT",
+        "setup": row.get("setup") or "MEAN_REVERSION",
     })
 
 

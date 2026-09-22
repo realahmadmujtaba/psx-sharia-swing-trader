@@ -6,19 +6,12 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import config
-from alerts import dashboard, webhook
+from alerts import dashboard, notifier, webhook
 from alerts.email_alert import send_digest
 from core import state
-from core.signal_engine import (
-    benchmark_rolling_return,
-    delisting_advice,
-    entry_failures,
-    entry_setup,
-    evaluate_exit,
-    evaluate_symbol,
-    market_status,
-    snapshot,
-)
+from core import scoring
+from core.fundamentals import fetch_many
+from core.signal_engine import benchmark_rolling_return, market_status, snapshot
 from fetchers.psx_fetcher import fetch_ohlcv
 from fetchers.purification import load_ratios, purification_amount
 from fetchers.universe import get_universe
@@ -50,6 +43,7 @@ def run_scan() -> dict:
     log_df = state.load_log()
     ratios = load_ratios()
     universe = get_universe()
+    fundamentals = fetch_many(universe)
     positions = state.open_positions()
     held_outside = [s for s in positions["symbol"] if s not in universe]
     open_count = len(positions)
@@ -58,82 +52,54 @@ def run_scan() -> dict:
     market = market_status(fetch_ohlcv(config.REGIME_INDEX, start, end))
     benchmark_return = benchmark_rolling_return(fetch_ohlcv(config.MARKET_INDEX, start, end))
 
-    signals, rows, warnings, watchlist, candidates = [], [], [], [], []
+    rows, warnings, snapshots = [], [], []
 
     for symbol in [*universe, *held_outside]:
         df = fetch_ohlcv(symbol, start, end)
-        snap = snapshot(df, benchmark_return) if not df.empty else None
+        snap = snapshot(
+            df,
+            benchmark_return,
+            fundamentals.get(symbol),
+        ) if not df.empty else None
         if snap is None:
             rows.append({"symbol": symbol, "status": "NO DATA", "reasons": ["No usable price history from PSX"]})
             continue
 
         row = {"symbol": symbol, **snap, "stale": (end - snap["date"]).days > STALE_AFTER_DAYS}
 
-        open_position = state.get_open_position(symbol)
-        if open_position is not None:
-            exit_signal = evaluate_exit(open_position, df)
-            row.update(
-                entry_price=float(open_position["close_price"]),
-                stop_loss=float(open_position["stop_loss"]),
-                take_profit=float(open_position["take_profit"]),
-                days_held=(snap["date"] - open_position["date"]).days,
-            )
-            if exit_signal is not None:
-                _attach_purification(exit_signal, ratios)
-                signals.append(exit_signal)
-                state.append_signal(exit_signal)
-                open_count -= 1
-                row.update(status="SELL", reasons=[exit_signal["exit_reason"]])
-            elif symbol in held_outside:
-                warnings.append(delisting_advice(open_position, snap))
-                row.update(status="HOLDING", reasons=[f"Left {config.UNIVERSE_INDEX}"])
-            else:
-                row.update(status="HOLDING", reasons=[])
-            rows.append(row)
-            continue
-
-        if entry_setup(snap) is None:
-            failures = entry_failures(snap)
-            row.update(status="NO SIGNAL", reasons=failures)
-            if len(failures) == 1:
-                watchlist.append(_watch(row, failures[0]))
-        else:
-            candidates.append((row, df))
+        row.update(status="RANKED", reasons=[])
+        snapshots.append({"symbol": symbol, **snap})
         rows.append(row)
 
-    if market is None or not market["uptrend"]:
-        if market is None:
-            blocked = f"Market regime: {config.REGIME_INDEX} data unavailable"
-        elif not market["above_ema"]:
-            blocked = f"Market regime: {config.REGIME_INDEX} below its {config.REGIME_EMA_PERIOD}-day EMA"
-        else:
-            blocked = f"Market regime: {config.REGIME_INDEX} {config.REGIME_EMA_PERIOD}-day EMA not rising"
-        for row, _ in candidates:
-            row.update(status="NO SIGNAL", reasons=[blocked])
-            watchlist.append(_watch(row, blocked))
-    else:
-        candidates.sort(key=lambda item: item[0]["volume_ratio"], reverse=True)
-        free_slots = max(config.MAX_OPEN_POSITIONS - open_count, 0)
-        for rank, (row, df) in enumerate(candidates):
-            if rank >= free_slots:
-                full = f"Max {config.MAX_OPEN_POSITIONS} open positions reached"
-                row.update(status="NO SIGNAL", reasons=[full])
-                watchlist.append(_watch(row, full))
-                continue
-            entry_signal = evaluate_symbol(row["symbol"], df, benchmark_return)
-            _attach_purification(entry_signal, ratios)
-            signals.append(entry_signal)
-            state.append_signal(entry_signal)
-            row.update(status="BUY", reasons=[], setup=entry_signal["setup"],
-                       stop_loss=entry_signal["stop_loss"], take_profit=entry_signal["take_profit"])
+    ranked = scoring.rank_snapshots(snapshots, config.PORTFOLIO_SIZE)
+    ranked_symbols = {row["symbol"] for row in ranked}
+    bullish = bool(market and market["uptrend"])
+    portfolio = ranked if bullish else []
+    for row in rows:
+        scored = next((item for item in ranked if item["symbol"] == row["symbol"]), None)
+        if scored:
+            row.update({key: scored[key] for key in (
+                "value_score", "income_score", "momentum_score", "composite_score"
+            )})
+        row["status"] = "TOP 10" if bullish and row["symbol"] in ranked_symbols else "RANKED"
 
-    return {"signals": signals, "rows": rows, "market": market, "warnings": warnings, "watchlist": watchlist}
+    return {
+        "signals": [],
+        "rows": portfolio,
+        "all_rows": rows,
+        "market": market,
+        "warnings": warnings,
+        "watchlist": [],
+        "portfolio": portfolio,
+    }
 
 
 def run_once() -> None:
     result = run_scan()
     dashboard.publish(dashboard.build_payload(result, state.load_log()))
     asyncio.run(send_digest(result))
+    if datetime.now(config.TIMEZONE).weekday() == 4:
+        asyncio.run(notifier.send_portfolio_alert(result))
     webhook.notify(result)
 
 

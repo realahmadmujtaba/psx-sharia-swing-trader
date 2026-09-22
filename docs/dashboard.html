@@ -114,10 +114,10 @@
   <div id="market" class="banner" hidden></div>
 
   <div class="tiles">
-    <div class="tile buy"><div class="n" id="n-buy">–</div><div class="l">BUY today</div></div>
-    <div class="tile sell"><div class="n" id="n-sell">–</div><div class="l">SELL today</div></div>
-    <div class="tile hold"><div class="n" id="n-hold">–</div><div class="l">Open positions</div></div>
-    <div class="tile watch"><div class="n" id="n-watch">–</div><div class="l">On watchlist</div></div>
+    <div class="tile buy"><div class="n" id="n-buy">–</div><div class="l">Top 10 holdings</div></div>
+    <div class="tile sell"><div class="n" id="n-sell">–</div><div class="l">Value factor</div></div>
+    <div class="tile hold"><div class="n" id="n-hold">–</div><div class="l">Income factor</div></div>
+    <div class="tile watch"><div class="n" id="n-watch">–</div><div class="l">Momentum factor</div></div>
   </div>
 
   <section id="warnings-section" hidden>
@@ -126,40 +126,13 @@
   </section>
 
   <section>
-    <h2>Watchlist <span class="sub">one condition short of a BUY</span></h2>
+    <h2>Top 10 Multi-Factor Portfolio <span class="sub">weekly equal-weight rebalance</span></h2>
     <div class="card scroll">
       <table>
         <thead>
-          <tr><th>Symbol</th><th>Missing</th><th class="num">Close</th><th class="num">RSI (14)</th><th class="num">Volume ×</th></tr>
+          <tr><th>Symbol</th><th class="num">Price</th><th class="num">Value</th><th class="num">Income</th><th class="num">Momentum</th><th class="num">Composite</th></tr>
         </thead>
-        <tbody id="watchlist"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section>
-    <h2>All stocks</h2>
-    <div class="card scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Symbol</th><th>Status</th><th class="num">Close</th><th class="num">vs 50-day EMA</th>
-            <th class="num">RSI (14)</th><th class="num">Volume ×</th><th class="num">Avg vol (20d)</th><th>Notes</th>
-          </tr>
-        </thead>
-        <tbody id="stocks"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section>
-    <h2>Signal history</h2>
-    <div class="card scroll">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Symbol</th><th>Signal</th><th class="num">Price</th><th class="num">Stop-loss</th><th class="num">Take-profit</th><th>Exit reason</th></tr>
-        </thead>
-        <tbody id="history"></tbody>
+        <tbody id="portfolio"></tbody>
       </table>
     </div>
   </section>
@@ -179,7 +152,6 @@
   const fmt = (n, d = 2) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
   const REASONS = { STOP_LOSS: "Stop-loss hit", TAKE_PROFIT: "Take-profit hit",
                     TRAIL_EMA: "Closed below the 20-day EMA", MAX_HOLD: "Max holding period reached" };
-  const SETUPS = { BREAKOUT: "Setup A · breakout", PULLBACK: "Setup B · pullback" };
   const ORDER = { BUY: 0, SELL: 1, HOLDING: 2, "NO SIGNAL": 3, "NO DATA": 4 };
 
   function el(tag, text, className) {
@@ -194,41 +166,22 @@
   }
 
   function notesFor(s) {
-    if (s.status === "BUY") return `${SETUPS[s.setup] || ""} · Stop-loss ${fmt(s.stop_loss)} · Take-profit ${fmt(s.take_profit)}`;
+    if (s.status === "BUY") return `Weekly value signal · Stop-loss ${fmt(s.stop_loss)} · Take-profit ${fmt(s.take_profit)}`;
     if (s.status === "HOLDING") return `Entry ${fmt(s.entry_price)} · day ${s.days_held} · SL ${fmt(s.stop_loss)} · TP ${fmt(s.take_profit)}`;
     if (s.status === "SELL") return `${REASONS[s.reasons[0]] || s.reasons[0]} · entry ${fmt(s.entry_price)} · day ${s.days_held}`;
     return (s.reasons || []).join(" · ");
   }
 
-  function renderStocks(stocks, rules) {
-    const body = document.getElementById("stocks");
-    const sorted = [...stocks].sort((a, b) =>
-      (ORDER[a.status] - ORDER[b.status]) ||
-      ((a.reasons || []).length - (b.reasons || []).length) ||
-      a.symbol.localeCompare(b.symbol));
-
-    for (const s of sorted) {
+  function renderPortfolio(stocks) {
+    const body = document.getElementById("portfolio");
+    for (const s of stocks) {
       const tr = document.createElement("tr");
       tr.append(el("td", s.symbol, "sym"));
-
-      const status = el("td");
-      status.append(badge(s.status));
-      if (s.stale) status.append(el("span", "STALE", "badge b-STALE"));
-      tr.append(status);
-
-      if (s.close === undefined) {
-        for (let i = 0; i < 5; i++) tr.append(el("td", "—", "num"));
-      } else {
-        const gap = (s.close / s.ema_50 - 1) * 100;
-        const inZone = s.rsi >= rules.rsi_lower && s.rsi <= rules.rsi_upper;
-        const spike = s.volume_ratio >= rules.volume_spike_mult;
-        tr.append(el("td", fmt(s.close), "num"));
-        tr.append(el("td", (gap >= 0 ? "+" : "") + fmt(gap, 1) + "%", "num " + (gap >= 0 ? "up" : "down")));
-        tr.append(el("td", fmt(s.rsi, 1), "num" + (inZone ? " inzone" : "")));
-        tr.append(el("td", fmt(s.volume_ratio, 1) + "×", "num" + (spike ? " inzone" : "")));
-        tr.append(el("td", fmt(s.avg_volume, 0), "num"));
-      }
-      tr.append(el("td", notesFor(s), "notes"));
+      tr.append(el("td", fmt(s.close), "num"));
+      tr.append(el("td", fmt(s.value_score, 1), "num"));
+      tr.append(el("td", fmt(s.income_score, 1), "num"));
+      tr.append(el("td", fmt(s.momentum_score, 1), "num"));
+      tr.append(el("td", fmt(s.composite_score, 1), "num"));
       body.append(tr);
     }
   }
@@ -276,27 +229,6 @@
     box.hidden = false;
   }
 
-  function renderWatchlist(list) {
-    const body = document.getElementById("watchlist");
-    if (!list.length) {
-      const tr = document.createElement("tr");
-      const td = el("td", "No stock is exactly one condition away today.", "empty");
-      td.colSpan = 5;
-      tr.append(td);
-      body.append(tr);
-      return;
-    }
-    for (const w of list) {
-      const tr = document.createElement("tr");
-      tr.append(el("td", w.symbol, "sym"));
-      tr.append(el("td", w.missing, "notes"));
-      tr.append(el("td", fmt(w.close), "num"));
-      tr.append(el("td", fmt(w.rsi, 1), "num"));
-      tr.append(el("td", fmt(w.volume_ratio, 1) + "×", "num"));
-      body.append(tr);
-    }
-  }
-
   function renderWarnings(list) {
     if (!list.length) return;
     const root = document.getElementById("warnings");
@@ -313,35 +245,21 @@
   }
 
   function renderRules(r) {
-    const pct = v => fmt(v * 100, 0) + "%";
     const groups = [
       ["Market regime — must be true to trade", [
-        `${r.regime_index} index above its ${r.regime_ema_period}-day EMA`,
-        `That EMA higher than it was ${r.regime_slope_lookback} sessions ago (rising, not just above)`,
-        "Fails either test: 0 new BUY signals, open positions still managed normally",
+        `${r.regime_index} index close above its ${r.regime_ema_period}-day EMA`,
+        "If the market regime breaks, the portfolio goes to cash",
       ]],
-      ["Baseline — every stock", [
-        `Close above the ${r.macro_ema_period}-day EMA (macro trend)`,
-        `${r.volume_lookback}-day average volume above ${fmt(r.min_avg_volume, 0)} shares`,
-        `Price above Rs. ${fmt(r.min_price, 0)}`,
-        `At most ${r.max_open_positions} open positions; strongest volume spike first`,
+      ["Multi-factor ranking", [
+        `Value score: ${fmt(r.value_weight * 100, 0)}% weight; lower P/E ranks higher`,
+        `Income score: ${fmt(r.income_weight * 100, 0)}% weight; higher dividend yield ranks higher`,
+        `Momentum score: ${fmt(r.momentum_weight * 100, 0)}% weight; higher 12-week RoC ranks higher`,
+        `Equal-weight top ${r.portfolio_size} stocks, rebalanced weekly`,
       ]],
-      ["Setup A — breakout", [
-        `ADX (${r.adx_period}) above ${r.adx_min}`,
-        `${r.rs_lookback}-day return above the ${r.market_index}'s`,
-        `Volume at least ${r.volume_spike_mult}× the ${r.volume_lookback}-day average`,
-        "RSI and support are ignored",
-      ]],
-      ["Setup B — pullback", [
-        `RSI (${r.rsi_period}) below ${r.rsi_upper}`,
-        `Close within ${pct(r.support_proximity_pct)} above the ${r.ema_period}-day EMA`,
-        "ADX and relative strength are ignored",
-      ]],
-      ["SELL an open position", [
-        `Stop-loss: ${r.atr_stop_mult} × ATR (${r.atr_period}) below entry`,
-        `Take-profit: ${r.atr_target_mult} × ATR above entry`,
-        `Trailing exit: closes below the ${r.trail_ema_period}-day EMA`,
-        "Checked on the closing price",
+      ["Fundamental value filters", [
+        `P/E reference threshold: ${r.value_max_pe}`,
+        `Dividend yield reference threshold: ${fmt(r.value_min_dividend_yield * 100, 1)}%`,
+        "When fundamentals are unavailable, transparent price/liquidity proxies are ranked",
       ]],
       ["Sharia", [
         `Only stocks in the ${r.market_index} Sharia index`,
@@ -368,16 +286,14 @@
       document.getElementById("price-date").textContent = d.price_date || "—";
       document.getElementById("updated").textContent = d.updated_at.replace("T", " ").slice(0, 16);
       const count = st => d.stocks.filter(s => s.status === st).length;
-      document.getElementById("n-buy").textContent = count("BUY");
-      document.getElementById("n-sell").textContent = count("SELL");
-      document.getElementById("n-hold").textContent = count("HOLDING");
+      document.getElementById("n-buy").textContent = d.portfolio.length;
+      document.getElementById("n-sell").textContent = d.portfolio.length ? "40%" : "—";
+      document.getElementById("n-hold").textContent = d.portfolio.length ? "40%" : "—";
+      document.getElementById("n-watch").textContent = d.portfolio.length ? "20%" : "—";
       document.getElementById("n-total").textContent = d.stocks.length;
-      document.getElementById("n-watch").textContent = (d.watchlist || []).length;
       renderMarket(d.market, d.rules);
       renderWarnings(d.warnings || []);
-      renderWatchlist(d.watchlist || []);
-      renderStocks(d.stocks, d.rules);
-      renderHistory(d.history);
+      renderPortfolio(d.portfolio || []);
       renderRules(d.rules);
     })
     .catch(err => {

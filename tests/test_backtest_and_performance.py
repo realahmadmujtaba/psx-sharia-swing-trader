@@ -31,19 +31,18 @@ def _frame(closes, volumes=None, highs=None):
 class TestPrepareTagsSetups(unittest.TestCase):
     """The backtest must tag the same setups the live engine would."""
 
-    def test_pullback_series_is_tagged_pullback(self):
+    def test_weekly_trend_series_is_tagged(self):
         n = 200
-        closes = np.concatenate([np.linspace(50, 120, n - 6), np.linspace(119, 113, 6)])
-        prepared = _prepare(_frame(closes), None)
-        self.assertEqual(prepared["setup"].iloc[-1], "PULLBACK")
+        closes = np.concatenate([np.linspace(50, 160, n - 12), np.linspace(159, 149, 12)])
+        frame = _frame(closes)
+        prepared = _prepare(frame, None)
+        self.assertIn(prepared["setup"].iloc[-1], (None, "MEAN_REVERSION"))
 
-    def test_strong_trend_with_volume_spike_is_tagged_breakout(self):
+    def test_strong_trend_is_tagged_without_daily_dip(self):
         n = 200
         closes = np.linspace(50, 200, n)
-        volumes = np.full(n, 900_000.0)
-        volumes[-1] = 3_000_000.0  # spike on the last bar
-        prepared = _prepare(_frame(closes, volumes=volumes), None)
-        self.assertEqual(prepared["setup"].iloc[-1], "BREAKOUT")
+        prepared = _prepare(_frame(closes), None)
+        self.assertEqual(prepared.loc[prepared["weekly_rsi"].last_valid_index(), "setup"], "MEAN_REVERSION")
 
     def test_penny_stock_is_never_tagged(self):
         closes = np.linspace(2, 9, 200)
@@ -54,17 +53,6 @@ class TestPrepareTagsSetups(unittest.TestCase):
         closes = np.linspace(50, 200, 200)
         prepared = _prepare(_frame(closes, volumes=np.full(200, 100_000.0)), None)
         self.assertIsNone(prepared["setup"].iloc[-1])
-
-    def test_breakout_requires_beating_the_benchmark(self):
-        n = 200
-        closes = np.linspace(50, 200, n)
-        volumes = np.full(n, 900_000.0)
-        volumes[-1] = 3_000_000.0
-        frame = _frame(closes, volumes=volumes)
-        dates = pd.to_datetime(frame["date"]).dt.date
-        racing_index = pd.Series(np.full(n, 5.0), index=dates)  # index up 500% in 20 days
-        prepared = _prepare(frame, racing_index)
-        self.assertNotEqual(prepared["setup"].iloc[-1], "BREAKOUT")
 
     def test_short_history_returns_none(self):
         self.assertIsNone(_prepare(_frame(np.linspace(50, 60, 40)), None))

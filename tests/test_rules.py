@@ -9,17 +9,8 @@ import config
 from alerts import dashboard
 from alerts.email_alert import _build_digest_message, _format_market
 from core import indicators, risk
-from core.signal_engine import (
-    SETUPS,
-    baseline_failures,
-    benchmark_rolling_return,
-    breakout_failures,
-    delisting_advice,
-    entry_failures,
-    entry_setup,
-    market_status,
-    snapshot,
-)
+from core.signal_engine import benchmark_rolling_return, delisting_advice, market_status, snapshot
+from core.scoring import rank_snapshots
 from fetchers.purification import parse_pdf_text, purification_amount
 
 
@@ -53,16 +44,16 @@ class TestATR(unittest.TestCase):
 
 
 class TestRisk(unittest.TestCase):
-    def test_atr_levels_keep_one_to_two(self):
+    def test_mean_reversion_levels_use_three_percent_support_and_2_5_atr_target(self):
         stop, target = risk.calculate_risk_levels(200.0, 10.0)
-        self.assertEqual((stop, target), (185.0, 230.0))
+        self.assertEqual((stop, target), (180.0, 225.0))
 
     def test_size_risks_exactly_the_budget(self):
-        # Risk per share = 1.5 x ATR = Rs. 15; budget = 1.5% of 1,000,000 = Rs. 15,000.
+        # Risk per share = 2 x ATR = Rs. 20; budget = 1.5% of 1,000,000 = Rs. 15,000.
         with mock.patch.object(config, "TRADING_CAPITAL", 1_000_000):
             shares = risk.position_size(200.0, atr_value=10.0)
-        self.assertEqual(shares, 1000)
-        self.assertAlmostEqual(shares * 15.0, 1_000_000 * config.RISK_PER_TRADE_PCT)
+        self.assertEqual(shares, 750)
+        self.assertAlmostEqual(shares * 20.0, 1_000_000 * config.RISK_PER_TRADE_PCT)
 
     def test_tight_stop_is_capped_by_cash_not_risk(self):
         # Risk per share = Rs. 0.15 would ask for 100,000 shares = Rs. 20m of stock.
@@ -108,72 +99,24 @@ class TestSnapshotMeasurements(unittest.TestCase):
 
 def _snap(**overrides):
     """A stock clearing the baseline and both setups; override to break one rule."""
-    base = {"close": 100.0, "ema_50": 98.0, "ema_100": 90.0, "ema_trail": 97.0, "ema_slope": 0.5,
-            "adx": 25.0, "rsi": 40.0, "avg_volume": 900_000.0, "volume_ratio": 2.0, "atr": 3.0,
+    base = {"close": 100.0, "ema_50": 98.0, "ema_100": 90.0, "ema_200": 95.0,
+            "ema_20": 102.0, "rsi": 35.0, "avg_volume": 900_000.0, "atr": 3.0,
             "atr_pct": 0.03, "near_support": True, "return_20d": 0.08,
-            "benchmark_return_20d": 0.02, "relative_strength": 0.06}
+            "benchmark_return_20d": 0.02, "relative_strength": 0.06, "bb_lower": 95.0,
+            "bullish": True}
     return {**base, **overrides}
 
 
-class TestBaseline(unittest.TestCase):
-    def test_clean_stock_passes(self):
-        self.assertEqual(baseline_failures(_snap()), [])
-
-    def test_thin_volume_rejected(self):
-        self.assertIn(f"Average volume below {config.MIN_AVG_VOLUME:,}",
-                      baseline_failures(_snap(avg_volume=400_000.0)))
-
-    def test_penny_stock_rejected(self):
-        self.assertIn(f"Price below Rs. {config.MIN_PRICE:,.0f}",
-                      baseline_failures(_snap(close=8.0, ema_100=5.0)))
-
-    def test_below_macro_ema_rejected(self):
-        self.assertIn("Below 100-day EMA", baseline_failures(_snap(ema_100=105.0)))
-
-    def test_baseline_miss_blocks_both_setups(self):
-        self.assertIsNone(entry_setup(_snap(avg_volume=100.0)))
-
-
-class TestSetupA(unittest.TestCase):
-    """Breakout: ADX, relative strength and a volume spike. RSI and support ignored."""
-
-    def test_triggers_when_momentum_conditions_hold(self):
-        # RSI high and far from support: only Setup A can fire.
-        snap = _snap(rsi=65.0, near_support=False)
-        self.assertEqual(breakout_failures(snap), [])
-        self.assertEqual(entry_setup(snap), "BREAKOUT")
-
-    def test_weak_adx_rejected(self):
-        self.assertIn(f"ADX below {config.ADX_MIN:.0f}", breakout_failures(_snap(adx=15.0)))
-
-    def test_missing_adx_rejected(self):
-        self.assertIn(f"ADX below {config.ADX_MIN:.0f}", breakout_failures(_snap(adx=None)))
-
-    def test_lagging_the_index_rejected(self):
-        self.assertIn(f"Lagging the {config.MARKET_INDEX} index",
-                      breakout_failures(_snap(relative_strength=-0.01)))
-
-    def test_no_volume_spike_rejected(self):
-        self.assertIn("No volume spike", breakout_failures(_snap(volume_ratio=1.1)))
-
-    def test_no_benchmark_skips_relative_strength(self):
-        self.assertEqual(breakout_failures(_snap(relative_strength=None)), [])
-
-
-class TestSetupBRetired(unittest.TestCase):
-    """Pullback entries were removed after failing out-of-sample (PF 0.60 vs 1.20)."""
-
-    def test_only_breakout_remains(self):
-        self.assertEqual(list(SETUPS), ["BREAKOUT"])
-
-    def test_a_pure_pullback_no_longer_triggers(self):
-        # Dip near support with weak momentum: used to fire Setup B, now nothing.
-        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8, rsi=35.0)
-        self.assertIsNone(entry_setup(snap))
-
-    def test_reasons_come_from_the_breakout_rules(self):
-        snap = _snap(adx=10.0, relative_strength=-0.05, volume_ratio=0.8, rsi=35.0)
-        self.assertEqual(entry_failures(snap), breakout_failures(snap))
+class TestRanking(unittest.TestCase):
+    def test_composite_weights_and_direction(self):
+        ranked = rank_snapshots([
+            {"symbol": "CHEAP", "close": 10, "avg_volume": 100, "pe": 5,
+             "dividend_yield": .08, "roc_12w": .10},
+            {"symbol": "EXPENSIVE", "close": 20, "avg_volume": 100, "pe": 20,
+             "dividend_yield": .02, "roc_12w": -.10},
+        ])
+        self.assertEqual(ranked[0]["symbol"], "CHEAP")
+        self.assertGreater(ranked[0]["composite_score"], ranked[1]["composite_score"])
 
 
 class TestBenchmarkReturn(unittest.TestCase):
@@ -203,24 +146,20 @@ class TestMarketRegime(unittest.TestCase):
     def test_rising_market_allows_entries(self):
         status = market_status(_frame(np.linspace(1000, 2000, 200)))
         self.assertTrue(status["above_ema"])
-        self.assertTrue(status["ema_rising"])
         self.assertTrue(status["uptrend"])
 
     def test_falling_market_blocks_entries(self):
         self.assertFalse(market_status(_frame(np.linspace(2000, 1000, 200)))["uptrend"])
 
-    def test_bounce_inside_a_downtrend_blocks(self):
-        # Long decline, then one sharp up day: price clears the EMA, but the EMA is still
-        # falling, so this is a bounce and not a new uptrend.
+    def test_bounce_above_100_day_ema_allows_entries(self):
         closes = list(np.linspace(2000, 1200, 220)) + [1400.0]
         status = market_status(_frame(closes))
         self.assertTrue(status["above_ema"])
-        self.assertFalse(status["ema_rising"])
-        self.assertFalse(status["uptrend"])
+        self.assertTrue(status["uptrend"])
 
     def test_uptrend_needs_both_conditions(self):
         status = market_status(_frame(np.linspace(1000, 2000, 200)))
-        self.assertEqual(status["uptrend"], status["above_ema"] and status["ema_rising"])
+        self.assertEqual(status["uptrend"], status["above_ema"])
 
     def test_short_history_returns_none(self):
         self.assertIsNone(market_status(_frame(np.linspace(1000, 2000, 80))))
@@ -293,7 +232,7 @@ class TestMarketRegimeEmail(unittest.TestCase):
 
     def test_sideways_above_ema_but_flat_pauses(self):
         text = _format_market(self._market(True, False))
-        self.assertIn("SIDEWAYS", text)
+        self.assertIn("CHOP", text)
         self.assertIn("paused", text)
 
     def test_none_market_reports_unavailable(self):

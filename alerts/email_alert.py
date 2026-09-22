@@ -32,12 +32,12 @@ def _purification_line(signal: dict) -> str:
 def _format_buy(signal: dict) -> str:
     close = signal["close_price"]
     earliest_sell = signal["timestamp"].date() + timedelta(days=config.MIN_HOLDING_DAYS)
-    setup_label = {"BREAKOUT": "Setup A - breakout/momentum",
-                   "PULLBACK": "Setup B - pullback to support"}.get(signal.get("setup"), "")
+    setup_label = {"MEAN_REVERSION": "Weekly trend + daily mean-reversion"}.get(
+        signal.get("setup"), "")
     text = (
         f"{signal['symbol']} - BUY ({setup_label})\n"
         f"  Close: {rs(close)}\n"
-        f"  Stop-loss: {rs(signal['stop_loss'])}  ({config.ATR_STOP_MULT:g} x ATR below; risk {rs(close - signal['stop_loss'])}/share)\n"
+        f"  Stop-loss: {rs(signal['stop_loss'])}  (2 x ATR below entry; risk {rs(close - signal['stop_loss'])}/share)\n"
         f"  Take-profit: {rs(signal['take_profit'])}  ({config.ATR_TARGET_MULT:g} x ATR above; reward {rs(signal['take_profit'] - close)}/share)\n"
         f"  ATR (14): {rs(signal['atr'])}\n"
     )
@@ -93,11 +93,13 @@ def _format_market(market: dict | None) -> str:
     if market["uptrend"]:
         trend = "UP (BUY signals allowed)"
     elif not market["above_ema"]:
-        trend = "DOWN, below its EMA (new BUY signals paused)"
+        trend = "DOWN, below its 100-day EMA (new BUY signals paused)"
     else:
-        trend = "SIDEWAYS, EMA not rising (new BUY signals paused)"
+        trend = f"CHOP, ADX below {config.ADX_MIN:.0f} (new BUY signals paused)"
+    ema = market.get("ema_100", market.get("ema_50"))
+    adx = market.get("adx", 0)
     return (f"Market regime: {config.REGIME_INDEX} {market['close']:,.0f} vs "
-            f"{config.REGIME_EMA_PERIOD}-day EMA {market['ema_100']:,.0f} - {trend}\n")
+            f"100-day EMA {ema:,.0f} - {trend}\n")
 
 
 def _build_digest_message(result: dict) -> EmailMessage:
