@@ -212,7 +212,8 @@
   function renderMarket(m, r) {
     const box = document.getElementById("market");
     if (!m) {
-      box.textContent = `Market regime: ${r.regime_index} data unavailable. New BUY signals are paused.`;
+      box.textContent = "New BUY signals are paused / Market is Bearish — " +
+        `${r.regime_index} data unavailable.`;
       box.className = "banner down";
     } else if (m.uptrend) {
       box.textContent = `Market regime: ${r.regime_index} closed at ${fmt(m.close, 0)}, above its rising ` +
@@ -222,8 +223,8 @@
       const why = !m.above_ema
         ? `below its ${r.regime_ema_period}-day EMA (${fmt(m.ema_100, 0)})`
         : `above its ${r.regime_ema_period}-day EMA but that average is not rising (sideways market)`;
-      box.textContent = `Market regime: ${r.regime_index} closed at ${fmt(m.close, 0)}, ${why}. ` +
-        "New BUY signals are paused; open positions still exit normally.";
+      box.textContent = `New BUY signals are paused / Market is Bearish — ` +
+        `${r.regime_index} closed at ${fmt(m.close, 0)}, ${why}.`;
       box.className = "banner down";
     }
     box.hidden = false;
