@@ -32,6 +32,6 @@ jobs:
         run: |
           git config user.name "psx-agent"
           git config user.email "actions@github.com"
-          git add docs/backtest.json docs/tearsheet.html docs/dashboard.html
+          git add docs/dashboard.html docs/data.json docs/backtest.json docs/tearsheet.html
           git diff --cached --quiet || git commit -m "Refresh backtest results"
           git push

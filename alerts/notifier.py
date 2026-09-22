@@ -1,5 +1,7 @@
 """Friday Top 10 portfolio notification."""
 
+import argparse
+import asyncio
 from email.message import EmailMessage
 from datetime import datetime
 
@@ -48,3 +50,38 @@ async def send_portfolio_alert(result: dict) -> None:
         password=password,
         start_tls=True,
     )
+
+
+async def _test() -> int:
+    try:
+        await send_portfolio_alert({
+            "market": {"uptrend": True},
+            "portfolio": [{
+                "symbol": "TEST",
+                "pe": 10.0,
+                "dividend_yield": 0.05,
+                "momentum_score": 50.0,
+                "composite_score": 50.0,
+            }],
+        })
+    except RuntimeError as exc:
+        print(f"Notifier test not sent: {exc}")
+        return 2
+    except (OSError, aiosmtplib.SMTPException) as exc:
+        print(f"Notifier SMTP test failed: {exc}")
+        return 1
+    print("Notifier test email sent.")
+    return 0
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Send the PSX Top 10 email notification.")
+    parser.add_argument("--test", action="store_true", help="Send a test Top 10 digest.")
+    args = parser.parse_args()
+    if not args.test:
+        parser.error("use --test to send a connectivity test")
+    raise SystemExit(asyncio.run(_test()))
+
+
+if __name__ == "__main__":
+    main()

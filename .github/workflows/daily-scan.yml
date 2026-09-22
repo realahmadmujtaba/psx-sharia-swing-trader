@@ -1,9 +1,9 @@
-name: Daily EOD scan
+name: Friday Top 10 scan
 
 on:
   schedule:
-    # 17:45 PKT = 12:45 UTC, Monday-Friday (PSX trading days).
-    - cron: "45 12 * * 1-5"
+    # 15:00 PKT = 10:00 UTC, before Friday's market close.
+    - cron: "0 10 * * 5"
   workflow_dispatch:
 
 permissions:

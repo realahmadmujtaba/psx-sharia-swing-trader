@@ -35,6 +35,8 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
             "value_max_pe": config.VALUE_MAX_PE,
             "value_min_dividend_yield": config.VALUE_MIN_DIVIDEND_YIELD,
             "smtp_weekly_alert_day": "Friday",
+            "market_index": config.UNIVERSE_INDEX,
+            "min_holding_days": config.MIN_HOLDING_DAYS,
         },
         "stocks": rows,
         "portfolio": rows,
