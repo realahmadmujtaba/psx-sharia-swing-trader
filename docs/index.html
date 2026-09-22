@@ -147,6 +147,7 @@
       <table id="bt-split">
         <thead><tr><th>Period</th><th class="n">Trades</th><th class="n">Win rate</th>
           <th class="n">Profit factor</th><th class="n">Return</th><th class="n">Index</th>
+          <th class="n">Exposure</th><th class="n">Max DD</th><th class="n">DD days</th>
           <th class="n">Sharpe</th><th class="n">Beta</th></tr></thead>
         <tbody></tbody>
       </table>
@@ -218,7 +219,8 @@
 
     const r = d.rules, list = document.getElementById("rules");
     const rules = [
-      [`Every stock must clear`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares, price above Rs. ${num(r.min_price, 0)}, close above the ${r.macro_ema_period}-day average, and the ${r.market_index} index above its ${r.ema_period}-day average`],
+      [`Market regime`, `no new buy unless the ${r.regime_index} index is above its ${r.regime_ema_period}-day average and that average is rising — sits in cash through sideways markets`],
+      [`Every stock must clear`, `${r.volume_lookback}-day average volume above ${Number(r.min_avg_volume).toLocaleString()} shares, price above Rs. ${num(r.min_price, 0)}, and close above the ${r.macro_ema_period}-day average`],
       [`Breakout entry`, `ADX(${r.adx_period}) above ${r.adx_min}, a ${r.rs_lookback}-day return beating the ${r.market_index}, and volume at least ${r.volume_spike_mult}× its ${r.volume_lookback}-day average`],
       [`Risk set at entry`, `stop-loss ${r.atr_stop_mult}× ATR below and take-profit ${r.atr_target_mult}× ATR above, sized so a stop-out costs about ${num(r.risk_per_trade_pct * 100, 1)}% of the account`],
       [`Trailing exit`, `the position is sold when it closes below its ${r.trail_ema_period}-day average, so winners are not cut on a fixed day`],
@@ -255,6 +257,8 @@
     stat(root, num(m.total_return_pct, 2) + "%", "total return", m.total_return_pct >= 0 ? "pos" : "neg");
     stat(root, num(bm.total_return_pct, 2) + "%", `holding ${bm.index} instead`,
          bm.total_return_pct >= 0 ? "pos" : "neg");
+    stat(root, num(m.exposure_pct, 0) + "%", "time in market");
+    stat(root, num(m.max_drawdown_pct, 2) + "%", `worst drawdown (${m.drawdown_duration_days}d to recover)`, "neg");
     stat(root, num(m.sharpe, 2), `Sharpe (index ${num(bm.sharpe, 2)})`, m.sharpe >= 0 ? "pos" : "neg");
 
     const rows = [
@@ -271,6 +275,9 @@
       cell(num(x.profit_factor, 2), x.profit_factor >= 1 ? "pos" : "neg");
       cell(num(x.total_return_pct, 2) + "%", x.total_return_pct >= 0 ? "pos" : "neg");
       cell(num(bench.total_return_pct, 2) + "%");
+      cell(num(x.exposure_pct, 0) + "%");
+      cell(num(x.max_drawdown_pct, 2) + "%", "neg");
+      cell(x.drawdown_duration_days);
       cell(num(x.sharpe, 2), x.sharpe >= 0 ? "pos" : "neg");
       cell(num(x.beta, 2));
       body.append(tr);
@@ -281,8 +288,11 @@
     if (oos.profit_factor === null || oos.profit_factor < 1 || oos.total_return_pct < oosBench.total_return_pct) {
       box.textContent = "Being straight with you: on the held-back period the rules lost to simply holding the index " +
         `(${num(oos.total_return_pct, 1)}% against ${num(oosBench.total_return_pct, 1)}%), with a profit factor of ` +
-        `${num(oos.profit_factor, 2)}. The earlier period looks better because the rules were built on it. ` +
-        "Nothing here demonstrates an edge yet, so treat the alerts as a shortlist to research, not a promise of profit.";
+        `${num(oos.profit_factor, 2)} and ${oos.drawdown_duration_days} of ${oos.trading_days} trading days spent ` +
+        "underwater. A market regime filter was added to sit out sideways markets, but it only stayed out of the " +
+        "market 22% of this period — a 100-day trend average is too slow to catch a market that goes flat after a " +
+        "big rally. The earlier period looks better because the rules were built on it. Nothing here demonstrates " +
+        "an edge yet, so treat the alerts as a shortlist to research, not a promise of profit.";
       box.hidden = false;
     }
 

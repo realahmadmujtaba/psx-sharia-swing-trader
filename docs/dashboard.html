@@ -259,13 +259,19 @@
   function renderMarket(m, r) {
     const box = document.getElementById("market");
     if (!m) {
-      box.textContent = `Market filter: ${r.market_index} data unavailable. New BUY signals are paused.`;
+      box.textContent = `Market regime: ${r.regime_index} data unavailable. New BUY signals are paused.`;
       box.className = "banner down";
+    } else if (m.uptrend) {
+      box.textContent = `Market regime: ${r.regime_index} closed at ${fmt(m.close, 0)}, above its rising ` +
+        `${r.regime_ema_period}-day EMA (${fmt(m.ema_100, 0)}). New BUY signals allowed.`;
+      box.className = "banner up";
     } else {
-      const trend = m.uptrend ? "above" : "below";
-      box.textContent = `Market filter: ${r.market_index} closed at ${fmt(m.close, 0)}, ${trend} its ${r.ema_period}-day EMA (${fmt(m.ema_50, 0)}). ` +
-        (m.uptrend ? "New BUY signals allowed." : "New BUY signals are paused until the index recovers.");
-      box.className = "banner " + (m.uptrend ? "up" : "down");
+      const why = !m.above_ema
+        ? `below its ${r.regime_ema_period}-day EMA (${fmt(m.ema_100, 0)})`
+        : `above its ${r.regime_ema_period}-day EMA but that average is not rising (sideways market)`;
+      box.textContent = `Market regime: ${r.regime_index} closed at ${fmt(m.close, 0)}, ${why}. ` +
+        "New BUY signals are paused; open positions still exit normally.";
+      box.className = "banner down";
     }
     box.hidden = false;
   }
@@ -309,8 +315,12 @@
   function renderRules(r) {
     const pct = v => fmt(v * 100, 0) + "%";
     const groups = [
+      ["Market regime — must be true to trade", [
+        `${r.regime_index} index above its ${r.regime_ema_period}-day EMA`,
+        `That EMA higher than it was ${r.regime_slope_lookback} sessions ago (rising, not just above)`,
+        "Fails either test: 0 new BUY signals, open positions still managed normally",
+      ]],
       ["Baseline — every stock", [
-        `${r.market_index} index above its ${r.ema_period}-day EMA (market filter)`,
         `Close above the ${r.macro_ema_period}-day EMA (macro trend)`,
         `${r.volume_lookback}-day average volume above ${fmt(r.min_avg_volume, 0)} shares`,
         `Price above Rs. ${fmt(r.min_price, 0)}`,

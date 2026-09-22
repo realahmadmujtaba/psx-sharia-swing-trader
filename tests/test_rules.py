@@ -7,7 +7,7 @@ import pandas as pd
 
 import config
 from alerts import dashboard
-from alerts.email_alert import _build_digest_message
+from alerts.email_alert import _build_digest_message, _format_market
 from core import indicators, risk
 from core.signal_engine import (
     SETUPS,
@@ -197,17 +197,37 @@ class TestADX(unittest.TestCase):
         self.assertLess(result.iloc[-1], config.ADX_MIN)
 
 
-class TestMarketFilter(unittest.TestCase):
-    def test_rising_index_is_uptrend(self):
-        self.assertTrue(market_status(_frame(np.linspace(1000, 2000, 80)))["uptrend"])
+class TestMarketRegime(unittest.TestCase):
+    """New entries are gated on the broad index: above a rising long EMA."""
 
-    def test_falling_index_blocks(self):
-        self.assertFalse(market_status(_frame(np.linspace(2000, 1000, 80)))["uptrend"])
+    def test_rising_market_allows_entries(self):
+        status = market_status(_frame(np.linspace(1000, 2000, 200)))
+        self.assertTrue(status["above_ema"])
+        self.assertTrue(status["ema_rising"])
+        self.assertTrue(status["uptrend"])
+
+    def test_falling_market_blocks_entries(self):
+        self.assertFalse(market_status(_frame(np.linspace(2000, 1000, 200)))["uptrend"])
+
+    def test_bounce_inside_a_downtrend_blocks(self):
+        # Long decline, then one sharp up day: price clears the EMA, but the EMA is still
+        # falling, so this is a bounce and not a new uptrend.
+        closes = list(np.linspace(2000, 1200, 220)) + [1400.0]
+        status = market_status(_frame(closes))
+        self.assertTrue(status["above_ema"])
+        self.assertFalse(status["ema_rising"])
+        self.assertFalse(status["uptrend"])
+
+    def test_uptrend_needs_both_conditions(self):
+        status = market_status(_frame(np.linspace(1000, 2000, 200)))
+        self.assertEqual(status["uptrend"], status["above_ema"] and status["ema_rising"])
+
+    def test_short_history_returns_none(self):
+        self.assertIsNone(market_status(_frame(np.linspace(1000, 2000, 80))))
 
     def test_duplicate_dates_are_ignored(self):
-        df = _frame(np.linspace(1000, 2000, 80))
-        df = pd.concat([df, df.tail(2)])
-        self.assertIsNotNone(market_status(df))
+        df = _frame(np.linspace(1000, 2000, 200))
+        self.assertIsNotNone(market_status(pd.concat([df, df.tail(2)])))
 
 
 class TestDelistingAdvice(unittest.TestCase):
@@ -255,9 +275,36 @@ class TestPurification(unittest.TestCase):
         self.assertEqual(purification_amount(-5_000, 1.3), 0.0)
 
 
+class TestMarketRegimeEmail(unittest.TestCase):
+    """The email must distinguish all three regime outcomes, not just up/down."""
+
+    def _market(self, above_ema, ema_rising):
+        return {"index": "KMIALLSHR", "close": 65000.0, "ema_100": 60000.0,
+                "above_ema": above_ema, "ema_rising": ema_rising,
+                "uptrend": above_ema and ema_rising}
+
+    def test_uptrend_allows_signals(self):
+        self.assertIn("UP", _format_market(self._market(True, True)))
+
+    def test_below_ema_pauses(self):
+        text = _format_market(self._market(False, False))
+        self.assertIn("DOWN", text)
+        self.assertIn("paused", text)
+
+    def test_sideways_above_ema_but_flat_pauses(self):
+        text = _format_market(self._market(True, False))
+        self.assertIn("SIDEWAYS", text)
+        self.assertIn("paused", text)
+
+    def test_none_market_reports_unavailable(self):
+        self.assertIn("unavailable", _format_market(None))
+
+
 class TestOutputs(unittest.TestCase):
     RESULT = {
-        "market": {"index": "KMI30", "date": date(2026, 9, 18), "close": 250000.0, "ema_50": 240000.0, "uptrend": True},
+        "market": {"index": "KMIALLSHR", "date": date(2026, 9, 18), "close": 65000.0,
+                  "ema_100": 60000.0, "ema_100_prior": 59000.0, "above_ema": True,
+                  "ema_rising": True, "uptrend": True, "ema_50": 62000.0},
         "signals": [{
             "symbol": "HUBC", "signal_type": "SELL", "close_price": 220.0, "entry_price": 200.0,
             "stop_loss": 185.0, "take_profit": 218.0, "exit_reason": "TAKE_PROFIT", "days_held": 6,

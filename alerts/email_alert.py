@@ -89,10 +89,15 @@ def _format_warning(warning: dict) -> str:
 
 def _format_market(market: dict | None) -> str:
     if market is None:
-        return f"Market: {config.MARKET_INDEX} data unavailable - new BUY signals paused today.\n"
-    trend = "UP (BUY signals allowed)" if market["uptrend"] else "DOWN (new BUY signals paused)"
-    return (f"Market: {config.MARKET_INDEX} {market['close']:,.0f} vs 50-day EMA "
-            f"{market['ema_50']:,.0f} - trend {trend}\n")
+        return f"Market regime: {config.REGIME_INDEX} data unavailable - new BUY signals paused today.\n"
+    if market["uptrend"]:
+        trend = "UP (BUY signals allowed)"
+    elif not market["above_ema"]:
+        trend = "DOWN, below its EMA (new BUY signals paused)"
+    else:
+        trend = "SIDEWAYS, EMA not rising (new BUY signals paused)"
+    return (f"Market regime: {config.REGIME_INDEX} {market['close']:,.0f} vs "
+            f"{config.REGIME_EMA_PERIOD}-day EMA {market['ema_100']:,.0f} - {trend}\n")
 
 
 def _build_digest_message(result: dict) -> EmailMessage:

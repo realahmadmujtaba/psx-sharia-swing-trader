@@ -118,18 +118,30 @@ def benchmark_rolling_return(index_df: pd.DataFrame) -> float | None:
 
 
 def market_status(index_df: pd.DataFrame) -> dict | None:
+    """Regime gate: is the broad market trending up enough to take new entries?"""
     df = _clean(index_df)
-    # Only the 50-day EMA matters here, so it does not need the macro-EMA history.
-    if len(df) < config.EMA_PERIOD + 1:
+    if len(df) < config.REGIME_EMA_PERIOD + config.REGIME_SLOPE_LOOKBACK + 1:
         return None
-    ema_50 = float(indicators.ema(df["close"], config.EMA_PERIOD).iloc[-1])
+
+    ema = indicators.ema(df["close"], config.REGIME_EMA_PERIOD)
+    ema_now = float(ema.iloc[-1])
+    ema_before = float(ema.iloc[-1 - config.REGIME_SLOPE_LOOKBACK])
     close = float(df["close"].iloc[-1])
+
+    above_ema = close > ema_now
+    rising = ema_now > ema_before
+
     return {
-        "index": config.MARKET_INDEX,
+        "index": config.REGIME_INDEX,
         "date": pd.Timestamp(df["date"].iloc[-1]).date(),
         "close": close,
-        "ema_50": ema_50,
-        "uptrend": close > ema_50,
+        "ema_100": ema_now,
+        "ema_100_prior": ema_before,
+        "above_ema": above_ema,
+        "ema_rising": rising,
+        "uptrend": above_ema and rising,
+        # Kept for the dashboard's rule copy.
+        "ema_50": float(indicators.ema(df["close"], config.EMA_PERIOD).iloc[-1]),
     }
 
 

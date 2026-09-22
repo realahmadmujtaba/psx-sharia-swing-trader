@@ -54,9 +54,9 @@ def run_scan() -> dict:
     held_outside = [s for s in positions["symbol"] if s not in universe]
     open_count = len(positions)
 
-    market_df = fetch_ohlcv(config.MARKET_INDEX, start, end)
-    market = market_status(market_df)
-    benchmark_return = benchmark_rolling_return(market_df)
+    # Regime gate runs on the broad index; relative strength still measures against KMI-30.
+    market = market_status(fetch_ohlcv(config.REGIME_INDEX, start, end))
+    benchmark_return = benchmark_rolling_return(fetch_ohlcv(config.MARKET_INDEX, start, end))
 
     signals, rows, warnings, watchlist, candidates = [], [], [], [], []
 
@@ -102,8 +102,12 @@ def run_scan() -> dict:
         rows.append(row)
 
     if market is None or not market["uptrend"]:
-        blocked = (f"Market filter: {config.MARKET_INDEX} below 50-day EMA" if market
-                   else f"Market filter: {config.MARKET_INDEX} data unavailable")
+        if market is None:
+            blocked = f"Market regime: {config.REGIME_INDEX} data unavailable"
+        elif not market["above_ema"]:
+            blocked = f"Market regime: {config.REGIME_INDEX} below its {config.REGIME_EMA_PERIOD}-day EMA"
+        else:
+            blocked = f"Market regime: {config.REGIME_INDEX} {config.REGIME_EMA_PERIOD}-day EMA not rising"
         for row, _ in candidates:
             row.update(status="NO SIGNAL", reasons=[blocked])
             watchlist.append(_watch(row, blocked))

@@ -35,8 +35,14 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 UNIVERSE_INDEX = "KMIALLSHR"
-# Benchmark for the market filter and for relative strength (the tradable Sharia index).
+# Benchmark for relative strength and for return comparisons (the tradable Sharia index).
 MARKET_INDEX = "KMI30"
+# Regime gate: the broad Sharia market. No new BUY unless it closes above its own
+# REGIME_EMA_PERIOD EMA *and* that EMA is higher than it was REGIME_SLOPE_LOOKBACK days ago,
+# so the engine sits in cash through sideways markets instead of being chopped up.
+REGIME_INDEX = "KMIALLSHR"
+REGIME_EMA_PERIOD = 100
+REGIME_SLOPE_LOOKBACK = 5
 # Cheap pre-filter from the one-shot screener table, so ~300 symbols are not all fetched.
 # Deliberately looser than MIN_AVG_VOLUME; the exact 20-day SMA still decides.
 PREFILTER_AVG_VOLUME = 300_000

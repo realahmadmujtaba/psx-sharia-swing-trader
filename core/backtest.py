@@ -93,12 +93,25 @@ def _risk_metrics(daily_equity: pd.Series, benchmark: pd.Series) -> dict:
     }
 
 
+def drawdown_duration_days(daily_equity: pd.Series) -> int:
+    """Longest run of days spent below the previous all-time high."""
+    if daily_equity.empty:
+        return 0
+    underwater = daily_equity < daily_equity.cummax()
+    longest = run = 0
+    for below in underwater:
+        run = run + 1 if below else 0
+        longest = max(longest, run)
+    return int(longest)
+
+
 def _metrics(trades: list[dict], daily_equity: pd.Series, benchmark: pd.Series,
-             start_equity: float, years: float) -> dict:
+             start_equity: float, years: float, exposure_days: int = 0) -> dict:
     base = {"trades": 0, "trades_per_year": 0.0, "win_rate": None, "total_return_pct": 0.0,
             "avg_return_pct": None, "avg_win_pct": None, "avg_loss_pct": None,
             "profit_factor": None, "max_drawdown_pct": 0.0, "avg_days_held": None,
-            "sharpe": None, "beta": None, "annual_return_pct": None, "annual_vol_pct": None}
+            "sharpe": None, "beta": None, "annual_return_pct": None, "annual_vol_pct": None,
+            "exposure_pct": 0.0, "drawdown_duration_days": 0, "trading_days": len(daily_equity)}
     if not trades or daily_equity.empty:
         return base
 
@@ -109,6 +122,8 @@ def _metrics(trades: list[dict], daily_equity: pd.Series, benchmark: pd.Series,
     return {
         **base,
         **_risk_metrics(daily_equity, benchmark),
+        "exposure_pct": round(exposure_days / len(daily_equity) * 100, 1),
+        "drawdown_duration_days": drawdown_duration_days(daily_equity),
         "trades": len(trades),
         "trades_per_year": round(len(trades) / years, 1),
         "win_rate": round(len(wins) / len(trades) * 100, 1),
@@ -167,6 +182,7 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
     cash = start_equity
     last_price: dict[str, float] = {}
     daily_equity: dict[date, float] = {}
+    exposure_days = 0
 
     for today in dates:
         for symbol in list(open_positions):
@@ -220,6 +236,8 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
 
         daily_equity[today] = cash + sum(p["shares"] * last_price.get(s, p["entry_price"])
                                          for s, p in open_positions.items())
+        if open_positions:
+            exposure_days += 1
 
     equity_series = pd.Series(daily_equity).sort_index()
     benchmark = market["close"].reindex(equity_series.index).ffill()
@@ -241,7 +259,7 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
         "variant": variant,
         "from": str(dates[0]) if dates else None,
         "to": str(dates[-1]) if dates else None,
-        "metrics": _metrics(trades, equity_series, benchmark, start_equity, years),
+        "metrics": _metrics(trades, equity_series, benchmark, start_equity, years, exposure_days),
         "by_setup": by_setup,
         "equity_curve": [{"date": str(d), "equity": round(v, 2)}
                          for d, v in equity_series.items()],
@@ -267,11 +285,18 @@ def load_history(years: int, refresh: bool = False) -> tuple[dict[str, pd.DataFr
     end = datetime.now(config.TIMEZONE).date()
     start = end - timedelta(days=round(years * 365.25) + config.MACRO_EMA_PERIOD * 2)
 
-    market_raw = _cached_fetch(config.MARKET_INDEX, start, end, refresh)
-    market = _prepare(market_raw, None)
+    market = _prepare(_cached_fetch(config.MARKET_INDEX, start, end, refresh), None)
     if market is None:
         raise RuntimeError(f"No usable history for the {config.MARKET_INDEX} index")
-    market["uptrend"] = market["close"] > market["ema_50"]
+
+    # Regime gate runs on the broad index: close above a rising long EMA.
+    regime = _prepare(_cached_fetch(config.REGIME_INDEX, start, end, refresh), None)
+    if regime is None:
+        raise RuntimeError(f"No usable history for the {config.REGIME_INDEX} index")
+    regime_ema = indicators.ema(regime["close"], config.REGIME_EMA_PERIOD)
+    regime_ok = ((regime["close"] > regime_ema)
+                 & (regime_ema > regime_ema.shift(config.REGIME_SLOPE_LOOKBACK)))
+    market["uptrend"] = regime_ok.reindex(market.index).fillna(False)
 
     history = {}
     for symbol in get_universe():

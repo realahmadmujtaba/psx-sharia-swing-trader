@@ -34,6 +34,10 @@ call to the liquid ones (~85 scanned per run).
 **Baseline — every candidate must clear:** KMI-30 index above its 50-day EMA (market filter);
 close above the 100-day EMA; 20-day average volume above 500,000 shares; price above Rs. 10.
 
+**Market regime gate (checked before any stock):** no new BUY unless the KMI All-Share index
+closes above its own 100-day EMA *and* that EMA is higher than 5 sessions ago. Open positions
+still exit normally when this is false — only new entries pause.
+
 **Entry (breakout):** ADX(14) above 20, a 20-day return beating the KMI-30, and volume at least
 1.5× its 20-day average.
 
@@ -85,15 +89,23 @@ directly in `core/indicators.py` with Wilder smoothing and unit-tested against k
 ## Results, honestly
 
 `python -m core.backtest --years 3 --save` reports the full period, the first 70% (in-sample) and
-the held-back 30% (out-of-sample) separately, each against buy-and-hold. Latest run:
+the held-back 30% (out-of-sample) separately, each against buy-and-hold. Latest run, with the
+market regime gate active:
 
-| Period | Trades | Win rate | Profit factor | Return | Index | Sharpe | Beta |
-|---|---|---|---|---|---|---|---|
-| Full 2023-03 → 2026-09 | 407 | 40.3% | 1.24 | +133.9% | +243.6% | 0.50 | 0.47 |
-| In-sample 2023-03 → 2025-09 | 287 | 43.2% | 1.45 | +148.3% | +203.6% | 0.99 | 0.47 |
-| **Out-of-sample 2025-09 → 2026-09** | **131** | **30.5%** | **0.88** | **−12.1%** | **+12.5%** | **−0.96** | **0.27** |
+| Period | Trades | Win rate | PF | Return | Index | Exposure | Max DD | DD days | Sharpe | Beta |
+|---|---|---|---|---|---|---|---|---|---|---|
+| In-sample 2023-03 → 2025-09 | 317 | 43.2% | 1.53 | +186.8% | +205.4% | 93.3% | −16.7% | 90 | 1.17 | 0.66 |
+| **Out-of-sample 2025-09 → 2026-09** | **145** | **29.0%** | **0.83** | **−20.3%** | **+11.4%** | **82.9%** | **−27.7%** | **244** | **−1.26** | **0.26** |
 
-The strategy underperforms simply holding the KMI-30 in every window, and loses money on the
-held-back period. Beta near 0.5 says roughly half the movement is just the market. Nothing here
-demonstrates an edge. The landing page publishes this table as-is; treat the alerts as a screening
-shortlist, not investment advice.
+**The regime gate did not fix it — and the reason is worth knowing.** It requires the KMI
+All-Share to be above a *rising* 100-day EMA, but after the prior rally that EMA kept climbing on
+its own inertia: it was only closed 22% of the out-of-sample window, so the strategy stayed almost
+as exposed (83% of days) through the exact chop that hurt it. A 100-day EMA is too slow to detect
+a market that goes sideways after a huge run-up. The drawdown also went underwater for 244 of 263
+out-of-sample trading days — essentially the whole period.
+
+Setup B (pullback), re-checked with the gate active: out-of-sample profit factor 0.71, still below
+the 1.20 keep threshold, so it stays retired.
+
+Nothing here demonstrates an edge. The landing page publishes this table as-is; treat the alerts
+as a screening shortlist, not investment advice.
