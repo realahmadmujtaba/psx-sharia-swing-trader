@@ -156,7 +156,7 @@
 
   function el(tag, text, className) {
     const node = document.createElement(tag);
-    if (text !== undefined && text !== null) node.textContent = text;
+    if (text != null) node.textContent = text;
     if (className) node.className = className;
     return node;
   }
