@@ -6,7 +6,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import config
-from alerts import dashboard, notifier, webhook
+from alerts import blog_generator, dashboard, notifier, webhook
 from alerts.email_alert import send_digest
 from core import state
 from core import scoring
@@ -99,7 +99,6 @@ def run_scan() -> dict:
 
 def run_once() -> None:
     result = run_scan()
-    dashboard.publish(dashboard.build_payload(result, state.load_log()))
     asyncio.run(send_digest(result))
     tickers = [item["symbol"] for item in result.get("portfolio", [])]
     try:
@@ -114,6 +113,8 @@ def run_once() -> None:
             "divergence_insights": [],
         }
     asyncio.run(notifier.send_portfolio_alert(result, intelligence))
+    blog_generator.save_blog_post(intelligence, result.get("portfolio", []))
+    dashboard.publish(dashboard.build_payload(result, state.load_log()))
     webhook.notify(result)
 
 

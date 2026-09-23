@@ -7,6 +7,52 @@ import pandas as pd
 
 import config
 
+# A small maintained map for symbols whose sector is not supplied by the data
+# provider. Unknown symbols remain independent sectors rather than being
+# incorrectly grouped together.
+SECTOR_MAP = {
+    "LUCK": "Cement",
+    "DGKC": "Cement",
+    "MLCF": "Cement",
+    "FCCL": "Cement",
+    "LOTCHEM": "Fertilizer",
+    "ENGRO": "Fertilizer",
+    "EFERT": "Fertilizer",
+    "FFC": "Fertilizer",
+    "FFBL": "Fertilizer",
+    "POL": "E&P",
+    "PPL": "E&P",
+    "OGDC": "E&P",
+    "MARI": "E&P",
+    "SNGPL": "Gas Utilities",
+    "SSGC": "Gas Utilities",
+    "HUBC": "Power",
+    "KEL": "Power",
+    "PSO": "Oil Marketing",
+    "SHEL": "Oil Marketing",
+    "ATRL": "Refinery",
+    "NRL": "Refinery",
+    "PRL": "Refinery",
+    "CNERGY": "Refinery",
+    "SYS": "Technology",
+    "TRG": "Technology",
+    "NETSOL": "Technology",
+    "MEBL": "Commercial Banks",
+    "HBL": "Commercial Banks",
+    "UBL": "Commercial Banks",
+    "MCB": "Commercial Banks",
+    "BAHL": "Commercial Banks",
+    "FFC": "Fertilizer",
+}
+
+
+def sector_for(symbol: str, sector: str | None = None) -> str:
+    """Return the provider sector, known PSX mapping, or symbol fallback."""
+    if sector is not None and not pd.isna(sector) and str(sector).strip():
+        return str(sector).strip()
+    normalized = str(symbol).strip().upper()
+    return SECTOR_MAP.get(normalized, f"Unknown:{normalized}")
+
 
 def _percentile(values: pd.Series, higher_is_better: bool) -> pd.Series:
     numeric = pd.to_numeric(values, errors="coerce")
@@ -18,8 +64,12 @@ def _percentile(values: pd.Series, higher_is_better: bool) -> pd.Series:
 
 def _proxy_values(rows: pd.DataFrame) -> tuple[pd.Series, pd.Series]:
     """Use transparent price/liquidity proxies when fundamentals are unavailable."""
-    price_proxy = rows["close"]
-    income_proxy = rows["avg_volume"] / rows["close"].replace(0, np.nan)
+    price_proxy = pd.to_numeric(rows.get("close", pd.Series(1.0, index=rows.index)), errors="coerce")
+    avg_volume = pd.to_numeric(
+        rows.get("avg_volume", pd.Series(1.0, index=rows.index)),
+        errors="coerce",
+    )
+    income_proxy = avg_volume / price_proxy.replace(0, np.nan)
     return price_proxy, income_proxy
 
 
@@ -44,7 +94,18 @@ def rank_snapshots(snapshots: list[dict], limit: int = 10) -> list[dict]:
         + frame["momentum_score"] * 0.2
     ).round(2)
     frame = frame.sort_values(["composite_score", "symbol"], ascending=[False, True])
-    return frame.head(limit).where(pd.notna(frame.head(limit)), None).to_dict("records")
+    selected = []
+    sector_counts: dict[str, int] = {}
+    for row in frame.to_dict("records"):
+        sector = sector_for(row["symbol"], row.get("sector"))
+        if sector_counts.get(sector, 0) >= 2:
+            continue
+        row["sector"] = sector
+        selected.append(row)
+        sector_counts[sector] = sector_counts.get(sector, 0) + 1
+        if len(selected) >= limit:
+            break
+    return pd.DataFrame(selected).where(pd.notna(pd.DataFrame(selected)), None).to_dict("records")
 
 
 def score_snapshot(symbol: str, snapshot: dict) -> dict:

@@ -62,6 +62,9 @@ def publish(payload: dict) -> None:
     for generated in ("docs/dashboard.html", "docs/tearsheet.html"):
         if (PROJECT_ROOT / generated).exists():
             paths.append(generated)
+    blog_posts = sorted((PROJECT_ROOT / "docs" / "blog_posts").glob("*.md"))
+    if blog_posts:
+        paths.append(str(blog_posts[-1].relative_to(PROJECT_ROOT)))
     for state_file in ("data/signals.db", "data/signals_log.csv"):
         if (PROJECT_ROOT / state_file).exists():
             paths.append(state_file)

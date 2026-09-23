@@ -263,8 +263,8 @@
         "When fundamentals are unavailable, transparent price/liquidity proxies are ranked",
       ]],
       ["Sharia", [
-        `Only stocks in the ${r.market_index} Sharia index`,
-        `No SELL of any kind before day ${r.min_holding_days}: shares must settle into the account first`,
+        `Only stocks in the ${r.market_index || "KMIALLSHR"} Sharia index`,
+        `No SELL of any kind before day ${r.min_holding_days ?? 2}: shares must settle into the account first`,
         "Purification ratio (Al-Meezan) shown with every signal",
         "If a held stock leaves the index: a warning with a hold-or-sell suggestion",
       ]],
