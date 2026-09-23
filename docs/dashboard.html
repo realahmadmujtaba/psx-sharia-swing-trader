@@ -96,6 +96,14 @@
   .warning:last-child { border-bottom: 0; }
   .warning .rec { font-weight: 700; }
   .warning p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+  .briefings { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+  .briefing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); }
+  .briefing-card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .briefing-card h3 { margin: 0; font-size: 1.2rem; }
+  .ai-score { background: linear-gradient(135deg, var(--accent), #2dd4bf); color: white; border-radius: 999px; padding: 4px 10px; font-size: 0.74rem; font-weight: 700; }
+  .urdu-block { direction: rtl; text-align: right; font-family: "Jameel Noori Nastaleeq", "Noto Naskh Arabic", "Segoe UI", Tahoma, Arial, sans-serif; font-size: 0.96rem; line-height: 1.8; color: var(--text); }
+  .urdu-block h4 { margin: 12px 0 4px; font-size: 0.92rem; color: var(--accent); }
+  .urdu-block p { margin: 0 0 10px; color: var(--text); }
   #error { display: none; background: var(--sell-bg); color: var(--sell); padding: 12px 16px; border-radius: 10px; margin-top: 16px; }
   @media (max-width: 640px) {
     .tiles { grid-template-columns: repeat(2, 1fr); }
@@ -112,6 +120,11 @@
   </header>
   <div id="error"></div>
   <div id="market" class="banner" hidden></div>
+
+  <section id="urdu-briefings-section" hidden>
+    <h2>آئی AI اردو تجزیہ</h2>
+    <div class="briefings" id="urdu-briefings"></div>
+  </section>
 
   <div class="tiles">
     <div class="tile buy"><div class="n" id="n-buy">–</div><div class="l">Top 10 holdings</div></div>
@@ -230,6 +243,46 @@
     box.hidden = false;
   }
 
+  function renderBriefings(list) {
+    const root = document.getElementById("urdu-briefings");
+    const section = document.getElementById("urdu-briefings-section");
+    const records = Array.isArray(list) ? list : [];
+    if (!records.length) {
+      section.hidden = true;
+      return;
+    }
+    root.innerHTML = "";
+    for (const record of records) {
+      const briefing = record.briefing || {};
+      const card = document.createElement("article");
+      card.className = "briefing-card";
+      const head = document.createElement("div");
+      head.className = "briefing-card-header";
+      const symbol = document.createElement("h3");
+      symbol.textContent = `${record.symbol || "—"}`;
+      const score = document.createElement("span");
+      score.className = "ai-score";
+      score.textContent = `AI ${Number(record.final_ai_score || 0).toFixed(1)}`;
+      head.append(symbol, score);
+      const block = document.createElement("div");
+      block.className = "urdu-block";
+      block.setAttribute("dir", "rtl");
+      const meta = document.createElement("p");
+      meta.innerHTML = `<strong>سیکٹر:</strong> ${record.sector || "—"}`;
+      block.appendChild(meta);
+      for (const [title, text] of Object.entries(briefing)) {
+        const label = document.createElement("h4");
+        label.textContent = title;
+        const value = document.createElement("p");
+        value.textContent = text;
+        block.append(label, value);
+      }
+      card.append(head, block);
+      root.appendChild(card);
+    }
+    section.hidden = false;
+  }
+
   function renderWarnings(list) {
     if (!list.length) return;
     const root = document.getElementById("warnings");
@@ -293,6 +346,7 @@
       document.getElementById("n-watch").textContent = d.portfolio.length ? "20%" : "—";
       document.getElementById("n-total").textContent = d.stocks.length;
       renderMarket(d.market, d.rules);
+      renderBriefings(d.urdu_briefings || []);
       renderWarnings(d.warnings || []);
       renderPortfolio(d.portfolio || []);
       renderRules(d.rules);
