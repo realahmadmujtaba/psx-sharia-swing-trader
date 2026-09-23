@@ -15,7 +15,7 @@ from fetchers.universe import get_universe
 RESULT_PATH = config.DOCS_DIR / "backtest.json"
 CACHE_DIR = config.DATA_DIR / "history_cache"
 # "both" is what runs live; the single-setup runs show which half carries the result.
-VARIANTS = {"multi_factor": ()}
+VARIANTS = {"multi_factor": (), "ai_conviction": ("AI_CONVICTION",)}
 
 
 def _prepare(df: pd.DataFrame, benchmark_return: pd.Series | None) -> pd.DataFrame | None:
@@ -48,6 +48,22 @@ def _prepare(df: pd.DataFrame, benchmark_return: pd.Series | None) -> pd.DataFra
     df["rsi"] = indicators.rsi(close, config.RSI_PERIOD)
     df["atr"] = indicators.atr(df["high"], df["low"], close, config.ATR_PERIOD)
     df["avg_volume"] = indicators.avg_volume(volume, config.VOLUME_LOOKBACK)
+    prior_avg_volume = df["avg_volume"].shift(1)
+    candle_range = (df["high"] - df["low"]).replace(0, np.nan)
+    df["retail_trap"] = (
+        (volume > prior_avg_volume * 3)
+        & (((df["close"] - df["low"]) / candle_range) <= 0.25)
+    ).fillna(False)
+    toxic = pd.Series(False, index=df.index)
+    for column in ("free_cash_flow", "earnings", "net_income"):
+        if column in df:
+            toxic |= pd.to_numeric(df[column], errors="coerce").lt(0).fillna(False)
+    if "pe" in df:
+        pe = pd.to_numeric(df["pe"], errors="coerce")
+        toxic |= pe.le(0).fillna(False) | pe.ge(100).fillna(False)
+    df["toxic_asset"] = toxic
+    df["toxic_penalty"] = np.where(toxic, -50.0, 0.0)
+    df["conviction_multiplier"] = np.where(df["retail_trap"], 0.5, 1.0)
     df = df.set_index("date")
 
     baseline = ((df["avg_volume"] > config.MIN_AVG_VOLUME)
@@ -301,16 +317,27 @@ def _weekly_rebalance_run(
     daily_equity: dict[date, float] = {}
     trades: list[dict] = []
     exposure_days = 0
+    excluded_traps_total = 0
+    excluded_toxic_total = 0
 
     for today in dates:
         if today in rebalance_dates:
             snapshots = []
+            excluded_traps = 0
+            excluded_toxic = 0
             for symbol, weekly in weekly_data.items():
                 available = weekly.loc[:pd.Timestamp(today)]
                 if available.empty:
                     continue
                 latest = available.iloc[-1]
                 if any(pd.isna(latest[field]) for field in ("ema_20", "rsi", "roc_12w")):
+                    continue
+                daily = history[symbol].loc[:today].iloc[-1]
+                is_trap = bool(daily.get("retail_trap", False))
+                is_toxic = bool(daily.get("toxic_asset", False))
+                if variant == "ai_conviction" and (is_trap or is_toxic):
+                    excluded_traps += int(is_trap)
+                    excluded_toxic += int(is_toxic)
                     continue
                 snapshots.append({
                     "symbol": symbol,
@@ -319,6 +346,9 @@ def _weekly_rebalance_run(
                     "pe": None,
                     "dividend_yield": None,
                     "roc_12w": float(latest["roc_12w"]),
+                    "retail_trap": is_trap,
+                    "toxic": is_toxic,
+                    "conviction_multiplier": float(daily.get("conviction_multiplier", 1.0)),
                 })
             target = scoring.rank_snapshots(snapshots, config.PORTFOLIO_SIZE) if market_ok.loc[today] else []
             new_holdings = [row["symbol"] for row in target]
@@ -329,6 +359,8 @@ def _weekly_rebalance_run(
             weights = {symbol: 1 / len(holdings) for symbol in holdings} if holdings else {}
             if holdings:
                 trades.append({"return_pct": 0.0, "pnl": 0.0, "days_held": 7})
+            excluded_traps_total += excluded_traps
+            excluded_toxic_total += excluded_toxic
 
         previous = daily_equity.get(dates[dates.index(today) - 1], equity) if dates.index(today) else equity
         if holdings:
@@ -354,6 +386,10 @@ def _weekly_rebalance_run(
         "to": str(dates[-1]),
         "metrics": _metrics(trades, equity_series, benchmark, start_equity, years, exposure_days),
         "by_setup": {},
+        "ai_filter": {
+            "volume_traps_excluded": excluded_traps_total,
+            "toxic_assets_excluded": excluded_toxic_total,
+        },
         "equity_curve": [{"date": str(d), "equity": round(v, 2)} for d, v in equity_series.items()],
         "trades": trades[-200:],
     }
@@ -500,6 +536,18 @@ def main() -> None:
     benchmark = benchmark_buy_and_hold(market, active["from"], active["to"])
 
     if args.save:
+        conviction_comparison = {
+            name: {
+                "win_rate": split["out_of_sample"]["metrics"]["win_rate"],
+                "sharpe": split["out_of_sample"]["metrics"]["sharpe"],
+                "trades": split["out_of_sample"]["metrics"]["trades"],
+                "volume_traps_excluded": split["out_of_sample"].get(
+                    "ai_filter", {}).get("volume_traps_excluded", 0),
+                "toxic_assets_excluded": split["out_of_sample"].get(
+                    "ai_filter", {}).get("toxic_assets_excluded", 0),
+            }
+            for name, split in results.items()
+        }
         payload = {
             "generated_at": datetime.now(config.TIMEZONE).isoformat(timespec="minutes"),
             "years": args.years,
@@ -519,6 +567,7 @@ def main() -> None:
                 market, results["multi_factor"]["out_of_sample"]["from"],
                 results["multi_factor"]["out_of_sample"]["to"]),
             "results": results,
+            "conviction_comparison": conviction_comparison,
             "caveats": [
                 "Uses today's index members, already filtered by today's price and liquidity, "
                 "over the whole period — so it is biased towards stocks that survived and did well.",

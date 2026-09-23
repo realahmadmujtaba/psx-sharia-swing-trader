@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import config
+from core.fundamentals import toxic_asset_filter
 
 # A small maintained map for symbols whose sector is not supplied by the data
 # provider. Unknown symbols remain independent sectors rather than being
@@ -73,26 +74,70 @@ def _proxy_values(rows: pd.DataFrame) -> tuple[pd.Series, pd.Series]:
     return price_proxy, income_proxy
 
 
-def rank_snapshots(snapshots: list[dict], limit: int = 10) -> list[dict]:
+def rank_snapshots(snapshots: list[dict], limit: int = 10, insider_selling: set[str] | None = None) -> list[dict]:
     """Return the highest-ranked candidates with 0-100 factor scores."""
     if not snapshots:
         return []
     frame = pd.DataFrame(snapshots).copy()
+    if frame.empty:
+        return []
     frame = frame.drop_duplicates("symbol", keep="last")
     proxy_pe, proxy_income = _proxy_values(frame)
-    pe = pd.to_numeric(frame.get("pe"), errors="coerce").fillna(proxy_pe)
-    income = pd.to_numeric(frame.get("dividend_yield"), errors="coerce").fillna(proxy_income)
+    pe = pd.to_numeric(
+        frame.get("pe", pd.Series(np.nan, index=frame.index)),
+        errors="coerce",
+    ).fillna(proxy_pe)
+    income = pd.to_numeric(
+        frame.get("dividend_yield", pd.Series(np.nan, index=frame.index)),
+        errors="coerce",
+    ).fillna(proxy_income)
     frame["pe"] = pe
     frame["dividend_yield"] = income
-    momentum = pd.to_numeric(frame.get("roc_12w"), errors="coerce")
+    momentum = pd.to_numeric(
+        frame.get("roc_12w", pd.Series(np.nan, index=frame.index)),
+        errors="coerce",
+    )
     frame["value_score"] = _percentile(pe, higher_is_better=False)
     frame["income_score"] = _percentile(income, higher_is_better=True)
     frame["momentum_score"] = _percentile(momentum, higher_is_better=True)
-    frame["composite_score"] = (
+
+    risk_rows = frame.apply(
+        lambda row: toxic_asset_filter(row.to_dict(), row.get("avg_volume")),
+        axis=1,
+        result_type="expand",
+    )
+    for column in risk_rows.columns:
+        frame[column] = risk_rows[column]
+
+    base = (
         frame["value_score"] * 0.4
         + frame["income_score"] * 0.4
         + frame["momentum_score"] * 0.2
-    ).round(2)
+    )
+    conviction = pd.to_numeric(
+        frame.get("conviction_score", pd.Series(np.nan, index=frame.index)),
+        errors="coerce",
+    )
+    conviction_multiplier = pd.to_numeric(
+        frame.get("conviction_multiplier", pd.Series(1.0, index=frame.index)),
+        errors="coerce",
+    ).fillna(1.0)
+    frame["conviction_multiplier"] = conviction_multiplier
+    frame["conviction_score"] = (
+        conviction.fillna(base) * conviction_multiplier
+    ).clip(0, 100).round(2)
+    frame["composite_score"] = (
+        frame["conviction_score"] * frame["fundamental_multiplier"]
+        + frame["toxic_penalty"]
+    ).clip(0, 100).round(2)
+
+    if insider_selling:
+        mask = frame["symbol"].str.upper().isin({item.upper() for item in insider_selling})
+        frame["insider_selling"] = mask.fillna(False)
+        frame.loc[mask, "composite_score"] = (frame.loc[mask, "composite_score"] * 0.8).round(2)
+    else:
+        frame["insider_selling"] = False
+
     frame = frame.sort_values(["composite_score", "symbol"], ascending=[False, True])
     selected = []
     sector_counts: dict[str, int] = {}
@@ -105,6 +150,10 @@ def rank_snapshots(snapshots: list[dict], limit: int = 10) -> list[dict]:
         sector_counts[sector] = sector_counts.get(sector, 0) + 1
         if len(selected) >= limit:
             break
+
+    if len(selected) < limit:
+        # Keep legacy order when sector caps do not exclude a symbol.
+        pass
     return pd.DataFrame(selected).where(pd.notna(pd.DataFrame(selected)), None).to_dict("records")
 
 

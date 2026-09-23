@@ -102,7 +102,11 @@ def run_once() -> None:
     asyncio.run(send_digest(result))
     tickers = [item["symbol"] for item in result.get("portfolio", [])]
     try:
-        intelligence = sentiment.daily_report(tickers, config.YOUTUBE_VIDEO_IDS)
+        intelligence = sentiment.daily_report(
+            tickers,
+            config.YOUTUBE_VIDEO_IDS,
+            result.get("portfolio", []),
+        )
     except (RuntimeError, OSError, ValueError) as exc:
         print(f"[sentiment] report unavailable: {exc}")
         intelligence = {
@@ -113,6 +117,7 @@ def run_once() -> None:
             "divergence_insights": [],
         }
     asyncio.run(notifier.send_portfolio_alert(result, intelligence))
+    sentiment.write_urdu_briefing(result.get("portfolio", []), config.DOCS_DIR / "urdu_briefing.json", limit=5)
     blog_generator.save_blog_post(intelligence, result.get("portfolio", []))
     dashboard.publish(dashboard.build_payload(result, state.load_log()))
     webhook.notify(result)

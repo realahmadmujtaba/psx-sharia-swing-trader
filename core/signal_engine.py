@@ -79,6 +79,30 @@ def snapshot(
     roc_12w = indicators.rolling_return(close, 12).iloc[-1]
     value = _fundamental_status(fundamentals, float(avg_vol_20.iloc[-1]), last_close)
     prior_volume = volume.iloc[-config.VOLUME_LOOKBACK - 1:-1].mean()
+    daily_ema_9 = indicators.ema(daily_close, 9)
+    daily_ema_20 = indicators.ema(daily_close, config.TRAIL_EMA_PERIOD)
+    daily_rsi = indicators.rsi(daily_close, config.RSI_PERIOD)
+    ema_cross = bool(
+        len(daily_close) > 1
+        and daily_ema_9.iloc[-2] <= daily_ema_20.iloc[-2]
+        and daily_ema_9.iloc[-1] > daily_ema_20.iloc[-1]
+    )
+    rsi_breakout = bool(
+        len(daily_rsi) > 1
+        and daily_rsi.iloc[-1] > 50
+        and daily_rsi.iloc[-2] <= 50
+        and daily_rsi.iloc[-6:-1].between(40, 55).all()
+    )
+    technical_score = 50.0 + (30.0 if ema_cross else 0.0) + (20.0 if rsi_breakout else 0.0)
+    latest_high = float(df["high"].iloc[-1])
+    latest_low = float(df["low"].iloc[-1])
+    range_size = latest_high - latest_low
+    retail_trap = bool(
+        prior_volume > 0
+        and float(volume.iloc[-1]) > prior_volume * 3
+        and range_size > 0
+        and (last_close - latest_low) / range_size <= 0.25
+    )
     required = [ema_20.iloc[-1], rsi_14.iloc[-1], atr_14.iloc[-1], avg_vol_20.iloc[-1], roc_12w]
     if any(pd.isna(value) for value in required):
         return None
@@ -94,6 +118,7 @@ def snapshot(
         "ema_100": float(ema_100.iloc[-1]),
         "rsi": float(rsi_14.iloc[-1]),
         "avg_volume": float(avg_vol_20.iloc[-1]),
+        "volume": float(volume.iloc[-1]),
         "volume_ratio": float(volume.iloc[-1] / prior_volume) if prior_volume else 0.0,
         "near_support": bool(
             min(abs(last_close / daily_ema_50 - 1), abs(last_close / daily_ema_200 - 1))
@@ -104,6 +129,14 @@ def snapshot(
         "weekly_trend": bool(last_close > ema_20.iloc[-1] and rsi_14.iloc[-1] > config.WEEKLY_RSI_MIN),
         "roc_12w": float(roc_12w),
         "benchmark_return_20d": benchmark_return,
+        "ema_9": float(daily_ema_9.iloc[-1]),
+        "daily_ema_20": float(daily_ema_20.iloc[-1]),
+        "daily_rsi": float(daily_rsi.iloc[-1]),
+        "ema_9_20_cross": ema_cross,
+        "rsi_breakout": rsi_breakout,
+        "technical_score": technical_score,
+        "retail_trap": retail_trap,
+        "conviction_score": technical_score * (0.5 if retail_trap else 1.0),
         **value,
     }
 
