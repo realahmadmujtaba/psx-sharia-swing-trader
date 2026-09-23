@@ -319,7 +319,7 @@
 </script>
 
 <script>
-  fetch("urdu_briefing.json", { cache: "no-store" })
+  fetch("urdu_briefing.json?v=41ea728", { cache: "no-store" })
     .then(response => {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
