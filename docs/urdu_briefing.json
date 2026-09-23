@@ -2,6 +2,8 @@
   "briefings": [
     {
       "symbol": "CNERGY",
+      "ticker": "CNERGY",
+      "price": 13.2,
       "final_ai_score": 91.2,
       "sector": "Refinery",
       "briefing": {
@@ -14,6 +16,8 @@
     },
     {
       "symbol": "PRL",
+      "ticker": "PRL",
+      "price": 87.33,
       "final_ai_score": 89.7,
       "sector": "Refinery",
       "briefing": {
