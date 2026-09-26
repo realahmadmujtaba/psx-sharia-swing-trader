@@ -11,7 +11,7 @@ import pandas as pd
 import config
 from alerts import dashboard
 from core import performance
-from core.backtest import _metrics, _prepare
+from core.backtest import _load_market_and_regime, _metrics, _prepare
 
 
 def _frame(closes, volumes=None, highs=None):
@@ -56,6 +56,17 @@ class TestPrepareTagsSetups(unittest.TestCase):
 
     def test_short_history_returns_none(self):
         self.assertIsNone(_prepare(_frame(np.linspace(50, 60, 40)), None))
+
+    def test_missing_market_index_uses_explicit_regime_benchmark(self):
+        regime = pd.DataFrame({"close": [100.0, 101.0]})
+        with mock.patch("core.backtest._cached_fetch", side_effect=[pd.DataFrame(), pd.DataFrame()]), \
+             mock.patch("core.backtest._prepare", side_effect=[regime, None]):
+            market, loaded_regime = _load_market_and_regime(
+                date(2025, 1, 1), date(2025, 1, 2), refresh=False
+            )
+        self.assertIs(loaded_regime, regime)
+        self.assertEqual(market.attrs["benchmark_index"], config.REGIME_INDEX)
+        pd.testing.assert_frame_equal(market, regime)
 
 
 class TestMetrics(unittest.TestCase):

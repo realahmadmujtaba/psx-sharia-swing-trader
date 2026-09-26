@@ -40,8 +40,8 @@ The alert system (`alerts/email_alert.py`) sends via SMTP using `aiosmtplib`. To
 
 ## Cloud run, subscribers and backtest
 
-- **The scan runs on GitHub Actions** (`.github/workflows/daily-scan.yml`), weekdays at 12:45 UTC
-  = 17:45 PKT, so your PC no longer has to be on. Settings live in repo secrets (`gh secret list`).
+- **The scan runs on GitHub Actions** (`.github/workflows/daily-scan.yml`), daily at 15:00 UTC
+  = 20:00 PKT, so your PC no longer has to be on. Settings live in repo secrets (`gh secret list`).
   Run it by hand any time from the repo's Actions tab, or `gh workflow run "Daily EOD scan"`.
   Because the cloud run is now the source of truth, **the Windows scheduled task must stay disabled**
   or both would email and push at once. Re-enable it only if you turn the workflow off:

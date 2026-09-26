@@ -56,8 +56,8 @@ only in the private email, never on the public dashboard.
 
 ## Running it
 
-**In the cloud (default).** `.github/workflows/daily-scan.yml` runs the scan weekdays at 12:45 UTC
-(17:45 PKT) and pushes the refreshed dashboard; `weekly-backtest.yml` refreshes the backtest every
+**In the cloud (default).** `.github/workflows/daily-scan.yml` runs the scan daily at 15:00 UTC
+(20:00 PKT) and pushes the refreshed dashboard; `weekly-backtest.yml` refreshes the backtest every
 Saturday. Configuration lives in repo secrets: `SMTP_HOST`, `SMTP_PORT`, `EMAIL_SENDER`,
 `EMAIL_PASSWORD`, `EMAIL_RECIPIENT`, `EMAIL_SUBSCRIBERS`, `TRADING_CAPITAL`, and optionally
 `WEBHOOK_URL` / `TELEGRAM_CHAT_ID`.

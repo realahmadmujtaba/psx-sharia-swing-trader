@@ -2,7 +2,7 @@ name: Daily market intelligence
 
 on:
   schedule:
-    # 20:00 PKT = 15:00 UTC.
+    # 20:00 PKT = 15:00 UTC. GitHub schedules can start a few minutes late.
     - cron: "0 15 * * *"
   workflow_dispatch:
 
@@ -16,6 +16,7 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -30,6 +31,12 @@ jobs:
         run: |
           git config user.name "psx-agent"
           git config user.email "actions@github.com"
+
+      - name: Verify execution context
+        run: |
+          echo "UTC: $(date -u --iso-8601=seconds)"
+          TZ=Asia/Karachi date --iso-8601=seconds
+          echo "Event: ${{ github.event_name }}"
 
       - name: Run the scan
         env:

@@ -415,18 +415,26 @@ def _cached_fetch(symbol: str, start: date, end: date, refresh: bool) -> pd.Data
     return df
 
 
+def _load_market_and_regime(start: date, end: date, refresh: bool) -> tuple[pd.DataFrame, pd.DataFrame]:
+    regime = _prepare(_cached_fetch(config.REGIME_INDEX, start, end, refresh), None)
+    if regime is None:
+        raise RuntimeError(f"No usable history for the {config.REGIME_INDEX} index")
+    market = _prepare(_cached_fetch(config.MARKET_INDEX, start, end, refresh), None)
+    if market is None:
+        print(f"[backtest] {config.MARKET_INDEX} unavailable; using {config.REGIME_INDEX} as benchmark fallback")
+        market = regime.copy(deep=True)
+        market.attrs["benchmark_index"] = config.REGIME_INDEX
+    else:
+        market.attrs["benchmark_index"] = config.MARKET_INDEX
+    return market, regime
+
+
 def load_history(years: int, refresh: bool = False) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
     end = datetime.now(config.TIMEZONE).date()
     start = end - timedelta(days=round(years * 365.25) + config.MACRO_EMA_PERIOD * 2)
 
-    market = _prepare(_cached_fetch(config.MARKET_INDEX, start, end, refresh), None)
-    if market is None:
-        raise RuntimeError(f"No usable history for the {config.MARKET_INDEX} index")
-
     # Regime gate runs on the broad index: close above its 100-day EMA.
-    regime = _prepare(_cached_fetch(config.REGIME_INDEX, start, end, refresh), None)
-    if regime is None:
-        raise RuntimeError(f"No usable history for the {config.REGIME_INDEX} index")
+    market, regime = _load_market_and_regime(start, end, refresh)
     regime_ema = indicators.ema(regime["close"], config.REGIME_EMA_PERIOD)
     regime_ok = regime["close"] > regime_ema
     market["uptrend"] = regime_ok.reindex(market.index).fillna(False)
@@ -450,7 +458,7 @@ def benchmark_buy_and_hold(market: pd.DataFrame, start: str, end: str) -> dict:
     if annual_vol:
         sharpe = round((annual_return - config.RISK_FREE_RATE) / annual_vol, 2)
     return {
-        "index": config.MARKET_INDEX,
+        "index": market.attrs.get("benchmark_index", config.MARKET_INDEX),
         "total_return_pct": round((window.iloc[-1] / window.iloc[0] - 1) * 100, 2),
         "max_drawdown_pct": round(float(drawdown) * 100, 2),
         "sharpe": sharpe,
