@@ -11,16 +11,16 @@
 The quantitative radar ranks stocks cross-sectionally using value, dividend income,
 and 12-week momentum. These are watchlist candidates, not guaranteed returns.
 
-- **DCR** — composite score 80.0, value 68.06, income 22.22, momentum 75.0.
-- **SLGL** — composite score 80.0, value 47.22, income 81.94, momentum 56.94.
-- **LOTCHEM** — composite score 70.0, value 75.0, income 87.5, momentum 54.17.
-- **AIRLINK** — composite score 50.0, value 69.44, income 16.67, momentum 31.94.
-- **ASL** — composite score 50.0, value 65.28, income 95.83, momentum 90.28.
-- **ASTM** — composite score 50.0, value 6.94, income 25.0, momentum 100.0.
-- **AVN** — composite score 50.0, value 25.0, income 30.56, momentum 27.78.
-- **BBFL** — composite score 50.0, value 16.67, income 43.06, momentum 12.5.
-- **BERG** — composite score 50.0, value 66.67, income 5.56, momentum 86.11.
-- **CEPB** — composite score 50.0, value 29.17, income 36.11, momentum 37.5.
+- **NETSOL** — composite score 70.0, value 75.0, income 20.59, momentum 72.06.
+- **SPSL** — composite score 70.0, value 47.06, income 97.06, momentum 52.94.
+- **TRSM** — composite score 70.0, value 54.41, income 51.47, momentum 47.06.
+- **AIRLINK** — composite score 50.0, value 67.65, income 16.18, momentum 30.88.
+- **ASL** — composite score 50.0, value 66.18, income 95.59, momentum 86.76.
+- **ASTM** — composite score 50.0, value 7.35, income 23.53, momentum 100.0.
+- **AVN** — composite score 50.0, value 26.47, income 29.41, momentum 25.0.
+- **BBFL** — composite score 50.0, value 17.65, income 44.12, momentum 13.24.
+- **CEPB** — composite score 50.0, value 29.41, income 36.76, momentum 50.0.
+- **CNERGY** — composite score 50.0, value 95.59, income 100.0, momentum 88.24.
 
 ## Risk & Sentiment Warnings
 
@@ -30,4 +30,4 @@ and 12-week momentum. These are watchlist candidates, not guaranteed returns.
 
 - Daily intelligence provider unavailable.
 
-*Generated 2026-10-15T00:13+05:00 PKT by PSX Sharia Swing Trader.*
+*Generated 2026-10-15T23:55+05:00 PKT by PSX Sharia Swing Trader.*
