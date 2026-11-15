@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import json
 from datetime import datetime, timedelta
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -35,6 +36,21 @@ def _attach_purification(signal: dict, ratios: dict) -> None:
 def _watch(row: dict, missing: str) -> dict:
     return {"symbol": row["symbol"], "missing": missing, "close": row["close"], "rsi": row["rsi"],
             "ema_50": row["ema_50"], "volume_ratio": row["volume_ratio"]}
+
+
+def _fallback_daily_signals(portfolio: list[dict]) -> list[dict]:
+    """Keep the daily contract at two candidates when the AI provider is unavailable."""
+    signals = []
+    for row in portfolio[:2]:
+        signals.append({
+            "symbol": row["symbol"],
+            "action": "WATCH",
+            "score": row.get("composite_score", 0),
+            "reason": "AI news confirmation was unavailable; monitor the ranked technical candidate.",
+            "news_evidence": [],
+            "risk": "Do not treat this fallback as a BUY signal.",
+        })
+    return signals
 
 
 def run_scan() -> dict:
@@ -99,7 +115,6 @@ def run_scan() -> dict:
 
 def run_once() -> None:
     result = run_scan()
-    asyncio.run(send_digest(result))
     tickers = [item["symbol"] for item in result.get("portfolio", [])]
     try:
         intelligence = sentiment.daily_report(
@@ -115,9 +130,36 @@ def run_once() -> None:
             "takeaways": ["Daily intelligence provider unavailable."],
             "stock_flags": [],
             "divergence_insights": [],
+            "daily_signals": _fallback_daily_signals(result.get("portfolio", [])),
         }
+    daily_signals = intelligence.get("daily_signals") or _fallback_daily_signals(result.get("portfolio", []))
+    if len(daily_signals) < 2:
+        used = {item.get("symbol") for item in daily_signals}
+        fallback = [
+            item for item in _fallback_daily_signals(result.get("portfolio", []))
+            if item["symbol"] not in used
+        ]
+        daily_signals.extend(fallback[: 2 - len(daily_signals)])
+    intelligence["daily_signals"] = daily_signals[:2]
+    result["daily_signals"] = intelligence["daily_signals"]
+    asyncio.run(send_digest(result))
     asyncio.run(notifier.send_portfolio_alert(result, intelligence))
-    sentiment.write_urdu_briefing(result.get("portfolio", []), config.DOCS_DIR / "urdu_briefing.json", limit=5)
+    ai_briefings = sentiment.build_ai_urdu_briefing_payload(
+        intelligence.get("urdu_briefings", []),
+        result.get("portfolio", []),
+        limit=2,
+    )
+    if len(ai_briefings["briefings"]) < 2:
+        fallback = sentiment.build_urdu_briefing_payload(result.get("portfolio", []), limit=2)
+        existing = {item["symbol"] for item in ai_briefings["briefings"]}
+        ai_briefings["briefings"].extend(
+            item for item in fallback["briefings"] if item["symbol"] not in existing
+        )
+        ai_briefings["briefings"] = ai_briefings["briefings"][:2]
+    (config.DOCS_DIR / "urdu_briefing.json").write_text(
+        json.dumps(ai_briefings, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
     blog_generator.save_blog_post(intelligence, result.get("portfolio", []))
     dashboard.publish(dashboard.build_payload(result, state.load_log()))
     webhook.notify(result)

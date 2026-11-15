@@ -28,11 +28,12 @@ jobs:
       - run: pip install -r requirements.txt
 
       - run: python -m core.backtest --years ${{ inputs.years || 3 }} --save
+      - run: python -m core.learning --save
 
       - name: Commit refreshed results
         run: |
           git config user.name "psx-agent"
           git config user.email "actions@github.com"
-          git add docs/dashboard.html docs/data.json docs/backtest.json docs/tearsheet.html
+          git add docs/dashboard.html docs/data.json docs/backtest.json docs/tearsheet.html docs/learning.json
           git diff --cached --quiet || git commit -m "Refresh backtest results"
           git push

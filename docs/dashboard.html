@@ -319,7 +319,7 @@
 </script>
 
 <script>
-  fetch("urdu_briefing.json?v=41ea728", { cache: "no-store" })
+  fetch("urdu_briefing.json?v=2", { cache: "no-store" })
     .then(response => {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
@@ -337,7 +337,10 @@
         "بنیادی مضبوطی اور تحفظ": "بنیادی مضبوطی اور تحفظ",
         "تکنیکی بریک آؤٹ": "تکنیکی بریک آؤٹ",
         "حقیقی بائنگ بمقابلہ فیک بائنگ": "حقیقی بائنگ بمقابلہ فیک بائنگ",
-        "ملکی و عالمی معاشی محرکات": "ملکی و عالمی معاشی محرکات"
+        "ملکی و عالمی معاشی محرکات": "ملکی و عالمی معاشی محرکات",
+        "سپلائی چین میں مقام اور اصل رکاوٹ": "سپلائی چین میں مقام اور اصل رکاوٹ",
+        "ثبوت اور اگلا چیک": "ثبوت اور اگلا چیک",
+        "مخالف دلیل اور فیصلہ بدلنے کی شرط": "مخالف دلیل اور فیصلہ بدلنے کی شرط"
       };
       container.replaceChildren();
       records.forEach(stock => {
@@ -358,6 +361,39 @@
           paragraph.append(strong, ` ${briefing[key] || "—"}`);
           card.appendChild(paragraph);
         });
+        const sources = (stock.evidence && stock.evidence.sources) || [];
+        if (sources.length) {
+          const sourceTitle = document.createElement("strong");
+          sourceTitle.textContent = "ذرائع:";
+          card.appendChild(sourceTitle);
+          const sourceList = document.createElement("ul");
+          sourceList.style.marginTop = "4px";
+          sources.slice(0, 4).forEach(source => {
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            link.href = source.url || "#";
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.textContent = source.title || source.url || "Source";
+            item.appendChild(link);
+            sourceList.appendChild(item);
+          });
+          card.appendChild(sourceList);
+        }
+        const checks = stock.selection_checks || [];
+        if (checks.length) {
+          const checksTitle = document.createElement("h4");
+          checksTitle.textContent = "تحقیق کے سوالات:";
+          card.appendChild(checksTitle);
+          const checksList = document.createElement("ul");
+          checksList.style.marginTop = "4px";
+          checks.forEach(check => {
+            const item = document.createElement("li");
+            item.textContent = `${check.question || "Question"} — ${check.answer || "Not verified"} [${check.status || "unverified"}]`;
+            checksList.appendChild(item);
+          });
+          card.appendChild(checksList);
+        }
         container.appendChild(card);
       });
     })

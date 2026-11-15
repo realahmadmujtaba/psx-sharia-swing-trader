@@ -4,3 +4,11 @@ __pycache__/
 data/universe_cache.csv
 data/history_cache/
 data/fundamentals.json
+
+# Local research clones; these are not runtime dependencies of the PSX agent.
+/serenity-skill/
+/a-stock-data/
+/deep_trader/
+/Automated-Stock-Trading-using-Reinforcement-Learning/
+/Deep-Reinforcement-Learning-with-Stock-Trading/
+/PanWatch/

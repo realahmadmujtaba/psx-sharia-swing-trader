@@ -1,4 +1,4 @@
-"""Friday Top 10 portfolio notification."""
+"""Daily two-stock AI signal notification."""
 
 import argparse
 import asyncio
@@ -20,7 +20,7 @@ def build_portfolio_message(
     recipient = config.RECIPIENT_EMAIL or config.EMAIL_RECIPIENT
     message["From"] = sender
     message["To"] = recipient
-    message["Subject"] = f"PSX Top 10 Multi-Factor Portfolio ({datetime.now(config.TIMEZONE).date()})"
+    message["Subject"] = f"PSX Daily AI Signals ({datetime.now(config.TIMEZONE).date()})"
     rows = "".join(
         f"<tr><td>{item['symbol']}</td><td>{item.get('pe', 'N/A')}</td>"
         f"<td>{item.get('dividend_yield', 'N/A')}</td>"
@@ -31,12 +31,37 @@ def build_portfolio_message(
     )
     regime = "BULLISH" if market and market.get("uptrend") else "CASH / NOT BULLISH"
     html = (
-        f"<h2>PSX Top 10 Multi-Factor Portfolio</h2><p>Market regime: <b>{regime}</b></p>"
+        f"<h2>PSX Daily AI Signals</h2><p>Market regime: <b>{regime}</b></p>"
         "<table border='1' cellpadding='6'><tr><th>Ticker</th><th>P/E</th>"
         "<th>Dividend Yield</th><th>Momentum Score</th><th>Total Score</th><th>News Flag</th></tr>"
         f"{rows}</table>"
     )
     intelligence = intelligence or {}
+    daily_signals = intelligence.get("daily_signals", [])
+    signal_rows = "".join(
+        f"<tr><td>{item.get('symbol')}</td><td>{item.get('action', 'WATCH')}</td>"
+        f"<td>{float(item.get('score', 0)):.2f}</td><td>{item.get('reason', '')}</td>"
+        f"<td>{item.get('risk', '')}</td></tr>"
+        for item in daily_signals[:2]
+    )
+    evidence_items = []
+    for item in daily_signals[:2]:
+        for source in item.get("news_evidence", [])[:3]:
+            if isinstance(source, dict):
+                evidence_items.append(
+                    f"{item.get('symbol')}: {source.get('source', 'Source')} - "
+                    f"{source.get('title', '')} ({source.get('url', '')})"
+                )
+            else:
+                evidence_items.append(f"{item.get('symbol')}: {source}")
+    evidence = "".join(f"<li>{item}</li>" for item in evidence_items)
+    html += (
+        "<h2>Two-stock update from news, blogs, and market data</h2>"
+        "<table border='1' cellpadding='6'><tr><th>Ticker</th><th>Action</th>"
+        "<th>AI score</th><th>Reason</th><th>Risk</th></tr>"
+        f"{signal_rows}</table>"
+        + (f"<p><b>News evidence</b></p><ul>{evidence}</ul>" if evidence else "")
+    )
     takeaways = intelligence.get("takeaways", ["No sentiment report available."])
     bullets = "".join(f"<li>{item}</li>" for item in takeaways[:4])
     html += (
@@ -48,7 +73,21 @@ def build_portfolio_message(
         + "".join(f"<li>{item}</li>" for item in intelligence.get("divergence_insights", []))
         + "</ul>"
     )
-    message.set_content(f"Market regime: {regime}\nTop 10: " + ", ".join(i["symbol"] for i in portfolio))
+    briefings = intelligence.get("urdu_briefings") or []
+    if briefings:
+        cards = []
+        for record in briefings[:5]:
+            briefing = record.get("briefing", {})
+            cards.append(
+                "<div><h3>{symbol}</h3><p><b>Final AI Score:</b> {score}</p>"
+                + "".join(f"<p><b>{k}</b>: {v}</p>" for k, v in briefing.items())
+                + "</div>"
+            )
+        html += "<h2>اردو مارکیٹ بریفنگ</h2>" + "".join(cards)
+    message.set_content(
+        f"Market regime: {regime}\nDaily signals: "
+        + ", ".join(f"{item.get('symbol')} ({item.get('action', 'WATCH')})" for item in daily_signals[:2])
+    )
     message.add_alternative(html, subtype="html")
     return message
 

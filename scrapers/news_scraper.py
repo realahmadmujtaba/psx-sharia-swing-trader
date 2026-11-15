@@ -16,6 +16,16 @@ FEEDS = {
     "Mettis Global": "https://mettisglobal.news/feed/",
 }
 
+INSIDER_SELLING_KEYWORDS = (
+    "director dealings",
+    "director dealing",
+    "material information",
+    "insider selling",
+    "shareholding",
+    "offload",
+    "sell",
+)
+
 
 def _text(value: str) -> str:
     return BeautifulSoup(unescape(value or ""), "html.parser").get_text(" ", strip=True)
@@ -45,6 +55,15 @@ def fetch_feed(name: str, url: str, timeout: int = 15) -> list[dict]:
     return articles
 
 
+def _insider_sell_penalty(article: dict, tickers: list[str]) -> float:
+    text = f"{article.get('title', '')} {article.get('summary', '')}".lower()
+    matched = any(ticker.lower() in text for ticker in tickers)
+    if not matched:
+        return 0.0
+    is_insider = any(keyword in text for keyword in INSIDER_SELLING_KEYWORDS)
+    return 0.2 if is_insider else 0.0
+
+
 def collect( tickers: list[str], feeds: dict[str, str] | None = None) -> list[dict]:
     """Collect recent articles and keep PSX/ticker-relevant items."""
     terms = {"psx", "kse", "kmi", "karachi stock", "shares", "market"}
@@ -55,7 +74,13 @@ def collect( tickers: list[str], feeds: dict[str, str] | None = None) -> list[di
             articles.extend(fetch_feed(name, url))
         except (OSError, requests.RequestException, ValueError):
             continue
-    return [
-        article for article in articles
-        if any(term.lower() in f"{article['title']} {article['summary']}".lower() for term in terms)
-    ]
+    collected = []
+    for article in articles:
+        text = f"{article['title']} {article['summary']}".lower()
+        if not any(term.lower() in text for term in terms):
+            continue
+        penalty = _insider_sell_penalty(article, tickers)
+        article["insider_sell_penalty"] = penalty
+        article["insider_alert"] = penalty > 0
+        collected.append(article)
+    return collected

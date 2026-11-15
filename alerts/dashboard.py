@@ -19,6 +19,13 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
     rows = result.get("portfolio", result["rows"])
     history = log_df.drop(columns=["shares"], errors="ignore").sort_values("date", ascending=False).head(HISTORY_LIMIT)
     price_dates = [row["date"] for row in rows if row.get("date")]
+    briefings_path = PROJECT_ROOT / "docs" / "urdu_briefing.json"
+    briefings = []
+    if briefings_path.exists():
+        try:
+            briefings = json.loads(briefings_path.read_text(encoding="utf-8")).get("briefings", [])
+        except (OSError, ValueError, TypeError):
+            briefings = []
 
     return {
         "updated_at": datetime.now(config.TIMEZONE).isoformat(timespec="minutes"),
@@ -40,11 +47,13 @@ def build_payload(result: dict, log_df: pd.DataFrame) -> dict:
         },
         "stocks": rows,
         "portfolio": rows,
+        "daily_signals": result.get("daily_signals", []),
         "signals_today": [],
         "warnings": result.get("warnings", []),
         "watchlist": [],
         "performance": performance.summarise(performance.closed_trades(log_df)),
         "history": history.to_dict(orient="records"),
+        "urdu_briefings": briefings,
     }
 
 

@@ -22,8 +22,15 @@ def fetch_ohlcv(symbol: str, start: date, end: date) -> pd.DataFrame:
         except Exception as error:  # network timeout, DNS failure, etc.
             last_error = error
 
+        # Authentication/authorization failures are deterministic for the
+        # provider session; retrying every symbol only makes a scheduled run
+        # appear hung without improving the outcome.
+        if last_error and ("403" in str(last_error) or "auth error" in str(last_error).lower()):
+            break
+
         if attempt < MAX_ATTEMPTS - 1:
             time.sleep(BACKOFF_SECONDS * (2**attempt))
 
-    print(f"[psx_fetcher] {symbol}: giving up after {MAX_ATTEMPTS} attempts ({last_error})")
+    attempts = attempt + 1
+    print(f"[psx_fetcher] {symbol}: giving up after {attempts} attempt(s) ({last_error})")
     return pd.DataFrame(columns=OHLCV_COLUMNS)
