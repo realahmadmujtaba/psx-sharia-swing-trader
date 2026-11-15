@@ -283,6 +283,7 @@ def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
 def _weekly_rebalance_run(
     history: dict[str, pd.DataFrame],
     market: pd.DataFrame,
+    variant: str,
     start_equity: float,
     period: tuple[date, date] | None,
 ) -> dict:
@@ -290,7 +291,7 @@ def _weekly_rebalance_run(
     if period:
         dates = [d for d in dates if period[0] <= d <= period[1]]
     if not dates:
-        return {"variant": "multi_factor", "from": None, "to": None,
+        return {"variant": variant, "from": None, "to": None,
                 "metrics": _metrics([], pd.Series(dtype=float), pd.Series(dtype=float),
                                     start_equity, 1), "by_setup": {}, "equity_curve": [], "trades": []}
 
@@ -381,7 +382,7 @@ def _weekly_rebalance_run(
     benchmark = market["close"].reindex(equity_series.index).ffill()
     years = max((dates[-1] - dates[0]).days / 365.25, 1e-9)
     return {
-        "variant": "multi_factor",
+        "variant": variant,
         "from": str(dates[0]),
         "to": str(dates[-1]),
         "metrics": _metrics(trades, equity_series, benchmark, start_equity, years, exposure_days),
@@ -398,7 +399,7 @@ def _weekly_rebalance_run(
 def run(history: dict[str, pd.DataFrame], market: pd.DataFrame, variant: str,
         start_equity: float = 1_000_000.0, period: tuple[date, date] | None = None) -> dict:
     """Run the weekly equal-weight Top 10 multi-factor portfolio."""
-    return _weekly_rebalance_run(history, market, start_equity, period)
+    return _weekly_rebalance_run(history, market, variant, start_equity, period)
 
 
 def _cached_fetch(symbol: str, start: date, end: date, refresh: bool) -> pd.DataFrame:
