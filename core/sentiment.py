@@ -188,11 +188,14 @@ def analyze(
         "candidates": candidates or [],
     }
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=SYSTEM_INSTRUCTION + "\nINPUT:\n" + json.dumps(payload, default=str),
-        config={"response_mime_type": "application/json"},
-    )
+    try:
+        response = client.models.generate_content(
+            model=config.GEMINI_MODEL,
+            contents=SYSTEM_INSTRUCTION + "\nINPUT:\n" + json.dumps(payload, default=str),
+            config={"response_mime_type": "application/json"},
+        )
+    except Exception as exc:
+        raise RuntimeError(f"Gemini request failed using {config.GEMINI_MODEL}: {exc}") from exc
     text = response.text.strip()
     result = json.loads(text)
     required = {"market_sentiment", "confidence", "macro_drivers", "takeaways", "stock_flags"}

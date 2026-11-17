@@ -32,6 +32,14 @@ class TestSentiment(unittest.TestCase):
             result = sentiment.analyze([], [], ["ABC"])
         self.assertEqual(result["market_sentiment"], "Bullish")
 
+    def test_provider_failure_uses_explicit_runtime_error(self):
+        client = mock.Mock()
+        client.models.generate_content.side_effect = RuntimeError("model unavailable")
+        with mock.patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}), \
+             mock.patch("google.genai.Client", return_value=client):
+            with self.assertRaisesRegex(RuntimeError, "Gemini request failed"):
+                sentiment.analyze([], [], ["ABC"])
+
 
 class TestNotifierIntelligence(unittest.TestCase):
     def test_message_includes_sentiment_sections(self):

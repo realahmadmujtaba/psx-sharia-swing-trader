@@ -22,6 +22,7 @@ SMTP_EMAIL = os.getenv("SMTP_EMAIL", EMAIL_SENDER)
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", EMAIL_PASSWORD)
 RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", EMAIL_RECIPIENT)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 YOUTUBE_VIDEO_IDS = [
     item.strip() for item in os.getenv("YOUTUBE_VIDEO_IDS", "").split(",") if item.strip()
 ]
