@@ -36,6 +36,8 @@ class TestSentiment(unittest.TestCase):
         client = mock.Mock()
         client.models.generate_content.side_effect = RuntimeError("model unavailable")
         with mock.patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}), \
+             mock.patch.object(sentiment.config, "GEMINI_API_KEY", "test-key"), \
+             mock.patch.object(sentiment.config, "GROQ_API_KEY", None), \
              mock.patch("google.genai.Client", return_value=client):
             with self.assertRaisesRegex(RuntimeError, "AI research providers unavailable"):
                 sentiment.analyze([], [], ["ABC"])

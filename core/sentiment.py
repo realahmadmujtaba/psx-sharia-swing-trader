@@ -203,6 +203,37 @@ def analyze(
 
     if not text and config.GROQ_API_KEY:
         try:
+            compact_payload = {
+                "tickers": tickers[:10],
+                "articles": [
+                    {
+                        key: str(article.get(key, ""))[:500]
+                        for key in ("source", "title", "summary", "url", "insider_alert")
+                    }
+                    for article in articles[:12]
+                ],
+                "videos": [
+                    {key: str(video.get(key, ""))[:500] for key in ("title", "summary", "transcript", "url")}
+                    for video in videos[:4]
+                ],
+                "candidates": [
+                    {
+                        key: candidate.get(key)
+                        for key in (
+                            "symbol", "close", "avg_volume", "volume_ratio", "pe",
+                            "dividend_yield", "momentum_score", "composite_score",
+                            "roc_12w", "rsi", "ema_50", "ema_100", "atr",
+                        )
+                        if key in candidate
+                    }
+                    for candidate in (candidates or [])[:5]
+                ],
+            }
+            groq_prompt = (
+                SYSTEM_INSTRUCTION
+                + "\nINPUT:\n"
+                + json.dumps(compact_payload, default=str, separators=(",", ":"))
+            )
             response = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={
@@ -211,7 +242,7 @@ def analyze(
                 },
                 json={
                     "model": config.GROQ_MODEL,
-                    "messages": [{"role": "user", "content": prompt}],
+                    "messages": [{"role": "user", "content": groq_prompt}],
                     "temperature": 0.1,
                     "response_format": {"type": "json_object"},
                 },
