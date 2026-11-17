@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-17T21:30+05:00",
+  "updated_at": "2026-11-17T21:37+05:00",
   "price_date": "2026-11-20",
   "universe": "KMIALLSHR",
   "market": {
@@ -56,9 +56,9 @@
       "dividend_yield": 29021.092740402888,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 30.77,
-      "income_score": 51.28,
-      "momentum_score": 47.44,
+      "value_score": 30.38,
+      "income_score": 50.63,
+      "momentum_score": 48.1,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -100,9 +100,9 @@
       "dividend_yield": 40398.956007879184,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 74.36,
-      "income_score": 61.54,
-      "momentum_score": 66.67,
+      "value_score": 74.68,
+      "income_score": 60.76,
+      "momentum_score": 67.09,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -144,9 +144,9 @@
       "dividend_yield": 26730.637854363536,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 17.95,
-      "income_score": 50.0,
-      "momentum_score": 46.15,
+      "value_score": 17.72,
+      "income_score": 49.37,
+      "momentum_score": 46.84,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -188,9 +188,9 @@
       "dividend_yield": 7276.21306238353,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 65.38,
-      "income_score": 25.64,
-      "momentum_score": 24.36,
+      "value_score": 65.82,
+      "income_score": 25.32,
+      "momentum_score": 24.05,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -232,9 +232,9 @@
       "dividend_yield": 134693.2740943267,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 70.51,
-      "income_score": 83.33,
-      "momentum_score": 80.77,
+      "value_score": 70.89,
+      "income_score": 83.54,
+      "momentum_score": 81.01,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -276,9 +276,9 @@
       "dividend_yield": 4229.565000830152,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 8.97,
-      "income_score": 12.82,
-      "momentum_score": 1.28,
+      "value_score": 8.86,
+      "income_score": 12.66,
+      "momentum_score": 1.27,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -320,9 +320,9 @@
       "dividend_yield": 432.3020524756665,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 97.44,
-      "income_score": 1.28,
-      "momentum_score": 28.21,
+      "value_score": 97.47,
+      "income_score": 1.27,
+      "momentum_score": 27.85,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -364,9 +364,9 @@
       "dividend_yield": 8436.849352051837,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 15.38,
-      "income_score": 29.49,
-      "momentum_score": 32.05,
+      "value_score": 15.19,
+      "income_score": 29.11,
+      "momentum_score": 31.65,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -408,9 +408,9 @@
       "dividend_yield": 42802.28978007762,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 37.18,
-      "income_score": 64.1,
-      "momentum_score": 17.95,
+      "value_score": 36.71,
+      "income_score": 63.29,
+      "momentum_score": 17.72,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -452,9 +452,9 @@
       "dividend_yield": 4766045.331877729,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 98.72,
+      "value_score": 98.73,
       "income_score": 100.0,
-      "momentum_score": 8.97,
+      "momentum_score": 8.86,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -498,9 +498,9 @@
       "dividend_yield": 29021.092740402888,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 30.77,
-      "income_score": 51.28,
-      "momentum_score": 47.44,
+      "value_score": 30.38,
+      "income_score": 50.63,
+      "momentum_score": 48.1,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -542,9 +542,9 @@
       "dividend_yield": 40398.956007879184,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 74.36,
-      "income_score": 61.54,
-      "momentum_score": 66.67,
+      "value_score": 74.68,
+      "income_score": 60.76,
+      "momentum_score": 67.09,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -586,9 +586,9 @@
       "dividend_yield": 26730.637854363536,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 17.95,
-      "income_score": 50.0,
-      "momentum_score": 46.15,
+      "value_score": 17.72,
+      "income_score": 49.37,
+      "momentum_score": 46.84,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -630,9 +630,9 @@
       "dividend_yield": 7276.21306238353,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 65.38,
-      "income_score": 25.64,
-      "momentum_score": 24.36,
+      "value_score": 65.82,
+      "income_score": 25.32,
+      "momentum_score": 24.05,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -674,9 +674,9 @@
       "dividend_yield": 134693.2740943267,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 70.51,
-      "income_score": 83.33,
-      "momentum_score": 80.77,
+      "value_score": 70.89,
+      "income_score": 83.54,
+      "momentum_score": 81.01,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -718,9 +718,9 @@
       "dividend_yield": 4229.565000830152,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 8.97,
-      "income_score": 12.82,
-      "momentum_score": 1.28,
+      "value_score": 8.86,
+      "income_score": 12.66,
+      "momentum_score": 1.27,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -762,9 +762,9 @@
       "dividend_yield": 432.3020524756665,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 97.44,
-      "income_score": 1.28,
-      "momentum_score": 28.21,
+      "value_score": 97.47,
+      "income_score": 1.27,
+      "momentum_score": 27.85,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -806,9 +806,9 @@
       "dividend_yield": 8436.849352051837,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 15.38,
-      "income_score": 29.49,
-      "momentum_score": 32.05,
+      "value_score": 15.19,
+      "income_score": 29.11,
+      "momentum_score": 31.65,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -850,9 +850,9 @@
       "dividend_yield": 42802.28978007762,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 37.18,
-      "income_score": 64.1,
-      "momentum_score": 17.95,
+      "value_score": 36.71,
+      "income_score": 63.29,
+      "momentum_score": 17.72,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -894,9 +894,9 @@
       "dividend_yield": 4766045.331877729,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 98.72,
+      "value_score": 98.73,
       "income_score": 100.0,
-      "momentum_score": 8.97,
+      "momentum_score": 8.86,
       "toxic": false,
       "toxic_reasons": [],
       "fundamental_multiplier": 1.0,
@@ -909,20 +909,108 @@
   ],
   "daily_signals": [
     {
-      "symbol": "AVN",
-      "action": "WATCH",
-      "score": 80.0,
-      "reason": "AI news confirmation was unavailable; monitor the ranked technical candidate.",
-      "news_evidence": [],
-      "risk": "Do not treat this fallback as a BUY signal."
+      "symbol": "QTECH",
+      "action": "BUY",
+      "score": 0.7,
+      "reason": "Volume is 291.8% above the 20\u2011day average (today: 3770000 shares; average: 961768 shares). Strong sector tailwind from record IT exports supports upside.",
+      "research_priority": "High",
+      "news_evidence": [
+        {
+          "source": "Business Recorder",
+          "title": "Pakistan\u2019s IT exports reach all-time monthly high of $453mn in Oct 2026",
+          "url": "https://www.brecorder.com/news/40449368/pakistans-it-exports-reach-all-time-monthly-high-of-453mn-in-oct-2026"
+        }
+      ],
+      "risk": "High valuation (PE 35.98) and elevated dividend\u2011yield figure raise caution",
+      "selection_checks": [
+        {
+          "question": "Is the price/volume move confirmed?",
+          "answer": "Yes, volume surge confirmed",
+          "status": "confirmed"
+        },
+        {
+          "question": "Is there relevant fresh news or an event?",
+          "answer": "IT export record provides sector catalyst",
+          "status": "confirmed"
+        },
+        {
+          "question": "Does the company have real business exposure?",
+          "answer": "Company operates in IT services, directly benefiting export growth",
+          "status": "confirmed"
+        },
+        {
+          "question": "Are fundamentals, valuation, and cash flow acceptable?",
+          "answer": "PE is high; dividend yield data appears anomalous",
+          "status": "negative"
+        },
+        {
+          "question": "Is liquidity sufficient for a PSX swing trade?",
+          "answer": "Yes, volume far exceeds average",
+          "status": "confirmed"
+        },
+        {
+          "question": "What is the strongest risk or counterargument?",
+          "answer": "Valuation may be stretched; price could stall below EMA 50",
+          "status": "confirmed"
+        },
+        {
+          "question": "What evidence would invalidate this priority?",
+          "answer": "If volume reverts to average and price stays below EMA 50",
+          "status": "unverified"
+        }
+      ]
     },
     {
-      "symbol": "KOHE",
-      "action": "WATCH",
-      "score": 70.0,
-      "reason": "AI news confirmation was unavailable; monitor the ranked technical candidate.",
-      "news_evidence": [],
-      "risk": "Do not treat this fallback as a BUY signal."
+      "symbol": "AVN",
+      "action": "AVOID",
+      "score": 0.8,
+      "reason": "Volume is 65% below the 20\u2011day average (today: 265500 shares; average: 763545 shares). Price is under EMA 50, indicating weak demand.",
+      "research_priority": "Medium",
+      "news_evidence": [
+        {
+          "source": "Dawn Business",
+          "title": "Equities post modest gains despite profit-taking",
+          "url": "https://www.dawn.com/news/2045046/equities-post-modest-gains-despite-profit-taking"
+        }
+      ],
+      "risk": "Low liquidity and price weakness may lead to further downside",
+      "selection_checks": [
+        {
+          "question": "Is the price/volume move confirmed?",
+          "answer": "No, volume is weak and price below EMA 50",
+          "status": "negative"
+        },
+        {
+          "question": "Is there relevant fresh news or an event?",
+          "answer": "No company\u2011specific news found",
+          "status": "unverified"
+        },
+        {
+          "question": "Does the company have real business exposure?",
+          "answer": "Business exposure not evident in supplied news",
+          "status": "unverified"
+        },
+        {
+          "question": "Are fundamentals, valuation, and cash flow acceptable?",
+          "answer": "PE moderate but dividend yield figure appears unrealistic",
+          "status": "unverified"
+        },
+        {
+          "question": "Is liquidity sufficient for a PSX swing trade?",
+          "answer": "Liquidity is insufficient",
+          "status": "negative"
+        },
+        {
+          "question": "What is the strongest risk or counterargument?",
+          "answer": "Low volume could exacerbate price decline",
+          "status": "confirmed"
+        },
+        {
+          "question": "What evidence would invalidate this priority?",
+          "answer": "A sudden volume spike and positive news could change outlook",
+          "status": "unverified"
+        }
+      ]
     }
   ],
   "signals_today": [],
@@ -939,130 +1027,49 @@
   "history": [],
   "urdu_briefings": [
     {
-      "symbol": "AVN",
-      "ticker": "AVN",
-      "price": 26.31,
-      "final_ai_score": 80.0,
-      "sector": "Unknown:AVN",
+      "symbol": "QTECH",
+      "final_ai_score": 0.7,
       "briefing": {
-        "\u0679\u0627\u0631\u06af\u062a \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "AVN \u06a9\u0648 2\u201320 \u062f\u0646 \u06a9\u06d2 Swing \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645 \u0645\u06cc\u06ba Buy Zone \u0627\u0648\u0631 \u0679\u0627\u0631\u06af\u0679 \u067e\u0631 \u063a\u0648\u0631 \u06a9\u0631\u06cc\u06ba\u06d4",
-        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u0628\u0646\u06cc\u0627\u062f\u06cc\u0627\u062a\u060c \u0646\u0642\u062f \u0628\u06c1\u0627\u0624\u060c valuation \u0627\u0648\u0631 governance \u06a9\u06cc \u062a\u0627\u0632\u06c1 \u062a\u0635\u062f\u06cc\u0642 \u0627\u0633 fallback \u0645\u06cc\u06ba \u062f\u0633\u062a\u06cc\u0627\u0628 \u0646\u06c1\u06cc\u06ba\u061b \u0627\u0633\u06d2 \u063a\u06cc\u0631\u0645\u0635\u062f\u0642\u06c1 \u0633\u0645\u062c\u06be\u06cc\u06ba\u06d4",
-        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u06cc\u06c1 \u0635\u0631\u0641 \u062f\u0633\u062a\u06cc\u0627\u0628 \u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0627\u0633\u06a9\u0631\u06cc\u0646\u0646\u06af \u0627\u0645\u06cc\u062f\u0648\u0627\u0631 \u06c1\u06d2\u061b \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u0627\u0648\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0637\u0644\u0628 \u06a9\u06cc \u0627\u0644\u06af \u062a\u0635\u062f\u06cc\u0642 \u0636\u0631\u0648\u0631\u06cc \u06c1\u06d2\u06d4",
-        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "Volume is 65.2% below the 20-day average (today: 267,060 shares; average: 763,545 shares). \u0627\u0633\u06cc \u0648\u0627\u0644\u06cc\u0648\u0645 \u067e\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u06cc\u0627 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af \u06a9\u0627 \u0641\u06cc\u0635\u0644\u06c1 \u06a9\u0631\u06cc\u06ba\u06d4",
-        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0645\u062a\u0639\u0644\u0642\u06c1 \u062a\u0627\u0632\u06c1 \u062e\u0628\u0631 \u06cc\u0627 macro driver \u0627\u0633 fallback \u0645\u06cc\u06ba verify \u0646\u06c1\u06cc\u06ba \u06c1\u0648\u0627\u06d4",
-        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "\u0627\u0633 \u06a9\u0645\u067e\u0646\u06cc \u06a9\u06d2 \u0644\u06cc\u06d2 supply-chain thesis \u0644\u0627\u06af\u0648 \u06c1\u06d2 \u06cc\u0627 \u0646\u06c1\u06cc\u06ba\u060c \u062a\u0627\u0632\u06c1 evidence \u06a9\u06d2 \u0628\u063a\u06cc\u0631 verify \u0646\u06c1\u06cc\u06ba \u06a9\u06cc\u0627 \u062c\u0627 \u0633\u06a9\u062a\u0627\u06d4",
-        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u062a\u0627\u0632\u06c1 \u06a9\u0645\u067e\u0646\u06cc disclosure\u060c PSX notice\u060c \u0645\u0627\u0644\u06cc\u0627\u062a\u06cc \u0631\u067e\u0648\u0631\u0679 \u0627\u0648\u0631 \u0645\u062a\u0639\u0644\u0642\u06c1 \u062e\u0628\u0631 \u0686\u06cc\u06a9 \u06a9\u0631\u06cc\u06ba\u06d4",
-        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u06a9\u0645\u0632\u0648\u0631 volume\u060c \u0645\u0646\u0641\u06cc disclosure\u060c liquidity issue \u06cc\u0627 thesis \u06a9\u06cc \u0639\u062f\u0645 \u062a\u0635\u062f\u06cc\u0642 research priority \u06a9\u0645 \u06a9\u0631\u06d2 \u06af\u06cc\u06d4"
+        "\u0679\u0627\u0631\u06af\u0679 \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "2-20 \u062f\u0646",
+        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "IT \u0628\u0631\u0622\u0645\u062f\u0627\u062a \u06a9\u06cc \u0631\u06cc\u06a9\u0627\u0631\u0688 \u0633\u0637\u062d \u0633\u06d2 \u0633\u06cc\u06a9\u0679\u0631 \u06a9\u06cc \u0628\u0646\u06cc\u0627\u062f \u0645\u0636\u0628\u0648\u0637",
+        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u0648\u0627\u0644\u06cc\u0648\u0645 291.8% \u0627\u0648\u067e\u0631 (\u0622\u062c: 3770000 \u0634\u06cc\u0626\u0631\u0632\u061b \u0627\u0648\u0633\u0637: 961768 \u0634\u06cc\u0626\u0631\u0632)",
+        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af IT \u0628\u0631\u0622\u0645\u062f\u0627\u062a \u06a9\u06cc \u0648\u062c\u06c1 \u0633\u06d2\u060c \u06a9\u0648\u0626\u06cc \u062c\u06be\u0648\u0679\u06cc \u062e\u0628\u0631 \u0646\u06c1\u06cc\u06ba",
+        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "IT \u0628\u0631\u0622\u0645\u062f\u0627\u062a \u0645\u06cc\u06ba \u0627\u0636\u0627\u0641\u06c1\u060c \u0631\u0648\u067e\u06d2 \u06a9\u06cc \u0645\u0633\u062a\u062d\u06a9\u0645 \u0635\u0648\u0631\u062a\u062d\u0627\u0644",
+        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "not applicable",
+        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u0627\u06af\u0631 \u0648\u0627\u0644\u06cc\u0648\u0645 \u0627\u0648\u0633\u0637 \u067e\u0631 \u0648\u0627\u067e\u0633 \u0622 \u062c\u0627\u0626\u06d2 \u062a\u0648 \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u062e\u0637\u0631\u06d2 \u0645\u06cc\u06ba",
+        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u0627\u06af\u0631 \u0642\u06cc\u0645\u062a EMA 50 \u06a9\u06d2 \u0646\u06cc\u0686\u06d2 \u0631\u06c1\u062a\u06cc \u06c1\u06d2 \u062a\u0648 \u062e\u0631\u06cc\u062f\u0627\u0631\u06cc \u06a9\u0627 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644 \u0633\u06a9\u062a\u0627 \u06c1\u06d2"
       },
       "evidence": {
-        "volume_ratio": 0.3478,
-        "volume_average_shares": 763544.95,
-        "volume_today_shares": 267060.0,
-        "stop_loss": 26.31,
-        "take_profit": 26.31,
+        "volume_ratio": 3.9184808653137573,
+        "volume_average_shares": 961768.35,
+        "volume_today_shares": 3770000,
+        "stop_loss": 30.93,
+        "take_profit": 41.03,
         "holding_days": "2-20",
-        "sources": []
+        "sources": [
+          {
+            "title": "Pakistan\u2019s IT exports reach all-time monthly high of $453mn in Oct 2026",
+            "url": "https://www.brecorder.com/news/40449368/pakistans-it-exports-reach-all-time-monthly-high-of-453mn-in-oct-2026",
+            "type": "primary"
+          }
+        ]
       },
-      "selection_checks": [
-        {
-          "question": "Is the price/volume move confirmed?",
-          "answer": "Technical screen only; independent confirmation is required.",
-          "status": "unverified"
-        },
-        {
-          "question": "Is there relevant fresh news or an event?",
-          "answer": "Fresh AI/news evidence was unavailable in fallback mode.",
-          "status": "unverified"
-        },
-        {
-          "question": "Does the company have real business exposure?",
-          "answer": "Not verified from fallback data.",
-          "status": "unverified"
-        },
-        {
-          "question": "Are fundamentals, valuation, and cash flow acceptable?",
-          "answer": "Not verified from fallback data.",
-          "status": "unverified"
-        },
-        {
-          "question": "Is liquidity sufficient for a PSX swing trade?",
-          "answer": "Liquidity is reflected only by the supplied volume metrics.",
-          "status": "unverified"
-        },
-        {
-          "question": "What is the strongest risk or counterargument?",
-          "answer": "Weak volume or negative disclosure can invalidate the idea.",
-          "status": "unverified"
-        },
-        {
-          "question": "What evidence would invalidate this priority?",
-          "answer": "A failed technical setup or contradictory company disclosure.",
-          "status": "unverified"
-        }
-      ]
+      "ticker": "QTECH"
     },
     {
-      "symbol": "KOHE",
-      "ticker": "KOHE",
-      "price": 15.23,
-      "final_ai_score": 70.0,
-      "sector": "Unknown:KOHE",
+      "symbol": "AVN",
+      "final_ai_score": 0.8,
       "briefing": {
-        "\u0679\u0627\u0631\u06af\u062a \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "KOHE \u06a9\u0648 2\u201320 \u062f\u0646 \u06a9\u06d2 Swing \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645 \u0645\u06cc\u06ba Buy Zone \u0627\u0648\u0631 \u0679\u0627\u0631\u06af\u0679 \u067e\u0631 \u063a\u0648\u0631 \u06a9\u0631\u06cc\u06ba\u06d4",
-        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u0628\u0646\u06cc\u0627\u062f\u06cc\u0627\u062a\u060c \u0646\u0642\u062f \u0628\u06c1\u0627\u0624\u060c valuation \u0627\u0648\u0631 governance \u06a9\u06cc \u062a\u0627\u0632\u06c1 \u062a\u0635\u062f\u06cc\u0642 \u0627\u0633 fallback \u0645\u06cc\u06ba \u062f\u0633\u062a\u06cc\u0627\u0628 \u0646\u06c1\u06cc\u06ba\u061b \u0627\u0633\u06d2 \u063a\u06cc\u0631\u0645\u0635\u062f\u0642\u06c1 \u0633\u0645\u062c\u06be\u06cc\u06ba\u06d4",
-        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u06cc\u06c1 \u0635\u0631\u0641 \u062f\u0633\u062a\u06cc\u0627\u0628 \u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0627\u0633\u06a9\u0631\u06cc\u0646\u0646\u06af \u0627\u0645\u06cc\u062f\u0648\u0627\u0631 \u06c1\u06d2\u061b \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u0627\u0648\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0637\u0644\u0628 \u06a9\u06cc \u0627\u0644\u06af \u062a\u0635\u062f\u06cc\u0642 \u0636\u0631\u0648\u0631\u06cc \u06c1\u06d2\u06d4",
-        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "Volume is 78.2% below the 20-day average (today: 134,690 shares; average: 615,276 shares). \u0627\u0633\u06cc \u0648\u0627\u0644\u06cc\u0648\u0645 \u067e\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u06cc\u0627 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af \u06a9\u0627 \u0641\u06cc\u0635\u0644\u06c1 \u06a9\u0631\u06cc\u06ba\u06d4",
-        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0645\u062a\u0639\u0644\u0642\u06c1 \u062a\u0627\u0632\u06c1 \u062e\u0628\u0631 \u06cc\u0627 macro driver \u0627\u0633 fallback \u0645\u06cc\u06ba verify \u0646\u06c1\u06cc\u06ba \u06c1\u0648\u0627\u06d4",
-        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "\u0627\u0633 \u06a9\u0645\u067e\u0646\u06cc \u06a9\u06d2 \u0644\u06cc\u06d2 supply-chain thesis \u0644\u0627\u06af\u0648 \u06c1\u06d2 \u06cc\u0627 \u0646\u06c1\u06cc\u06ba\u060c \u062a\u0627\u0632\u06c1 evidence \u06a9\u06d2 \u0628\u063a\u06cc\u0631 verify \u0646\u06c1\u06cc\u06ba \u06a9\u06cc\u0627 \u062c\u0627 \u0633\u06a9\u062a\u0627\u06d4",
-        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u062a\u0627\u0632\u06c1 \u06a9\u0645\u067e\u0646\u06cc disclosure\u060c PSX notice\u060c \u0645\u0627\u0644\u06cc\u0627\u062a\u06cc \u0631\u067e\u0648\u0631\u0679 \u0627\u0648\u0631 \u0645\u062a\u0639\u0644\u0642\u06c1 \u062e\u0628\u0631 \u0686\u06cc\u06a9 \u06a9\u0631\u06cc\u06ba\u06d4",
-        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u06a9\u0645\u0632\u0648\u0631 volume\u060c \u0645\u0646\u0641\u06cc disclosure\u060c liquidity issue \u06cc\u0627 thesis \u06a9\u06cc \u0639\u062f\u0645 \u062a\u0635\u062f\u06cc\u0642 research priority \u06a9\u0645 \u06a9\u0631\u06d2 \u06af\u06cc\u06d4"
+        "\u0679\u0627\u0631\u06af\u0679 \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "2-20 \u062f\u0646",
+        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u0645\u062d\u062f\u0648\u062f \u0628\u0646\u06cc\u0627\u062f\u060c \u06a9\u0648\u0626\u06cc \u0648\u0627\u0636\u062d \u0633\u06cc\u06a9\u0679\u0631 \u0679\u06cc\u0644\u0631 \u0646\u06c1\u06cc\u06ba",
+        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u0648\u0627\u0644\u06cc\u0648\u0645 65% \u0646\u06cc\u0686\u06d2 (\u0622\u062c: 265500 \u0634\u06cc\u0626\u0631\u0632\u061b \u0627\u0648\u0633\u0637: 763545 \u0634\u06cc\u0626\u0631\u0632)",
+        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "\u06a9\u0648\u0626\u06cc \u0648\u0627\u0636\u062d \u0628\u0627\u0626\u0646\u06af \u0633\u06af\u0646\u0644 \u0646\u06c1\u06cc\u06ba\u060c \u0635\u0631\u0641 \u0645\u0627\u0631\u06a9\u06cc\u0679 \u06a9\u06cc \u0639\u0645\u0648\u0645\u06cc \u06a9\u0645\u0632\u0648\u0631\u06cc",
+        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0631\u0648\u067e\u06cc \u06a9\u06cc \u0645\u0639\u0645\u0648\u0644\u06cc \u0642\u062f\u0631 \u0645\u06cc\u06ba \u0627\u0636\u0627\u0641\u06c1\u060c \u0644\u06cc\u06a9\u0646 \u0633\u06cc\u06a9\u0679\u0631 \u067e\u0631 \u0645\u062d\u062f\u0648\u062f \u0627\u062b\u0631",
+        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "not applicable",
+        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u0627\u06af\u0631 \u0648\u0627\u0644\u06cc\u0648\u0645 \u0627\u0686\u0627\u0646\u06a9 \u0628\u0691\u06be \u062c\u0627\u0626\u06d2 \u062a\u0648 \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u0645\u0645\u06a9\u0646",
+        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u0627\u06af\u0631 \u0645\u062b\u0628\u062a \u06a9\u0645\u067e\u0646\u06cc \u062e\u0628\u0631 \u0633\u0627\u0645\u0646\u06d2 \u0622\u0626\u06d2 \u062a\u0648 \u062a\u062c\u0632\u06cc\u06c1 \u0628\u062f\u0644 \u0633\u06a9\u062a\u0627 \u06c1\u06d2"
       },
-      "evidence": {
-        "volume_ratio": 0.2176,
-        "volume_average_shares": 615276.1,
-        "volume_today_shares": 134690.0,
-        "stop_loss": 15.23,
-        "take_profit": 15.23,
-        "holding_days": "2-20",
-        "sources": []
-      },
-      "selection_checks": [
-        {
-          "question": "Is the price/volume move confirmed?",
-          "answer": "Technical screen only; independent confirmation is required.",
-          "status": "unverified"
-        },
-        {
-          "question": "Is there relevant fresh news or an event?",
-          "answer": "Fresh AI/news evidence was unavailable in fallback mode.",
-          "status": "unverified"
-        },
-        {
-          "question": "Does the company have real business exposure?",
-          "answer": "Not verified from fallback data.",
-          "status": "unverified"
-        },
-        {
-          "question": "Are fundamentals, valuation, and cash flow acceptable?",
-          "answer": "Not verified from fallback data.",
-          "status": "unverified"
-        },
-        {
-          "question": "Is liquidity sufficient for a PSX swing trade?",
-          "answer": "Liquidity is reflected only by the supplied volume metrics.",
-          "status": "unverified"
-        },
-        {
-          "question": "What is the strongest risk or counterargument?",
-          "answer": "Weak volume or negative disclosure can invalidate the idea.",
-          "status": "unverified"
-        },
-        {
-          "question": "What evidence would invalidate this priority?",
-          "answer": "A failed technical setup or contradictory company disclosure.",
-          "status": "unverified"
-        }
-      ]
+      "ticker": "AVN"
     }
   ]
 }
