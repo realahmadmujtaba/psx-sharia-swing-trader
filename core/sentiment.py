@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 import config
 
@@ -173,30 +174,59 @@ def analyze(
     tickers: list[str],
     candidates: list[dict] | None = None,
 ) -> dict:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is required for sentiment analysis")
-    try:
-        from google import genai
-    except ImportError as exc:
-        raise RuntimeError("google-genai is required for sentiment analysis") from exc
-
     payload = {
         "tickers": tickers,
         "articles": articles,
         "videos": videos,
         "candidates": candidates or [],
     }
-    client = genai.Client(api_key=api_key)
-    try:
-        response = client.models.generate_content(
-            model=config.GEMINI_MODEL,
-            contents=SYSTEM_INSTRUCTION + "\nINPUT:\n" + json.dumps(payload, default=str),
-            config={"response_mime_type": "application/json"},
-        )
-    except Exception as exc:
-        raise RuntimeError(f"Gemini request failed using {config.GEMINI_MODEL}: {exc}") from exc
-    text = response.text.strip()
+    prompt = SYSTEM_INSTRUCTION + "\nINPUT:\n" + json.dumps(payload, default=str)
+    failures = []
+    text = ""
+
+    if config.GEMINI_API_KEY:
+        try:
+            from google import genai
+            client = genai.Client(api_key=config.GEMINI_API_KEY)
+            response = client.models.generate_content(
+                model=config.GEMINI_MODEL,
+                contents=prompt,
+                config={"response_mime_type": "application/json"},
+            )
+            text = response.text.strip()
+        except (ImportError, OSError, ValueError, RuntimeError) as exc:
+            failures.append(f"Gemini ({config.GEMINI_MODEL}): {exc}")
+        except Exception as exc:
+            failures.append(f"Gemini ({config.GEMINI_MODEL}): {exc}")
+    else:
+        failures.append("Gemini: GEMINI_API_KEY is not configured")
+
+    if not text and config.GROQ_API_KEY:
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {config.GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": config.GROQ_MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "response_format": {"type": "json_object"},
+                },
+                timeout=60,
+            )
+            response.raise_for_status()
+            text = response.json()["choices"][0]["message"]["content"].strip()
+        except (KeyError, OSError, ValueError, requests.RequestException) as exc:
+            failures.append(f"Groq ({config.GROQ_MODEL}): {exc}")
+    elif not text:
+        failures.append("Groq: GROQ_API_KEY is not configured")
+
+    if not text:
+        raise RuntimeError("AI research providers unavailable: " + "; ".join(failures))
+
     result = json.loads(text)
     required = {"market_sentiment", "confidence", "macro_drivers", "takeaways", "stock_flags"}
     if not required.issubset(result):

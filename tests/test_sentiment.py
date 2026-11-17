@@ -37,8 +37,32 @@ class TestSentiment(unittest.TestCase):
         client.models.generate_content.side_effect = RuntimeError("model unavailable")
         with mock.patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}), \
              mock.patch("google.genai.Client", return_value=client):
-            with self.assertRaisesRegex(RuntimeError, "Gemini request failed"):
+            with self.assertRaisesRegex(RuntimeError, "AI research providers unavailable"):
                 sentiment.analyze([], [], ["ABC"])
+
+    def test_groq_is_used_when_gemini_fails(self):
+        response = mock.Mock()
+        response.json.return_value = {
+            "choices": [{
+                "message": {
+                    "content": '{"market_sentiment":"Neutral","confidence":0.5,'
+                    '"macro_drivers":[],"takeaways":[],"stock_flags":[]}'
+                }
+            }]
+        }
+        response.raise_for_status.return_value = None
+        client = mock.Mock()
+        client.models.generate_content.side_effect = RuntimeError("temporary outage")
+        with mock.patch.dict(
+            "os.environ",
+            {"GEMINI_API_KEY": "gemini-key", "GROQ_API_KEY": "groq-key"},
+        ), mock.patch.object(sentiment.config, "GEMINI_API_KEY", "gemini-key"), \
+             mock.patch.object(sentiment.config, "GROQ_API_KEY", "groq-key"), \
+             mock.patch("google.genai.Client", return_value=client), \
+             mock.patch.object(sentiment.requests, "post", return_value=response) as post:
+            result = sentiment.analyze([], [], ["ABC"])
+        self.assertEqual(result["market_sentiment"], "Neutral")
+        self.assertEqual(post.call_args.kwargs["headers"]["Authorization"], "Bearer groq-key")
 
 
 class TestNotifierIntelligence(unittest.TestCase):
