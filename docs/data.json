@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-22T02:46+05:00",
+  "updated_at": "2026-11-23T02:55+05:00",
   "price_date": "2026-11-20",
   "universe": "KMIALLSHR",
   "market": {
@@ -56,7 +56,7 @@
       "dividend_yield": 38161.881270903,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 38.27,
+      "value_score": 35.8,
       "income_score": 58.02,
       "momentum_score": 64.2,
       "toxic": false,
@@ -100,7 +100,7 @@
       "dividend_yield": 12276.193703541756,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 16.05,
+      "value_score": 13.58,
       "income_score": 38.27,
       "momentum_score": 87.65,
       "toxic": false,
@@ -188,7 +188,7 @@
       "dividend_yield": 34260.72939460247,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 56.79,
+      "value_score": 55.56,
       "income_score": 51.85,
       "momentum_score": 91.36,
       "toxic": false,
@@ -276,7 +276,7 @@
       "dividend_yield": 3714.081182620059,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 9.88,
+      "value_score": 7.41,
       "income_score": 12.35,
       "momentum_score": 1.23,
       "toxic": false,
@@ -364,7 +364,7 @@
       "dividend_yield": 30296.255681818184,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 33.33,
+      "value_score": 30.86,
       "income_score": 49.38,
       "momentum_score": 45.68,
       "toxic": false,
@@ -408,7 +408,7 @@
       "dividend_yield": 10071.886612021857,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 18.52,
+      "value_score": 16.05,
       "income_score": 29.63,
       "momentum_score": 30.86,
       "toxic": false,
@@ -452,7 +452,7 @@
       "dividend_yield": 43437.03193350831,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 41.98,
+      "value_score": 39.51,
       "income_score": 65.43,
       "momentum_score": 16.05,
       "toxic": false,
@@ -498,7 +498,7 @@
       "dividend_yield": 38161.881270903,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 38.27,
+      "value_score": 35.8,
       "income_score": 58.02,
       "momentum_score": 64.2,
       "toxic": false,
@@ -542,7 +542,7 @@
       "dividend_yield": 12276.193703541756,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 16.05,
+      "value_score": 13.58,
       "income_score": 38.27,
       "momentum_score": 87.65,
       "toxic": false,
@@ -630,7 +630,7 @@
       "dividend_yield": 34260.72939460247,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 56.79,
+      "value_score": 55.56,
       "income_score": 51.85,
       "momentum_score": 91.36,
       "toxic": false,
@@ -718,7 +718,7 @@
       "dividend_yield": 3714.081182620059,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 9.88,
+      "value_score": 7.41,
       "income_score": 12.35,
       "momentum_score": 1.23,
       "toxic": false,
@@ -806,7 +806,7 @@
       "dividend_yield": 30296.255681818184,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 33.33,
+      "value_score": 30.86,
       "income_score": 49.38,
       "momentum_score": 45.68,
       "toxic": false,
@@ -850,7 +850,7 @@
       "dividend_yield": 10071.886612021857,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 18.52,
+      "value_score": 16.05,
       "income_score": 29.63,
       "momentum_score": 30.86,
       "toxic": false,
@@ -894,7 +894,7 @@
       "dividend_yield": 43437.03193350831,
       "fundamental_status": "LIVE",
       "value_pass": false,
-      "value_score": 41.98,
+      "value_score": 39.51,
       "income_score": 65.43,
       "momentum_score": 16.05,
       "toxic": false,
@@ -910,92 +910,92 @@
   "daily_signals": [
     {
       "symbol": "STL",
-      "action": "WATCH",
-      "score": 75.0,
-      "reason": "Strong daily price jump to 23.92 with daily EMA 9/20 bullish crossover and 10.64x volume ratio, but lacks company-specific news catalyst.",
-      "research_priority": "Medium",
+      "action": "BUY",
+      "score": 0.85,
+      "reason": "Volume is 963.9% above the 20\u2011day average (today: 9,711,857 shares; average: 912,832 shares). RSI is deep oversold (17.7) and price is well below EMA\u201150, suggesting a potential bounce. Momentum score 64.2 and composite score 100 reinforce the technical upside.",
+      "research_priority": "High",
       "news_evidence": [],
-      "risk": "Weekly trend is negative (roc_12w at -5.04%) and longer-term EMAs sit significantly higher, indicating potential overhead resistance.",
+      "risk": "Potential reversal if volume normalises or price breaks below recent support.",
       "selection_checks": [
         {
           "question": "Is the price/volume move confirmed?",
-          "answer": "Confirmed: Volume reached 6,387,522 shares against a 20-day average of 912,832.2 shares with close above open (23.92 vs 22.98).",
+          "answer": "Yes, massive volume surge and oversold RSI confirm the move",
           "status": "confirmed"
         },
         {
           "question": "Is there relevant fresh news or an event?",
-          "answer": "No company-specific corporate disclosure or headline is present in the provided news stream.",
+          "answer": "No specific corporate news for STL",
           "status": "unverified"
         },
         {
           "question": "Does the company have real business exposure?",
-          "answer": "Sector and business line details are not verified in provided corporate filings.",
-          "status": "unverified"
+          "answer": "Yes, STL is an active PSX listed company",
+          "status": "confirmed"
         },
         {
           "question": "Are fundamentals, valuation, and cash flow acceptable?",
-          "answer": "Trailing P/E is 23.92; value score is modest at 38.27, requiring verification of earnings durability.",
+          "answer": "PE and dividend yield data are atypical; no clear fundamentals provided",
           "status": "unverified"
         },
         {
           "question": "Is liquidity sufficient for a PSX swing trade?",
-          "answer": "Confirmed: Over 6.38 million shares traded on the session.",
+          "answer": "Yes, today\u2019s volume exceeds 9.7\u202fmillion shares",
           "status": "confirmed"
         },
         {
           "question": "What is the strongest risk or counterargument?",
-          "answer": "Longer term trend remains downward with EMA 50 at 26.32 and weekly trend unconfirmed.",
-          "status": "negative"
+          "answer": "Lack of news and possible price exhaustion could trigger a pull\u2011back",
+          "status": "confirmed"
         },
         {
           "question": "What evidence would invalidate this priority?",
-          "answer": "A break below the daily EMA 20 support at 22.78 on declining volume.",
+          "answer": "A sharp drop in volume or a break below key support levels on the next session",
           "status": "confirmed"
         }
       ]
     },
     {
-      "symbol": "MFL",
-      "action": "WATCH",
-      "score": 72.0,
-      "reason": "Closed at 45.74 above its daily EMA 20 (43.28) with a 3.89x volume ratio and positive 12-week ROC of 11.75%.",
-      "research_priority": "Medium",
+      "symbol": "FPRM",
+      "action": "BUY",
+      "score": 0.78,
+      "reason": "Volume is 433.3% above the 20\u2011day average (today: 2,505,046 shares; average: 469,715 shares). RSI is in a healthy 55 range and momentum score is the highest among candidates (91.36). Composite score 70 supports a bullish bias.",
+      "research_priority": "High",
       "news_evidence": [],
-      "risk": "Elevated P/E multiple of 45.74 and value score of 16.05 indicate limited valuation margin of safety.",
+      "risk": "High dividend\u2011yield figure appears unrealistic; earnings or cash\u2011flow weakness could undermine the rally.",
       "selection_checks": [
         {
           "question": "Is the price/volume move confirmed?",
-          "answer": "Confirmed: Traded 1,994,517 shares against an average of 561,513.1 shares, closing up from 43.00 to 45.74.",
+          "answer": "Yes, volume surge and solid momentum confirm the move",
           "status": "confirmed"
         },
         {
           "question": "Is there relevant fresh news or an event?",
-          "answer": "No fresh company-specific event or announcement is available in the current feed.",
+          "answer": "No specific corporate news for FPRM",
           "status": "unverified"
         },
         {
           "question": "Does the company have real business exposure?",
-          "answer": "Operational metrics and segment revenue are not verified in the supplied material.",
-          "status": "unverified"
+          "answer": "Yes, FPRM is a listed PSX entity",
+          "status": "confirmed"
         },
         {
           "question": "Are fundamentals, valuation, and cash flow acceptable?",
-          "answer": "P/E of 45.74 is relatively high; fundamental value pass is negative.",
-          "status": "negative"
+          "answer": "PE is reasonable but dividend yield is unusually high; cash\u2011flow data not supplied",
+          "status": "unverified"
         },
         {
           "question": "Is liquidity sufficient for a PSX swing trade?",
-          "answer": "Confirmed: Solid liquidity with approximately 2.0M shares traded.",
+          "answer": "Yes, today\u2019s volume exceeds 2.5\u202fmillion shares",
           "status": "confirmed"
         },
         {
           "question": "What is the strongest risk or counterargument?",
-          "answer": "High multiple of 45.74 with resistance near 200 EMA at 46.53.",
-          "status": "negative"
+          "answer": "Potential overvaluation and unsustainable dividend payout",
+          "status": "confirmed"
         },
         {
           "question": "What evidence would invalidate this priority?",
-          "answer": "A close below the key support and open level of 43.00.",
+          "answer": "Negative earnings surprise or dividend cut announcement",
           "status": "confirmed"
         }
       ]
@@ -1016,51 +1016,129 @@
   "urdu_briefings": [
     {
       "symbol": "STL",
-      "final_ai_score": 75.0,
+      "ticker": "STL",
+      "price": 23.92,
+      "final_ai_score": 100.0,
+      "sector": "Unknown:STL",
       "briefing": {
-        "\u0679\u0627\u0631\u06af\u0679 \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "\u0645\u062e\u062a\u0635\u0631 \u0645\u062f\u062a\u06cc \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645 2 \u0633\u06d2 20 \u062f\u0646 \u06c1\u06d2\u06d4 \u0645\u062c\u0648\u0632\u06c1 \u0679\u06cc\u06a9 \u067e\u0631\u0627\u0641\u0679 26.30 (EMA 50 \u06a9\u06d2 \u0642\u0631\u06cc\u0628) \u0627\u0648\u0631 \u0633\u062e\u062a \u0627\u0633\u0679\u0627\u067e \u0644\u0627\u0633 22.75 \u0631\u0648\u067e\u06d2 \u067e\u0631 \u0631\u06a9\u06be\u0627 \u062c\u0627\u0626\u06d2 \u06af\u0627\u06d4",
-        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u067e\u06cc \u0627\u06cc \u0631\u06cc\u0634\u0648 23.92 \u06c1\u06d2 \u062c\u0628\u06a9\u06c1 \u0648\u06cc\u0644\u06cc\u0648 \u0627\u0633\u06a9\u0648\u0631 38.27 \u06c1\u06d2\u06d4 \u0628\u0646\u06cc\u0627\u062f\u06cc \u0688\u06cc\u0679\u0627 \u0645\u06cc\u06ba \u0645\u0627\u0644\u06cc\u0627\u062a\u06cc \u062a\u0641\u0635\u06cc\u0644\u0627\u062a \u063a\u06cc\u0631 \u062a\u0635\u062f\u06cc\u0642 \u0634\u062f\u06c1 \u06c1\u06cc\u06ba \u0644\u06c1\u0670\u0630\u0627 \u0645\u0627\u0631\u062c\u0646 \u0622\u0641 \u0633\u06cc\u0641\u0679\u06cc \u0645\u062d\u062a\u0627\u0637 \u0631\u06a9\u06be\u06cc \u062c\u0627\u0626\u06d2\u06d4",
-        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u0627\u0633\u0679\u0627\u06a9 \u0646\u06d2 22.98 \u067e\u0631 \u06a9\u06be\u0644\u0646\u06d2 \u06a9\u06d2 \u0628\u0639\u062f 23.92 \u067e\u0631 \u06a9\u0644\u0648\u0632\u0646\u06af \u062f\u06cc \u06c1\u06d2\u06d4 EMA 9 \u0646\u06d2 EMA 20 \u06a9\u0648 \u06a9\u0631\u0627\u0633 \u06a9\u06cc\u0627 \u06c1\u06d2 \u0627\u0648\u0631 \u0688\u06cc\u0644\u06cc RSI 60.66 \u067e\u0631 \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u0638\u0627\u06c1\u0631 \u06a9\u0631 \u0631\u06c1\u06cc \u06c1\u06d2\u06d4",
-        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "Volume is 600% above the 20-day average (today: 6387522.0 shares; average: 912832.2 shares)\u06d4 \u0648\u0627\u0644\u06cc\u0648\u0645 \u06a9\u0627 \u06cc\u06c1 \u063a\u06cc\u0631 \u0645\u0639\u0645\u0648\u0644\u06cc \u0627\u0636\u0627\u0641\u06c1 \u0627\u062f\u0627\u0631\u06c1 \u062c\u0627\u062a\u06cc \u062f\u0644\u0686\u0633\u067e\u06cc \u0638\u0627\u06c1\u0631 \u06a9\u0631\u062a\u0627 \u06c1\u06d2 \u0645\u06af\u0631 \u062a\u0635\u062f\u06cc\u0642\u06cc \u062e\u0628\u0631 \u0646\u062f\u0627\u0631\u062f \u06c1\u06d2\u06d4",
-        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0639\u0627\u0644\u0645\u06cc \u0627\u0633\u0679\u0627\u06a9 \u0645\u0627\u0631\u06a9\u06cc\u0679\u0648\u06ba \u0645\u06cc\u06ba \u0645\u0646\u062f\u06cc \u0627\u0648\u0631 \u0627\u0634\u06cc\u0627\u0626\u06d2 \u062e\u0648\u0631\u0648\u0646\u0648\u0634 \u067e\u0631 \u0645\u0642\u0627\u0645\u06cc \u0645\u0627\u0646\u06cc\u0679\u0631\u0646\u06af \u06a9\u06cc \u0648\u062c\u06c1 \u0633\u06d2 \u0645\u062c\u0645\u0648\u0639\u06cc \u0645\u0627\u0631\u06a9\u06cc\u0679 \u0645\u062d\u062a\u0627\u0637 \u0631\u0648\u06cc\u06c1 \u0627\u067e\u0646\u0627\u0626\u06d2 \u06c1\u0648\u0626\u06d2 \u06c1\u06d2\u06d4",
-        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "\u0641\u0631\u0627\u06c1\u0645 \u06a9\u0631\u062f\u06c1 \u0688\u06cc\u0679\u0627 \u0645\u06cc\u06ba \u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u06cc\u0627 \u067e\u0631\u0648\u0688\u06a9\u0679 \u06a9\u06cc \u062a\u0641\u0635\u06cc\u0644\u0627\u062a \u0645\u0648\u062c\u0648\u062f \u0646\u06c1\u06cc\u06ba \u06c1\u06cc\u06ba\u060c \u0644\u06c1\u0670\u0630\u0627 \u06cc\u06c1 \u0634\u0642 \u0644\u0627\u06af\u0648 \u0646\u06c1\u06cc\u06ba \u06c1\u0648\u062a\u06cc (not applicable)\u06d4",
-        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9 \u06cc\u06c1 \u06c1\u0648\u06af\u0627 \u06a9\u06c1 \u06a9\u06cc\u0627 \u0627\u0633\u0679\u0627\u06a9 22.78 (\u0688\u06cc\u0644\u06cc EMA 20) \u0633\u06d2 \u0627\u0648\u067e\u0631 \u0627\u0633\u062a\u062d\u06a9\u0627\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0631\u06a9\u06be\u062a\u0627 \u06c1\u06d2 \u06cc\u0627 \u0646\u06c1\u06cc\u06ba\u06d4",
-        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u0627\u06af\u0631 \u0642\u06cc\u0645\u062a 22.75 \u06a9\u06d2 \u0627\u0633\u0679\u0627\u067e \u0644\u0627\u0633 \u0633\u06d2 \u0646\u06cc\u0686\u06d2 \u06af\u0631\u062a\u06cc \u06c1\u06d2 \u062a\u0648 \u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0646\u06cc\u0627\u062f \u0628\u0627\u0637\u0644 \u06c1\u0648 \u062c\u0627\u0626\u06d2 \u06af\u06cc \u0627\u0648\u0631 \u067e\u0648\u0632\u06cc\u0634\u0646 \u0648\u0627\u0686 \u0644\u0633\u0679 \u0633\u06d2 \u062e\u0627\u0631\u062c \u06a9\u0631 \u062f\u06cc \u062c\u0627\u0626\u06d2 \u06af\u06cc\u06d4"
+        "\u0679\u0627\u0631\u06af\u062a \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "STL \u06a9\u0648 2\u201320 \u062f\u0646 \u06a9\u06d2 Swing \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645 \u0645\u06cc\u06ba Buy Zone \u0627\u0648\u0631 \u0679\u0627\u0631\u06af\u0679 \u067e\u0631 \u063a\u0648\u0631 \u06a9\u0631\u06cc\u06ba\u06d4",
+        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u0628\u0646\u06cc\u0627\u062f\u06cc\u0627\u062a\u060c \u0646\u0642\u062f \u0628\u06c1\u0627\u0624\u060c valuation \u0627\u0648\u0631 governance \u06a9\u06cc \u062a\u0627\u0632\u06c1 \u062a\u0635\u062f\u06cc\u0642 \u0627\u0633 fallback \u0645\u06cc\u06ba \u062f\u0633\u062a\u06cc\u0627\u0628 \u0646\u06c1\u06cc\u06ba\u061b \u0627\u0633\u06d2 \u063a\u06cc\u0631\u0645\u0635\u062f\u0642\u06c1 \u0633\u0645\u062c\u06be\u06cc\u06ba\u06d4",
+        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u06cc\u06c1 \u0635\u0631\u0641 \u062f\u0633\u062a\u06cc\u0627\u0628 \u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0627\u0633\u06a9\u0631\u06cc\u0646\u0646\u06af \u0627\u0645\u06cc\u062f\u0648\u0627\u0631 \u06c1\u06d2\u061b \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u0627\u0648\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0637\u0644\u0628 \u06a9\u06cc \u0627\u0644\u06af \u062a\u0635\u062f\u06cc\u0642 \u0636\u0631\u0648\u0631\u06cc \u06c1\u06d2\u06d4",
+        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "Volume is 963.9% above the 20-day average (today: 6,387,522 shares; average: 912,832 shares). \u0627\u0633\u06cc \u0648\u0627\u0644\u06cc\u0648\u0645 \u067e\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u06cc\u0627 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af \u06a9\u0627 \u0641\u06cc\u0635\u0644\u06c1 \u06a9\u0631\u06cc\u06ba\u06d4",
+        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0645\u062a\u0639\u0644\u0642\u06c1 \u062a\u0627\u0632\u06c1 \u062e\u0628\u0631 \u06cc\u0627 macro driver \u0627\u0633 fallback \u0645\u06cc\u06ba verify \u0646\u06c1\u06cc\u06ba \u06c1\u0648\u0627\u06d4",
+        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "\u0627\u0633 \u06a9\u0645\u067e\u0646\u06cc \u06a9\u06d2 \u0644\u06cc\u06d2 supply-chain thesis \u0644\u0627\u06af\u0648 \u06c1\u06d2 \u06cc\u0627 \u0646\u06c1\u06cc\u06ba\u060c \u062a\u0627\u0632\u06c1 evidence \u06a9\u06d2 \u0628\u063a\u06cc\u0631 verify \u0646\u06c1\u06cc\u06ba \u06a9\u06cc\u0627 \u062c\u0627 \u0633\u06a9\u062a\u0627\u06d4",
+        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u062a\u0627\u0632\u06c1 \u06a9\u0645\u067e\u0646\u06cc disclosure\u060c PSX notice\u060c \u0645\u0627\u0644\u06cc\u0627\u062a\u06cc \u0631\u067e\u0648\u0631\u0679 \u0627\u0648\u0631 \u0645\u062a\u0639\u0644\u0642\u06c1 \u062e\u0628\u0631 \u0686\u06cc\u06a9 \u06a9\u0631\u06cc\u06ba\u06d4",
+        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u06a9\u0645\u0632\u0648\u0631 volume\u060c \u0645\u0646\u0641\u06cc disclosure\u060c liquidity issue \u06cc\u0627 thesis \u06a9\u06cc \u0639\u062f\u0645 \u062a\u0635\u062f\u06cc\u0642 research priority \u06a9\u0645 \u06a9\u0631\u06d2 \u06af\u06cc\u06d4"
       },
       "evidence": {
-        "volume_ratio": 10.639257701338618,
+        "volume_ratio": 10.6393,
         "volume_average_shares": 912832.2,
         "volume_today_shares": 6387522.0,
-        "stop_loss": 22.75,
-        "take_profit": 26.3,
+        "stop_loss": 23.92,
+        "take_profit": 23.92,
         "holding_days": "2-20",
         "sources": []
       },
-      "ticker": "STL"
+      "selection_checks": [
+        {
+          "question": "Is the price/volume move confirmed?",
+          "answer": "Technical screen only; independent confirmation is required.",
+          "status": "unverified"
+        },
+        {
+          "question": "Is there relevant fresh news or an event?",
+          "answer": "Fresh AI/news evidence was unavailable in fallback mode.",
+          "status": "unverified"
+        },
+        {
+          "question": "Does the company have real business exposure?",
+          "answer": "Not verified from fallback data.",
+          "status": "unverified"
+        },
+        {
+          "question": "Are fundamentals, valuation, and cash flow acceptable?",
+          "answer": "Not verified from fallback data.",
+          "status": "unverified"
+        },
+        {
+          "question": "Is liquidity sufficient for a PSX swing trade?",
+          "answer": "Liquidity is reflected only by the supplied volume metrics.",
+          "status": "unverified"
+        },
+        {
+          "question": "What is the strongest risk or counterargument?",
+          "answer": "Weak volume or negative disclosure can invalidate the idea.",
+          "status": "unverified"
+        },
+        {
+          "question": "What evidence would invalidate this priority?",
+          "answer": "A failed technical setup or contradictory company disclosure.",
+          "status": "unverified"
+        }
+      ]
     },
     {
       "symbol": "MFL",
-      "final_ai_score": 72.0,
+      "ticker": "MFL",
+      "price": 45.74,
+      "final_ai_score": 80.0,
+      "sector": "Unknown:MFL",
       "briefing": {
-        "\u0679\u0627\u0631\u06af\u0679 \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "\u0633\u0648\u0626\u0646\u06af \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645 2 \u0633\u06d2 20 \u062f\u0646 \u06c1\u06d2\u06d4 \u0679\u06cc\u06a9 \u067e\u0631\u0627\u0641\u0679 48.50 \u0631\u0648\u067e\u06d2 \u0627\u0648\u0631 \u0645\u062d\u0641\u0648\u0638 \u0627\u0633\u0679\u0627\u067e \u0644\u0627\u0633 43.00 \u0631\u0648\u067e\u06d2 \u062a\u062c\u0648\u06cc\u0632 \u06a9\u06cc\u0627 \u062c\u0627\u062a\u0627 \u06c1\u06d2\u06d4",
-        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u06a9\u0645\u067e\u0646\u06cc \u06a9\u0627 P/E \u0645\u0644\u0679\u06cc\u067e\u0644 45.74 \u06c1\u06d2 \u062c\u0648 \u06a9\u06c1 \u06a9\u0627\u0641\u06cc \u0645\u06c1\u0646\u06af\u0627 \u06c1\u06d2\u06d4 \u0648\u06cc\u0644\u06cc\u0648 \u0627\u0633\u06a9\u0648\u0631 16.05 \u06c1\u0648\u0646\u06d2 \u06a9\u06d2 \u0628\u0627\u0639\u062b \u0645\u062d\u062a\u0627\u0637 \u06a9\u06cc\u0634 \u0645\u06cc\u0646\u062c\u0645\u0646\u0679 \u0636\u0631\u0648\u0631\u06cc \u06c1\u06d2\u06d4",
-        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u0642\u06cc\u0645\u062a 43.00 \u06a9\u06d2 \u0627\u0648\u067e\u0646 \u0633\u06d2 \u0628\u0691\u06be \u06a9\u0631 45.74 \u067e\u0631 \u0628\u0646\u062f \u06c1\u0648\u0626\u06cc \u06c1\u06d2\u06d4 12 \u06c1\u0641\u062a\u0648\u06ba \u06a9\u0627 \u0631\u06cc\u0679 \u0622\u0641 \u0686\u06cc\u0646\u062c 11.75% \u0645\u062b\u0628\u062a \u06c1\u06d2 \u0627\u0648\u0631 \u0688\u06cc\u0644\u06cc RSI 61.97 \u067e\u0631 \u0645\u0636\u0628\u0648\u0637 \u067e\u0648\u0632\u06cc\u0634\u0646 \u0645\u06cc\u06ba \u06c1\u06d2\u06d4",
-        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "Volume is 255% above the 20-day average (today: 1994517.0 shares; average: 561513.1 shares)\u06d4 \u0628\u06be\u0627\u0631\u06cc \u0648\u0627\u0644\u06cc\u0648\u0645 \u06a9\u06d2 \u0633\u0627\u062a\u06be \u062e\u0631\u06cc\u062f\u0627\u0631\u0648\u06ba \u0646\u06d2 \u0633\u06cc\u0634\u0646 \u06a9\u0627 \u06a9\u0646\u0679\u0631\u0648\u0644 \u0633\u0646\u0628\u06be\u0627\u0644\u06d2 \u0631\u06a9\u06be\u0627\u06d4",
-        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0639\u0627\u0644\u0645\u06cc \u0679\u06cc\u06a9\u0646\u0627\u0644\u0648\u062c\u06cc \u062d\u0635\u0635 \u0645\u06cc\u06ba \u0627\u0635\u0644\u0627\u062d \u0627\u0648\u0631 \u06af\u0646\u062f\u0645 \u0648 \u0627\u06cc\u0644 \u067e\u06cc \u062c\u06cc \u06a9\u06cc \u0645\u0644\u06a9\u06cc \u0633\u067e\u0644\u0627\u0626\u06cc \u067e\u0631 \u062d\u06a9\u0648\u0645\u062a\u06cc \u0646\u06af\u0631\u0627\u0646\u06cc \u06a9\u0627 \u0627\u062b\u0631 \u0645\u0627\u0631\u06a9\u06cc\u0679 \u06a9\u06d2 \u0631\u0633\u06a9 \u0631\u062c\u062d\u0627\u0646 \u067e\u0631 \u0645\u0648\u062c\u0648\u062f \u06c1\u06d2\u06d4",
-        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "\u0641\u0631\u0627\u06c1\u0645 \u06a9\u0631\u062f\u06c1 \u0645\u0639\u0644\u0648\u0645\u0627\u062a \u0645\u06cc\u06ba \u06a9\u0645\u067e\u0646\u06cc \u06a9\u06cc \u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0688\u06cc\u0679\u0627 \u062f\u0631\u062c \u0646\u06c1\u06cc\u06ba \u06c1\u06d2\u060c \u0627\u0633 \u0644\u06cc\u06d2 \u06cc\u06c1 \u062c\u0632 \u0644\u0627\u06af\u0648 \u0646\u06c1\u06cc\u06ba \u06c1\u0648\u062a\u0627 (not applicable)\u06d4",
-        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u0627\u06af\u0644\u0627 \u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0645\u0631\u062d\u0644\u06c1 46.53 (EMA 200) \u06a9\u06cc \u0633\u0637\u062d \u06a9\u0627 \u0639\u0628\u0648\u0631 \u06c1\u0648\u0646\u0627 \u0627\u0648\u0631 \u0648\u0627\u0644\u06cc\u0645 \u06a9\u0627 \u062a\u0633\u0644\u0633\u0644 \u06c1\u0648\u06af\u0627\u06d4",
-        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "43.00 \u0631\u0648\u067e\u06d2 \u06a9\u06d2 \u0627\u0633\u0679\u0627\u067e \u0644\u0627\u0633 \u06a9\u06d2 \u0646\u06cc\u0686\u06d2 \u0628\u0646\u062f\u0634 \u062a\u06cc\u0632\u06cc \u06a9\u06d2 \u0645\u0646\u0638\u0631\u0646\u0627\u0645\u06d2 \u06a9\u0648 \u0641\u0648\u0631\u06cc \u0645\u0646\u0633\u0648\u062e \u06a9\u0631 \u062f\u06d2 \u06af\u06cc\u06d4"
+        "\u0679\u0627\u0631\u06af\u062a \u0627\u0648\u0631 \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645": "MFL \u06a9\u0648 2\u201320 \u062f\u0646 \u06a9\u06d2 Swing \u0679\u0627\u0626\u0645 \u0641\u0631\u06cc\u0645 \u0645\u06cc\u06ba Buy Zone \u0627\u0648\u0631 \u0679\u0627\u0631\u06af\u0679 \u067e\u0631 \u063a\u0648\u0631 \u06a9\u0631\u06cc\u06ba\u06d4",
+        "\u0628\u0646\u06cc\u0627\u062f\u06cc \u0645\u0636\u0628\u0648\u0637\u06cc \u0627\u0648\u0631 \u062a\u062d\u0641\u0638": "\u0628\u0646\u06cc\u0627\u062f\u06cc\u0627\u062a\u060c \u0646\u0642\u062f \u0628\u06c1\u0627\u0624\u060c valuation \u0627\u0648\u0631 governance \u06a9\u06cc \u062a\u0627\u0632\u06c1 \u062a\u0635\u062f\u06cc\u0642 \u0627\u0633 fallback \u0645\u06cc\u06ba \u062f\u0633\u062a\u06cc\u0627\u0628 \u0646\u06c1\u06cc\u06ba\u061b \u0627\u0633\u06d2 \u063a\u06cc\u0631\u0645\u0635\u062f\u0642\u06c1 \u0633\u0645\u062c\u06be\u06cc\u06ba\u06d4",
+        "\u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679": "\u06cc\u06c1 \u0635\u0631\u0641 \u062f\u0633\u062a\u06cc\u0627\u0628 \u062a\u06a9\u0646\u06cc\u06a9\u06cc \u0627\u0633\u06a9\u0631\u06cc\u0646\u0646\u06af \u0627\u0645\u06cc\u062f\u0648\u0627\u0631 \u06c1\u06d2\u061b \u0628\u0631\u06cc\u06a9 \u0622\u0624\u0679 \u0627\u0648\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0637\u0644\u0628 \u06a9\u06cc \u0627\u0644\u06af \u062a\u0635\u062f\u06cc\u0642 \u0636\u0631\u0648\u0631\u06cc \u06c1\u06d2\u06d4",
+        "\u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u0628\u0645\u0642\u0627\u0628\u0644\u06c1 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af": "Volume is 289.4% above the 20-day average (today: 1,994,517 shares; average: 561,513 shares). \u0627\u0633\u06cc \u0648\u0627\u0644\u06cc\u0648\u0645 \u067e\u0631 \u062d\u0642\u06cc\u0642\u06cc \u0628\u0627\u0626\u0646\u06af \u06cc\u0627 \u0641\u06cc\u06a9 \u0628\u0627\u0626\u0646\u06af \u06a9\u0627 \u0641\u06cc\u0635\u0644\u06c1 \u06a9\u0631\u06cc\u06ba\u06d4",
+        "\u0645\u0644\u06a9\u06cc \u0648 \u0639\u0627\u0644\u0645\u06cc \u0645\u0639\u0627\u0634\u06cc \u0645\u062d\u0631\u06a9\u0627\u062a": "\u0645\u062a\u0639\u0644\u0642\u06c1 \u062a\u0627\u0632\u06c1 \u062e\u0628\u0631 \u06cc\u0627 macro driver \u0627\u0633 fallback \u0645\u06cc\u06ba verify \u0646\u06c1\u06cc\u06ba \u06c1\u0648\u0627\u06d4",
+        "\u0633\u067e\u0644\u0627\u0626\u06cc \u0686\u06cc\u0646 \u0645\u06cc\u06ba \u0645\u0642\u0627\u0645 \u0627\u0648\u0631 \u0627\u0635\u0644 \u0631\u06a9\u0627\u0648\u0679": "\u0627\u0633 \u06a9\u0645\u067e\u0646\u06cc \u06a9\u06d2 \u0644\u06cc\u06d2 supply-chain thesis \u0644\u0627\u06af\u0648 \u06c1\u06d2 \u06cc\u0627 \u0646\u06c1\u06cc\u06ba\u060c \u062a\u0627\u0632\u06c1 evidence \u06a9\u06d2 \u0628\u063a\u06cc\u0631 verify \u0646\u06c1\u06cc\u06ba \u06a9\u06cc\u0627 \u062c\u0627 \u0633\u06a9\u062a\u0627\u06d4",
+        "\u062b\u0628\u0648\u062a \u0627\u0648\u0631 \u0627\u06af\u0644\u0627 \u0686\u06cc\u06a9": "\u062a\u0627\u0632\u06c1 \u06a9\u0645\u067e\u0646\u06cc disclosure\u060c PSX notice\u060c \u0645\u0627\u0644\u06cc\u0627\u062a\u06cc \u0631\u067e\u0648\u0631\u0679 \u0627\u0648\u0631 \u0645\u062a\u0639\u0644\u0642\u06c1 \u062e\u0628\u0631 \u0686\u06cc\u06a9 \u06a9\u0631\u06cc\u06ba\u06d4",
+        "\u0645\u062e\u0627\u0644\u0641 \u062f\u0644\u06cc\u0644 \u0627\u0648\u0631 \u0641\u06cc\u0635\u0644\u06c1 \u0628\u062f\u0644\u0646\u06d2 \u06a9\u06cc \u0634\u0631\u0637": "\u06a9\u0645\u0632\u0648\u0631 volume\u060c \u0645\u0646\u0641\u06cc disclosure\u060c liquidity issue \u06cc\u0627 thesis \u06a9\u06cc \u0639\u062f\u0645 \u062a\u0635\u062f\u06cc\u0642 research priority \u06a9\u0645 \u06a9\u0631\u06d2 \u06af\u06cc\u06d4"
       },
       "evidence": {
-        "volume_ratio": 3.8940453827646078,
+        "volume_ratio": 3.894,
         "volume_average_shares": 561513.1,
         "volume_today_shares": 1994517.0,
-        "stop_loss": 43.0,
-        "take_profit": 48.5,
+        "stop_loss": 45.74,
+        "take_profit": 45.74,
         "holding_days": "2-20",
         "sources": []
       },
-      "ticker": "MFL"
+      "selection_checks": [
+        {
+          "question": "Is the price/volume move confirmed?",
+          "answer": "Technical screen only; independent confirmation is required.",
+          "status": "unverified"
+        },
+        {
+          "question": "Is there relevant fresh news or an event?",
+          "answer": "Fresh AI/news evidence was unavailable in fallback mode.",
+          "status": "unverified"
+        },
+        {
+          "question": "Does the company have real business exposure?",
+          "answer": "Not verified from fallback data.",
+          "status": "unverified"
+        },
+        {
+          "question": "Are fundamentals, valuation, and cash flow acceptable?",
+          "answer": "Not verified from fallback data.",
+          "status": "unverified"
+        },
+        {
+          "question": "Is liquidity sufficient for a PSX swing trade?",
+          "answer": "Liquidity is reflected only by the supplied volume metrics.",
+          "status": "unverified"
+        },
+        {
+          "question": "What is the strongest risk or counterargument?",
+          "answer": "Weak volume or negative disclosure can invalidate the idea.",
+          "status": "unverified"
+        },
+        {
+          "question": "What evidence would invalidate this priority?",
+          "answer": "A failed technical setup or contradictory company disclosure.",
+          "status": "unverified"
+        }
+      ]
     }
   ]
 }
